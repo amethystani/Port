@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { ORIGIN, MIRROR_HOSTS, localPath } from './paths.mjs';
+import { ORIGIN, MIRROR_HOSTS, MIRROR_IMAGE_HOSTS, localPath } from './paths.mjs';
 
 const OUT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../site');
 const BLOCK = /googletagmanager|google-analytics|doubleclick|googleads|datadoghq|betterstack|vercel-scripts|_vercel\/|33be7c63cabd3a23|twitter\.com|x\.com|twimg/;
@@ -40,8 +40,8 @@ await ctx.route('**/*', async (route) => {
   const u = req.url();
   if (BLOCK.test(u)) return route.abort();
   const rel = localPath(u);
-  if (!rel && !/^https?:/.test(u)) return route.continue();
-  if (!rel) return route.abort(); // other third parties (embeds, analytics)
+  if (rel === null && !/^https?:/.test(u)) return route.continue();
+  if (rel === null) return route.abort(); // other third parties (embeds, analytics)
   const isRsc = req.headers()['rsc'] || /_rsc=/.test(u);
   let res;
   try {
@@ -94,18 +94,20 @@ await browser.close();
 for (const [rel, html] of htmlPages) save(rel, html, 'text/html');
 
 // Sweep text files for referenced assets the browser never requested.
-const hostRe = MIRROR_HOSTS.map((h) => h.replaceAll('.', String.raw`\.`)).join('|');
-const REF = new RegExp(String.raw`(?:/_next/static/[\w\-./%]+|/font/[\w\-./%]+|https://(?:${hostRe})/[\w\-./%]+)`, 'g');
+const esc = (h) => h.replaceAll('.', String.raw`\.`);
+const extRe = [...MIRROR_HOSTS, ...MIRROR_IMAGE_HOSTS].map(esc).join('|');
+// Local assets stop at the first char that cannot be in a path; external CDN URLs keep their
+// commas/colons/queries (e.g. substack's and google docs' signed image URLs).
+const REF = new RegExp(String.raw`(?:/_next/static/[\w\-./%]+|/font/[\w\-./%]+|https://(?:${extRe})/[^\s"'\\)<>]+)`, 'g');
 for (let round = 0; round < 4; round++) {
   const want = new Set();
   for (const [rel, type] of saved) {
     if (!/text|javascript|json|css|svg/.test(type) && !/\.(js|css|html|json|svg)$/.test(rel)) continue;
     const txt = fs.readFileSync(path.join(OUT, rel), 'utf8');
     for (const m of txt.matchAll(REF)) {
-      let r = m[0].replace(/\\u0026.*/, '').replace(/[?#].*/, '').replace(/\.$/, '');
-      const abs = r.startsWith('http') ? r : ORIGIN + r;
+      const abs = (m[0].startsWith('http') ? m[0] : ORIGIN + m[0].replace(/[?#].*/, '')).replace(/&amp;|\\u0026/g, '&').replace(/[.,;]+$/, '');
       const lp = localPath(abs);
-      if (lp && !saved.has(lp) && !fs.existsSync(path.join(OUT, lp)) && !/\.\w+$/.test(lp) === false) want.add(abs);
+      if (lp && !saved.has(lp) && !fs.existsSync(path.join(OUT, lp))) want.add(abs);
     }
   }
   if (!want.size) break;

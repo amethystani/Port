@@ -12,6 +12,10 @@ export const MIRROR_HOSTS = [
   'lh7-rt.googleusercontent.com',
 ];
 
+// Hosts that are mostly plain links (so NOT rewritten wholesale), where only image files are mirrored.
+export const MIRROR_IMAGE_HOSTS = ['nousresearch-com-backup.vercel.app'];
+export const IMAGE_EXT = /\.(png|jpe?g|webp|gif|svg|avif)$/i;
+
 // Filenames over 100 chars (e.g. substack's url-encoded paths) are replaced by a hash + extension.
 export function safeRel(rel) {
   return rel
@@ -29,6 +33,6 @@ export function localPath(u) {
   const url = new URL(u);
   const pathname = decodeURIComponent(url.pathname).replace(/^\//, '');
   if (url.origin === ORIGIN) return safeRel(pathname);
-  if (MIRROR_HOSTS.includes(url.hostname)) return safeRel(`__ext/${url.hostname}/${pathname}`);
+  if (MIRROR_HOSTS.includes(url.hostname) || (MIRROR_IMAGE_HOSTS.includes(url.hostname) && IMAGE_EXT.test(url.pathname))) return safeRel(`__ext/${url.hostname}/${pathname}`);
   return null;
 }

@@ -11,7 +11,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { MIRROR_HOSTS, safeRel } from './tools/paths.mjs';
+import { MIRROR_HOSTS, MIRROR_IMAGE_HOSTS, IMAGE_EXT, safeRel } from './tools/paths.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const SITE = path.join(ROOT, 'site');
@@ -77,6 +77,9 @@ http.createServer((req, res) => {
     let body = fs.readFileSync(file, 'utf8');
     // asset hosts that were mirrored now live on this server
     for (const h of MIRROR_HOSTS) body = body.split(`https://${h}`).join(`/__ext/${h}`);
+    for (const h of MIRROR_IMAGE_HOSTS) {
+      body = body.replace(new RegExp(`https://${h.replaceAll('.', '\\.')}/[^\\s"'\\\\)<>?]+`, 'g'), (m) => (IMAGE_EXT.test(m) ? m.replace('https://', '/__ext/') : m));
+    }
     for (const [from, to] of loadReplacements()) body = body.split(from).join(to);
     res.writeHead(status, headers);
     return res.end(body);
