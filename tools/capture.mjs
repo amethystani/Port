@@ -105,9 +105,9 @@ for (let round = 0; round < 4; round++) {
     if (!/text|javascript|json|css|svg/.test(type) && !/\.(js|css|html|json|svg)$/.test(rel)) continue;
     const txt = fs.readFileSync(path.join(OUT, rel), 'utf8');
     for (const m of txt.matchAll(REF)) {
-      const abs = (m[0].startsWith('http') ? m[0] : ORIGIN + m[0].replace(/[?#].*/, '')).replace(/&amp;|\\u0026/g, '&').replace(/[.,;]+$/, '');
+      const abs = (m[0].startsWith('http') ? m[0] : ORIGIN + m[0].replace(/[?#].*/, '')).replace(/&amp;#x27.*$|&#x27.*$|&quot;.*$/, '').replace(/&amp;|\\u0026/g, '&').replace(/[.,;]+$/, '');
       const lp = localPath(abs);
-      if (lp && !saved.has(lp) && !fs.existsSync(path.join(OUT, lp))) want.add(abs);
+      if (lp && (abs.startsWith(ORIGIN) ? /\.\w+$/.test(lp) : true) && !saved.has(lp) && !fs.existsSync(path.join(OUT, lp))) want.add(abs);
     }
   }
   if (!want.size) break;
