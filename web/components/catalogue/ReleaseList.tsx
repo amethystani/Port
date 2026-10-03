@@ -1,5 +1,6 @@
 import { SectionHead } from '@/components/catalogue/SectionHead';
 import { CatalogueHero, WRAP } from '@/components/catalogue/CatalogueHero';
+import { PageMotion } from '@/components/behavior/PageMotion';
 import { Body, Mono, RowTitle } from '@/components/ui/Type';
 import { ListDisclosure } from '@/components/ui/ListDisclosure';
 import type { Release } from '@/content/releases';
@@ -25,30 +26,33 @@ function ReleaseRow({ release }: { release: Release }) {
 
 export function ReleasesPage({ releases }: { releases: Release[] }) {
   return (
-    <main className="nw-catalogue" id="top">
-      <CatalogueHero
-        className="nw-catalogue-listing-hero"
-        eyebrow={`Last release · ${longDate(releases[0].date)}`}
-        title="Releases"
-      />
-      <section aria-labelledby="releases-heading" className={`${WRAP} nw-catalogue-section`}>
-        <SectionHead
-          id="releases-heading"
-          title="Most Recent"
-          icon="/assets/nous-web/catalogue/heading-filter.svg"
-          link={{ href: '#release-list', label: 'Jump to releases' }}
+    <>
+      <PageMotion kind="catalogue" />
+      <main className="nw-catalogue" id="top">
+        <CatalogueHero
+          className="nw-catalogue-listing-hero"
+          eyebrow={`Last release · ${longDate(releases[0].date)}`}
+          title="Releases"
         />
-        <ListDisclosure
-          id="release-list"
-          pageSize={9}
-          itemLabel="releases"
-          controlsProps={{ id: 'release-list-more', className: 'nw-release-more', tabIndex: -1 }}
-        >
-          {releases.map((release) => (
-            <ReleaseRow key={`${release.date}-${release.title}`} release={release} />
-          ))}
-        </ListDisclosure>
-      </section>
-    </main>
+        <section aria-labelledby="releases-heading" className={`${WRAP} nw-catalogue-section`}>
+          <SectionHead
+            id="releases-heading"
+            title="Most Recent"
+            icon="/assets/nous-web/catalogue/heading-filter.svg"
+            link={{ href: '#release-list', label: 'Jump to releases' }}
+          />
+          <ListDisclosure
+            id="release-list"
+            pageSize={9}
+            itemLabel="releases"
+            controlsProps={{ id: 'release-list-more', className: 'nw-release-more', tabIndex: -1 }}
+          >
+            {releases.map((release) => (
+              <ReleaseRow key={`${release.date}-${release.title}`} release={release} />
+            ))}
+          </ListDisclosure>
+        </section>
+      </main>
+    </>
   );
 }

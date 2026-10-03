@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { SectionHead } from '@/components/catalogue/SectionHead';
 import { CatalogueHero, WRAP } from '@/components/catalogue/CatalogueHero';
+import { PageMotion } from '@/components/behavior/PageMotion';
 import { Body, Mono, RowTitle } from '@/components/ui/Type';
 import { ListDisclosure } from '@/components/ui/ListDisclosure';
 import { HermesBlock } from '@/components/home/HermesBlock';
@@ -74,6 +75,7 @@ function ArchiveRow({ post }: { post: Post }) {
 export function BlogIndex({ featured, archive }: { featured: Post[]; archive: Post[] }) {
   return (
     <>
+      <PageMotion kind="blog" />
       <main className="nw-blog-index nw-catalogue" id="main">
         <CatalogueHero eyebrow="Research & perspectives" title="Nous Blog" />
         <div>

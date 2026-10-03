@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { DiscordIcon, GitHubIcon, NousBadgeFilled, NousBadgeOutline, XIcon } from '@/components/icons';
 import { navigation } from '@/content/navigation';
+import { BrandLink } from './BrandLink';
 
 type Variant = 'main' | 'pinned';
 
@@ -107,11 +108,7 @@ export function NavBar({
       </div>
       {main ? (
         <div className="nw-research-brand">
-          <Link href="/" className="nw-research-brand-link" aria-label="Nous Research home">
-            <span>
-              <BadgePair className="nw-research-badge" width={43} height={60} />
-            </span>
-          </Link>
+          <BrandLink />
           {socials && <SocialLinks items={socials} />}
         </div>
       ) : (

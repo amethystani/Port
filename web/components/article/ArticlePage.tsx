@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { PageMotion } from '@/components/behavior/PageMotion';
 import { Button } from '@/components/ui/Button';
 import { ChevronIcon, ListenIcon, NousBadgeFilled, NousBadgeOutline, ShareIcon } from '@/components/icons';
 import { Mono } from '@/components/ui/Type';
@@ -145,6 +146,7 @@ export function ArticlePage({ post, body }: { post: Post; body: string }) {
   const related = post.related.map(getPost).filter((p): p is Post => Boolean(p));
   return (
     <div>
+      <PageMotion kind="article" />
       <main className={`nw-blog nw-article${post.feature ? ' nw-article-feature' : ''}`}>
         <article>
           <header className={`${WRAP} nw-article-hero`}>

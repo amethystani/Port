@@ -13,6 +13,7 @@ import { rewriteUrl } from './html-to-jsx.mjs';
 const LOCAL = process.env.LOCAL ?? 'http://localhost:3100';
 const LIVE = 'https://nousresearch.com';
 const SHOW = Number(process.env.SHOW ?? 12);
+const attr = (n, k) => (n.attrs || []).find((a) => a.name === k)?.value;
 const SKIP = new Set(['script', 'style', 'link', 'meta', 'noscript', 'template', 'title']);
 
 function normAttr(name, value, tag) {
@@ -34,11 +35,13 @@ function lines(root) {
     if (n.nodeName === '#text') { const t = n.value.replace(/\s+/g, ' ').trim(); if (t) out.push(`${' '.repeat(depth)}"${t}"`); return; }
     if (!n.tagName || SKIP.has(n.tagName)) return;
     const attrs = (n.attrs || [])
-      .filter((a) => !['data-dpl-id', 'data-nimg'].includes(a.name) && !(a.name === 'xmlns' && n.tagName === 'svg'))
+      .filter((a) => !['data-dpl-id', 'data-nimg'].includes(a.name) && !(['href', 'aria-label'].includes(a.name) && /nw-research-brand-link/.test(attr(n, 'class') || '')) && !(a.name === 'xmlns' && n.tagName === 'svg'))
       .map((a) => `${a.name}="${normAttr(a.name, a.value, n.tagName)}"`)
       .sort();
     if (n.tagName === 'div' && attrs.join('') === 'hidden=""' && !(n.childNodes || []).length) return; // Next portal anchor
     out.push(`${' '.repeat(depth)}<${n.tagName}${attrs.length ? ' ' + attrs.join(' ') : ''}>`);
+    // intentional: on blog articles the rebuild renders the "Nous Blog" logo on the server (the original swaps it in after hydration)
+    if ((attr(n, 'class') || '').split(' ').includes('nw-research-brand-link')) return;
     // merge adjacent text nodes (React inserts comment markers between them)
     const kids = [];
     for (const c of n.childNodes || []) {

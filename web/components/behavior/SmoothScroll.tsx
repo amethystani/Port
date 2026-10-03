@@ -7,7 +7,7 @@ import Lenis from 'lenis';
 export function SmoothScroll() {
   useEffect(() => {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const lenis = new Lenis({ lerp: 0.09 });
+    const lenis = new Lenis({ lerp: 0.09, anchors: true });
     let frame = requestAnimationFrame(function tick(time) {
       lenis.raf(time);
       frame = requestAnimationFrame(tick);

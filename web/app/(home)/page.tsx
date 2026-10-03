@@ -1,3 +1,4 @@
+import { PageMotion } from '@/components/behavior/PageMotion';
 import { JsonLd } from '@/components/JsonLd';
 import { Announcements } from '@/components/home/Announcements';
 import { Hero } from '@/components/home/Hero';
@@ -29,6 +30,7 @@ export default function HomePage() {
           ],
         }}
       />
+      <PageMotion kind="home" />
       <main className="nw-page-body">
         <Hero />
         <Mission />
