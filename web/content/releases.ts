@@ -229,7 +229,7 @@ export const releases: Release[] = [
     date: '03/05/24',
     type: 'PAPER',
     title: 'Nous Research Official Branding Booklet',
-    href: '/wp-content/uploads/2024/03/NOUS-BRAND-BOOKLET-firstedition_1.pdf',
+    href: 'https://nousresearch.com/wp-content/uploads/2024/03/NOUS-BRAND-BOOKLET-firstedition_1.pdf',
     description: 'Design & story of Nous',
   },
   {

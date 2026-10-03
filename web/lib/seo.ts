@@ -10,6 +10,8 @@ type PageMeta = {
   /** Path starting with "/", used for the canonical URL and og:url. */
   path: string;
   image?: string;
+  /** Alt text for the share image; defaults to the site name (or the title, for articles). */
+  imageAlt?: string;
   type?: 'website' | 'article';
   publishedTime?: string;
   author?: string;
@@ -22,14 +24,15 @@ export function pageMetadata({
   description = site.description,
   path,
   image,
+  imageAlt,
   type = 'website',
   publishedTime,
   author,
 }: PageMeta): Metadata {
   const ogTitle = shareTitle ?? title;
-  const images = image
-    ? [{ url: image, ...(type === 'website' ? { width: 1200, height: 630 } : {}), alt: ogTitle }]
-    : undefined;
+  const size = type === 'website' ? { width: 1200, height: 630 } : {};
+  const alt = imageAlt ?? (type === 'website' ? site.name : ogTitle);
+  const images = image ? [{ url: image, ...size, alt }] : undefined;
   return {
     title: { absolute: title },
     description,
@@ -48,7 +51,7 @@ export function pageMetadata({
       card: image ? 'summary_large_image' : 'summary',
       title: ogTitle,
       description,
-      ...(image ? { images: [{ url: image, alt: ogTitle }] } : {}),
+      ...(images ? { images } : {}),
     },
   };
 }

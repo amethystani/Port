@@ -128,6 +128,8 @@ Deliberate, and small:
 - **One reading-rail preview** (the second "Logic puzzles" section of the thinking-efficiency article) can
   show a different excerpt. The original's rule counts the whitespace in its source HTML as text; this
   one measures real text.
+- **Linked documents.** The two technical-report PDFs and one article figure that the original serves from its own site are copied into `public/`. The 42 MB brand booklet is not; its link points at nousresearch.com.
+- **No site-verification tag.** The original carries Nous's Google site-verification token; it is theirs, so it is left out.
 - **Third-party images** that the original hot-links are copied into `public/assets/external/`.
 - **Links to other Nous sites** (portal, hermes-agent docs, shop, Discord, GitHub, X) still point at the
   real ones.

@@ -11,7 +11,12 @@ import { site } from '@/lib/site';
 import '@/styles/home-announcements.css';
 import '@/styles/home-orb.css';
 
-export const metadata = pageMetadata({ title: site.name, path: '/', image: site.ogImage });
+export const metadata = pageMetadata({
+  title: site.name,
+  description: site.homeDescription,
+  path: '/',
+  image: site.ogImage,
+});
 
 export default function HomePage() {
   return (
