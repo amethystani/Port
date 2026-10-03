@@ -10,6 +10,7 @@ export const MIRROR_HOSTS = [
   '5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com',
   'substackcdn.com',
   'lh7-rt.googleusercontent.com',
+  'pbs.twimg.com',
 ];
 
 // Hosts that are mostly plain links (so NOT rewritten wholesale), where only image files are mirrored.
