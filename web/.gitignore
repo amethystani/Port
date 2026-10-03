@@ -4,3 +4,7 @@ node_modules
 *.tsbuildinfo
 next-env.d.ts
 .compare
+
+# written by `next dev`
+AGENTS.md
+CLAUDE.md

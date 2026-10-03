@@ -1,6 +1,29 @@
 /*
- * Your own styles go here. This file is loaded after the design system, so rules here win
- * ties against it. Example: re-theme the blue by overriding the brand variable.
+ * Your own styles go here. This file loads after the design system, so rules here win ties.
  *
- *   :root { --hermes-primary: #0a7d4b; }
+ * Re-theme: the site is two blues, a bright one for the frame, buttons, headings and links, and a darker
+ * one for body copy. Copy the block below out of this comment and pick your own colours.
+ * (The images, such as the hero art and the footer picture, are blue pictures and have to be replaced
+ * separately.)
+ *
+ *   :root {
+ *     --hermes-color-blue: #0a7d4b;
+ *     --hermes-primary: #0a7d4b;
+ *     --nw-theme-blue: #064d2d;
+ *   }
+ *   .nous-web {
+ *     --nw-ink: #0a7d4b;
+ *     --nw-editorial-link: #0a7d4b;
+ *     --nw-editorial-text: #064d2d;
+ *     --hw-teams-ink: #064d2d;
+ *     --nw-key-ink: #064d2d;
+ *   }
+ *
+ * What each one does:
+ *   --hermes-color-blue, --hermes-primary   the bright brand colour: frame, buttons, labels
+ *   --nw-theme-blue                         the darker tint used by dark mode surfaces
+ *   --nw-ink                                headlines, navigation, small labels
+ *   --nw-editorial-link                     links in articles and lists
+ *   --nw-editorial-text, --hw-teams-ink,
+ *   --nw-key-ink                            body copy and keyboard hints
  */

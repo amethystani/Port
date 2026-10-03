@@ -1,5 +1,26 @@
 # Port
 
+Two ways to run [nousresearch.com](https://nousresearch.com) yourself and adapt it:
+
+| | What it is | Use it when |
+| --- | --- | --- |
+| [`web/`](web/README.md) | **An editable Next.js project**: the same 36 pages rebuilt as readable React + TypeScript, with the copy in data files and the behaviours as small components. Verified against the live site (identical server HTML, pixel comparison, behaviour checks). | you want to change, extend or re-skin it |
+| `site/` + `server.mjs` | **An exact offline mirror** of the compiled live build (minified bundles, original HTML), served by a zero-dependency Node server. | you want the untouched original running locally |
+
+```sh
+# the editable project
+cd web && npm install && npm run dev        # http://localhost:3000
+
+# the mirror
+node server.mjs                              # http://localhost:3000
+```
+
+The rest of this file is about the mirror. For the project, see [`web/README.md`](web/README.md).
+
+---
+
+## The mirror
+
 A local, offline mirror of [nousresearch.com](https://nousresearch.com) that you can serve
 yourself and adapt to your own use case. It is the real Next.js build (original HTML,
 JS, CSS, fonts, images, hero video and the interactive blog demos), so the page renders and
