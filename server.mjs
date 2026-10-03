@@ -11,12 +11,15 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { MIRROR_HOSTS, safeRel } from './tools/paths.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const SITE = path.join(ROOT, 'site');
 const OVERRIDES = path.join(ROOT, 'overrides');
 const PORT = Number(process.argv[2] || process.env.PORT || 3000);
-const EXT_PREFIX = '/__ext/web-assets.nousresearch.com';
+// Trackers are not part of the look of the site; ALLOW_EXTERNAL=1 lifts the policy below.
+const CSP = "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; connect-src 'self' data: blob:";
+const ANALYTICS = /^(_vercel|33be7c63cabd3a23)\//;
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
@@ -37,6 +40,7 @@ function loadReplacements() {
 }
 
 function find(rel) {
+  rel = safeRel(rel);
   for (const base of [OVERRIDES, SITE]) {
     const root = path.resolve(base);
     for (const cand of [rel, path.join(rel, 'index.html'), rel + '.html']) {
@@ -56,6 +60,8 @@ http.createServer((req, res) => {
   // A 404 makes Next.js fall back to a normal full-page load of the same URL.
   if (req.headers['rsc'] || url.searchParams.has('_rsc')) { res.writeHead(404); return res.end(); }
 
+  if (ANALYTICS.test(rel)) { res.writeHead(204); return res.end(); }
+
   let file = find(rel === '' ? 'index.html' : rel);
   let status = 200;
   if (!file) { file = find('404.html'); status = 404; }
@@ -64,12 +70,13 @@ http.createServer((req, res) => {
   const ext = path.extname(file).toLowerCase();
   const type = TYPES[ext] || 'application/octet-stream';
   const headers = { 'content-type': type };
+  if (!process.env.ALLOW_EXTERNAL && type.startsWith('text/html')) headers['content-security-policy'] = CSP;
   headers['cache-control'] = /^_next\/static|^font\/|^__ext\//.test(rel) ? 'public, max-age=3600' : 'no-cache';
 
   if (TEXT.test(file)) {
     let body = fs.readFileSync(file, 'utf8');
-    // the original asset host now lives on this server
-    body = body.split('https://web-assets.nousresearch.com').join(EXT_PREFIX);
+    // asset hosts that were mirrored now live on this server
+    for (const h of MIRROR_HOSTS) body = body.split(`https://${h}`).join(`/__ext/${h}`);
     for (const [from, to] of loadReplacements()) body = body.split(from).join(to);
     res.writeHead(status, headers);
     return res.end(body);

@@ -1,0 +1,12 @@
+{
+  "name": "port",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "capture": "node tools/capture.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.56.1"
+  }
+}

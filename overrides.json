@@ -1,0 +1,5 @@
+{
+  "_help": "Exact-string replacements applied to every html/js/css/json response at serve time. Keys starting with _ are ignored. The page text appears twice in Next.js output (HTML + RSC payload) and both copies are replaced.",
+  "replace": {
+  }
+}

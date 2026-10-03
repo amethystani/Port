@@ -5,21 +5,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ORIGIN = 'https://nousresearch.com';
-const ASSET_HOST = 'https://web-assets.nousresearch.com';
+import { ORIGIN, MIRROR_HOSTS, localPath } from './paths.mjs';
+
 const OUT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../site');
-const EXT_DIR = '__ext/web-assets.nousresearch.com';
-const BLOCK = /googletagmanager|google-analytics|doubleclick|googleads|twitter\.com|x\.com|twimg/;
+const BLOCK = /googletagmanager|google-analytics|doubleclick|googleads|datadoghq|betterstack|vercel-scripts|_vercel\/|33be7c63cabd3a23|twitter\.com|x\.com|twimg/;
 
 const saved = new Map(); // local rel path -> content-type
-
-function localPath(u) {
-  const url = new URL(u);
-  let p = decodeURIComponent(url.pathname);
-  if (url.origin === ASSET_HOST) p = `${EXT_DIR}${p}`;
-  else if (url.origin !== ORIGIN) return null;
-  return p.replace(/^\//, '');
-}
 
 function save(rel, body, type) {
   if (!rel) return;
@@ -55,7 +46,7 @@ await ctx.route('**/*', async (route) => {
   let res;
   try {
     const headers = { ...req.headers() };
-    delete headers['host']; delete headers['accept-encoding'];
+    delete headers['host']; delete headers['accept-encoding']; delete headers['range'];
     res = await fetch(u, { method: req.method(), headers, redirect: 'follow' });
   } catch (e) { return route.abort(); }
   const body = Buffer.from(await res.arrayBuffer());
@@ -70,10 +61,10 @@ async function visit(url) {
   const page = await ctx.newPage();
   try {
     const res = await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
-    if (!res || res.status() !== 200) { console.log('skip', res?.status(), url); return; }
+    if (!res || res.status() !== 200) { console.log('skip', res?.status(), url); return true; }
     const html = await (await fetch(url)).text();
     const u = new URL(url);
-    const rel = u.pathname === '/' ? 'index.html' : `${u.pathname.replace(/^\//, '')}/index.html`;
+    const rel = u.pathname === '/' ? 'index.html' : /\.html$/.test(u.pathname) ? u.pathname.slice(1) : `${u.pathname.replace(/^\//, '')}/index.html`;
     htmlPages.set(rel, html);
     // scroll to trigger lazy images / observers
     const h = await page.evaluate(() => document.body.scrollHeight);
@@ -84,17 +75,18 @@ async function visit(url) {
     const links = await page.$$eval('a[href]', (as) => as.map((a) => a.href));
     for (const l of links) {
       const lu = new URL(l);
-      if (lu.origin === ORIGIN && !/\.(png|jpe?g|svg|webp|pdf|zip)$/i.test(lu.pathname)) pages.add(lu.origin + lu.pathname.replace(/\/$/, '') || '/');
+      if (lu.origin === ORIGIN && !/\.(png|jpe?g|svg|webp|pdf|zip)$/i.test(lu.pathname)) pages.add(lu.origin + (lu.pathname.replace(/\/$/, '') || '/'));
     }
     console.log('ok  ', url);
-  } catch (e) { console.log('fail', url, e.message); }
+    return true;
+  } catch (e) { console.log('fail', url, e.message.split('\n')[0]); return false; }
   finally { await page.close(); }
 }
 
 let queue;
 while ((queue = [...pages].filter((p) => !done.has(p))).length) {
   for (let i = 0; i < queue.length; i += 4) {
-    await Promise.all(queue.slice(i, i + 4).map((u) => { done.add(u); return visit(u); }));
+    await Promise.all(queue.slice(i, i + 4).map(async (u) => { done.add(u); if (!(await visit(u))) await visit(u); }));
   }
 }
 await browser.close();
@@ -102,7 +94,8 @@ await browser.close();
 for (const [rel, html] of htmlPages) save(rel, html, 'text/html');
 
 // Sweep text files for referenced assets the browser never requested.
-const REF = /(?:\/_next\/static\/[\w\-./%]+|\/font\/[\w\-./%]+|https:\/\/web-assets\.nousresearch\.com\/[\w\-./%]+|\/(?:images?|assets|media|videos?)\/[\w\-./%]+\.(?:png|jpe?g|webp|svg|mp4|webm|woff2?|json|gif|avif))/g;
+const hostRe = MIRROR_HOSTS.map((h) => h.replaceAll('.', String.raw`\.`)).join('|');
+const REF = new RegExp(String.raw`(?:/_next/static/[\w\-./%]+|/font/[\w\-./%]+|https://(?:${hostRe})/[\w\-./%]+)`, 'g');
 for (let round = 0; round < 4; round++) {
   const want = new Set();
   for (const [rel, type] of saved) {
