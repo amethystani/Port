@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import { hermesFeatures } from '@/content/home';
 import { Button } from '@/components/ui/Button';
+import { DemoVideo } from './DemoVideo';
 
 export function HermesBlock() {
   return (
@@ -102,16 +103,7 @@ export function HermesBlock() {
         </div>
       </div>
       <div className="relative overflow-clip h-[var(--nw-demo-h)] w-full" data-el="hermes-demo">
-        <video
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 size-full object-cover object-center"
-          loop
-          muted
-          playsInline
-          poster="/assets/nous-web/hermes-demo-poster.webp"
-          src="/media/hermes-desktop.mp4"
-          preload="metadata"
-        />
+        <DemoVideo poster="/assets/nous-web/hermes-demo-poster.webp" src="/media/hermes-desktop.mp4" />
       </div>
       <div
         data-el="hermes-products"

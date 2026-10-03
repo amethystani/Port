@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { PageMotion } from '@/components/behavior/PageMotion';
 import { Button } from '@/components/ui/Button';
 import { NousBadgeFilled, NousBadgeOutline } from '@/components/icons';
+import { ArticleEmbeds } from '@/components/article/ArticleEmbeds';
 import { ArticleReading } from '@/components/article/ArticleReading';
 import { ArticleToolbar } from '@/components/article/ArticleToolbar';
 import { Mono } from '@/components/ui/Type';
@@ -153,6 +154,7 @@ export function ArticlePage({ post, body }: { post: Post; body: string }) {
               dateLabel={post.dateLabel}
             />
             <ArticleReading headings={headings} />
+            <ArticleEmbeds />
             <div className="nw-article-prose" id="article-prose" dangerouslySetInnerHTML={{ __html: body }} />
             {post.sourceTools && (
               <aside className="nw-article-source-tools" aria-labelledby="source-tools-heading">

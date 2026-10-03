@@ -1,3 +1,4 @@
+import { ArtShader } from './ArtShader';
 import type { CSSProperties } from 'react';
 import Link from 'next/link';
 import { DiscordIcon, GitHubIcon, NousBadgeOutline, XIcon } from '@/components/icons';
@@ -63,9 +64,9 @@ export function Footer() {
               loading="lazy"
               src="/assets/nous-web/footer-field.webp"
             />
-            <canvas
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 size-full motion-reduce:invisible"
+            <ArtShader
+              className="pointer-events-none absolute inset-0 size-full"
+              src="/assets/nous-web/footer-field.webp"
             />
           </div>
           <div

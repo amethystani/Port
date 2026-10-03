@@ -15,6 +15,7 @@ import '@/styles/08-surfaces.css';
 import '@/styles/09-prose-table.css';
 import '@/styles/custom.css';
 
+import { FilmGrain } from '@/components/chrome/FilmGrain';
 import { Frame } from '@/components/chrome/Frame';
 import { FooterReveal } from '@/components/behavior/FooterReveal';
 import { SmoothScroll } from '@/components/behavior/SmoothScroll';
@@ -46,11 +47,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <div className="bg-hermes mx-auto min-h-dvh w-full md:w-[var(--hw-teams-page-w)] nous-web-viewport relative">
             <div className="nous-web min-h-screen">{children}</div>
           </div>
-          <canvas
-            aria-hidden="true"
-            className="pointer-events-none fixed inset-0 z-101 h-full w-full"
-            style={{ mixBlendMode: 'normal', opacity: 0.02 }}
-          />
+          <FilmGrain />
           <Frame />
         </div>
         <SmoothScroll />

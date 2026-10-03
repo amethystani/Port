@@ -152,6 +152,49 @@ const attr = (page, sel, name) => page.$eval(sel, (el, n) => el.getAttribute(n),
   await ctx.close();
 }
 
+// ---------------------------------------------------------------- neuron constellation
+{
+  const { page, errors, ctx } = await open('/neuron-steering');
+  await page.evaluate(() => document.querySelector('.nw-constellation').scrollIntoView({ block: 'center' })); await page.waitForTimeout(2500);
+  const count = () => page.$eval('.nw-neuron-count', (e) => e.textContent);
+  check('the 3D scene loads when scrolled to: canvas drawn, "101 shown"', (await count()) === '101 shown' && (await page.$eval('.nw-neuron-scene canvas', (c) => c.width > 300)));
+  await page.selectOption('select[aria-label="Neuron subset"]', 'all'); await page.waitForTimeout(300);
+  check('"All neurons" shows all 200', (await count()) === '200 shown');
+  await page.selectOption('select[aria-label="Neuron subset"]', 'negative'); await page.waitForTimeout(300);
+  check('"Negative delta" shows 99', (await count()) === '99 shown');
+  await page.selectOption('select[aria-label="Inspect neuron"]', { index: 5 });
+  check('the inspector describes the chosen neuron', /^Layer \d+ · Neuron \d+ · Rank \d+ · Delta -/.test(await page.$eval('.nw-neuron-details output', (e) => e.textContent)));
+  const before = await page.screenshot({ clip: await page.$eval('.nw-neuron-viewport', (e) => { const r = e.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; }) });
+  await page.click('button[aria-label="Zoom in"]'); await page.waitForTimeout(300);
+  const after = await page.screenshot({ clip: await page.$eval('.nw-neuron-viewport', (e) => { const r = e.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; }) });
+  check('zoom changes the picture', !before.equals(after));
+  check('no console errors with the constellation', errors.length === 0, errors.slice(0, 2).join(' | '));
+  await ctx.close();
+}
+// ---------------------------------------------------------------- canvases and video
+{
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await ctx.newPage();
+  await page.addInitScript(() => {
+    window.__plays = 0; window.__pauses = 0;
+    HTMLMediaElement.prototype.play = function () { window.__plays++; return Promise.resolve(); };
+    HTMLMediaElement.prototype.pause = function () { window.__pauses++; };
+  });
+  await page.goto(BASE + '/', { waitUntil: 'networkidle' }); await page.waitForTimeout(800);
+  const plays = () => page.evaluate(() => window.__plays);
+  const before = await plays();
+  await page.evaluate(() => document.querySelector('[data-el="hermes-demo"]').scrollIntoView({ block: 'center' })); await page.waitForTimeout(800);
+  check('the Hermes demo plays when it scrolls into view', (await plays()) > before);
+  const pausesBefore = await page.evaluate(() => window.__pauses);
+  await page.evaluate(() => scrollTo(0, 0)); await page.waitForTimeout(800);
+  check('and pauses when it leaves', (await page.evaluate(() => window.__pauses)) > pausesBefore);
+  await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight)); await page.waitForTimeout(2500);
+  await page.evaluate(() => document.querySelector('.nw-orb-stage')?.scrollIntoView({ block: 'center' })); await page.waitForTimeout(2500);
+  const canvases = await page.$$eval('canvas', (cs) => cs.map((c) => c.width > 300));
+  check('orb, footer shader and film grain canvases are all drawn', canvases.length === 3 && canvases.every(Boolean), JSON.stringify(canvases));
+  await ctx.close();
+}
+
 // ---------------------------------------------------------------- an editorial page
 {
   const { page, errors, ctx } = await open('/releases');
