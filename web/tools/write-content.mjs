@@ -9,7 +9,13 @@ const doc = load('index.html');
 const ts = (v) => JSON.stringify(v, null, 2); // prettier turns this into idiomatic TS
 
 const cols = footerColumns(doc).map(({ links, ...c }) => ({ ...c, links: links.map(({ external, ...l }) => ({ ...l, ...(external ? { newTab: true } : {}) })) }));
-fs.writeFileSync(path.join(OUT, 'footer.ts'), `export type FooterLink = { label: string; href: string; newTab?: boolean };
+fs.writeFileSync(path.join(OUT, 'footer.ts'), `export type FooterLink = {
+  label: string;
+  href: string;
+  /** Dimmed text before the label, e.g. "Go to ". */
+  prefix?: string;
+  newTab?: boolean;
+};
 export type FooterColumn = { group: string; title: string; links: FooterLink[] };
 
 /** The four link columns in the footer. */
@@ -20,6 +26,9 @@ fs.writeFileSync(path.join(OUT, 'announcements.ts'), `export type Announcement =
   /** Where the card links to (a post on X). */
   url: string;
   image: string;
+  /** Intrinsic size of the image (sets the card's aspect ratio). */
+  width: number;
+  height: number;
   handle: string;
   text: string;
   /** Display date, shown as written. */

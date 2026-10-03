@@ -31,7 +31,7 @@ async function context(w, h, live) {
   await ctx.route('**/*', async (route) => {
     const u = route.request().url();
     if (!live) return /^https?:\/\/localhost/.test(u) ? route.continue() : route.abort();
-    if (!/nousresearch\.com|vercel-storage|twimg\.com|substackcdn|googleusercontent/.test(u)) return route.abort();
+    if (!/nousresearch(\.com|-com-backup\.vercel\.app)|vercel-storage|twimg\.com|substackcdn|googleusercontent/.test(u)) return route.abort();
     try {
       const hd = { ...route.request().headers() };
       delete hd.host; delete hd['accept-encoding']; delete hd.range;

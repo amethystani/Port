@@ -15,9 +15,7 @@ import '@/styles/08-surfaces.css';
 import '@/styles/09-prose-table.css';
 import '@/styles/custom.css';
 
-import { Footer } from '@/components/chrome/Footer';
 import { Frame } from '@/components/chrome/Frame';
-import { Header, PinnedHeader } from '@/components/chrome/Header';
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -35,12 +33,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="min-h-screen">
         <div className="hermes-web min-h-dvh w-full bg-[var(--hermes-primary)] text-[var(--hermes-white)] hw-teams-page my-0 nw-research-shell">
           <div className="bg-hermes mx-auto min-h-dvh w-full md:w-[var(--hw-teams-page-w)] nous-web-viewport relative">
-            <div className="nous-web min-h-screen">
-              <Header />
-              <PinnedHeader />
-              {children}
-              <Footer />
-            </div>
+            <div className="nous-web min-h-screen">{children}</div>
           </div>
           <canvas
             aria-hidden="true"

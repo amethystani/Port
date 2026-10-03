@@ -6,7 +6,7 @@
     "ghost": "bg-transparent text-current hover:shadow-[var(--hpv2-shadow-hair)] active:shadow-[var(--hpv2-shadow-hair),var(--hpv2-shadow-press)] disabled:opacity-40 disabled:shadow-none",
     "outline": "hermes-button-outline bg-[color-mix(in_srgb,var(--hermes-paper)_90%,transparent)] text-[var(--hpv2-brand,var(--hermes-primary))] shadow-[var(--hpv2-shadow-hair)] hover:bg-[var(--hermes-paper)] hover:shadow-[var(--hpv2-shadow-hair),var(--hpv2-shadow-lift)] active:bg-[var(--hermes-paper)] active:shadow-[var(--hpv2-shadow-hair),var(--hpv2-shadow-press)] disabled:bg-[var(--hpv2-row-well,rgb(0_0_0/0.02))] disabled:text-[var(--hpv2-inactive-fg,color-mix(in_srgb,var(--hermes-primary)_40%,transparent))] disabled:shadow-none",
     "icon": "hermes-button-icon-only hermes-button-size-m text-xs bg-transparent text-current opacity-70 hover:opacity-100 disabled:opacity-40 disabled:shadow-none size-[var(--hpv2-btn-icon-m)] leading-none",
-    "disclosure": "disabled:opacity-40"
+    "editorial-disclosure": "disabled:opacity-40"
   },
   "sizes": {
     "m": "hermes-button-size-m gap-2 px-3",
@@ -16,5 +16,6 @@
     "cta": "py-[var(--hw-teams-btn-py)] text-[length:var(--hw-teams-label)]",
     "compact": "text-xs py-2.5"
   },
-  "label": "leading-none whitespace-nowrap cap-mono text-cap-trim relative -top-[var(--hpv2-cap-nudge)] cap-fallback:top-[var(--hpv2-nudge)]!"
+  "label": "leading-none whitespace-nowrap cap-mono text-cap-trim relative -top-[var(--hpv2-cap-nudge)] cap-fallback:top-[var(--hpv2-nudge)]!",
+  "labelNoTrim": "leading-none whitespace-nowrap cap-mono relative -top-[var(--hpv2-cap-nudge)] cap-fallback:top-[var(--hpv2-nudge)]!"
 }

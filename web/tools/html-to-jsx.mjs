@@ -41,6 +41,7 @@ function attrName(n) {
 
 // ---------------------------------------------------------------- url rewriting
 const ASSET_RE = /^https:\/\/web-assets\.nousresearch\.com\/portal\/[0-9a-f]{40}\/(assets\/.*|logo-favicon\.png)$/;
+const EXTERNAL_MAP = fs.existsSync(path.join(path.dirname(fileURLToPath(import.meta.url)), 'external-map.json')) ? JSON.parse(fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), 'external-map.json'), 'utf8')) : {};
 const EXTERNAL_HOSTS = ['5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com', 'substackcdn.com', 'lh7-rt.googleusercontent.com', 'pbs.twimg.com'];
 
 export function rewriteUrl(v) {
@@ -49,6 +50,8 @@ export function rewriteUrl(v) {
   if (v === 'https://hermes-assets.nousresearch.com/hermes-desktop.mp4') return '/media/hermes-desktop.mp4';
   try {
     const u = new URL(v);
+    const mapped = EXTERNAL_MAP[u.hostname + decodeURIComponent(u.pathname)];
+    if (mapped) return mapped;
     if (EXTERNAL_HOSTS.includes(u.hostname)) {
       return '/assets/external/' + safeRel(`${u.hostname}${decodeURIComponent(u.pathname)}`);
     }
@@ -70,12 +73,12 @@ function matchButton(n) {
   const a = Object.fromEntries((n.attrs || []).map((x) => [x.name, x.value]));
   if (a['data-slot'] !== 'button' || !a.class) return null;
   const have = toks(a.class);
-  const variant = a['data-variant'] === 'editorial-disclosure' ? 'disclosure' : a['data-variant'];
+  const variant = a['data-variant'];
   const size = a['data-size'];
   if (!BTN.variants[variant] || !BTN.sizes[size] || variant === 'icon' || variant === 'outline') return null;
   const kids = (n.childNodes || []).filter((k) => k.tagName || (k.nodeName === '#text' && k.value.trim()));
   if (kids.length !== 2 || kids[0].tagName !== 'span' || !(toks(attrsOf(kids[1]).class || '').includes('hermes-button-hover-border'))) return null;
-  if (attrsOf(kids[0]).class !== BTN.label) return null;
+  if (attrsOf(kids[0]).class !== (variant === 'editorial-disclosure' ? BTN.labelNoTrim : BTN.label)) return null;
   if (!hasAll(have, BTN.base) || !hasAll(have, BTN.variants[variant]) || !hasAll(have, BTN.sizes[size])) return null;
   let density = 'compact';
   let used = [BTN.base, BTN.variants[variant], BTN.sizes[size]];

@@ -20,11 +20,17 @@ export function footerColumns(doc) {
   const cols = [];
   for (const col of all(grid, (n) => hasClass(n, 'hw-teams-footer-column'))) {
     const ps = all(col, (n) => n.tagName === 'p').map((p) => text(p).trim());
-    const links = all(col, (n) => n.tagName === 'a').map((a) => ({
-      label: text(a).trim(),
-      href: rewriteUrl(attr(a, 'href')),
-      external: attr(a, 'target') === '_blank',
-    }));
+    const links = all(col, (n) => n.tagName === 'a').map((a) => {
+      // some labels carry a dimmed lead-in: <span class="opacity-60">Go to </span>Discord
+      const dim = all(a, (n) => n.tagName === 'span' && hasClass(n, 'opacity-60'))[0];
+      const prefix = dim ? text(dim) : '';
+      return {
+        label: text(a).slice(prefix.length).trim(),
+        ...(prefix ? { prefix } : {}),
+        href: rewriteUrl(attr(a, 'href')),
+        external: attr(a, 'target') === '_blank',
+      };
+    });
     cols.push({ group: ps[0], title: ps[1], links });
   }
   return cols;
@@ -38,6 +44,8 @@ export function announcements(doc) {
     return {
       url: attr(c, 'href'),
       image: rewriteUrl(attr(imgs[0], 'src')),
+      width: Number(attr(imgs[0], 'width')),
+      height: Number(attr(imgs[0], 'height')),
       handle: spans[0],
       text: all(c, (n) => n.tagName === 'p').map(text).join(''),
       date: spans[spans.length - 1],
@@ -48,4 +56,28 @@ export function announcements(doc) {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const doc = load('index.html');
   console.log(JSON.stringify({ footer: footerColumns(doc), announcements: announcements(doc) }, null, 1));
+}
+
+/** Blog index: featured cards + archive rows, in page order. */
+export function blogIndex(doc) {
+  const main = findNode(doc, 'main');
+  const featured = all(main, (n) => n.tagName === 'article' && hasClass(n, 'nw-blog-feature')).map((a) => {
+    const link = all(a, (n) => n.tagName === 'a' && (rewriteUrl(attr(n, 'href') || '')).startsWith('/'))[0];
+    const imgs = all(a, (n) => n.tagName === 'img');
+    return {
+      slug: rewriteUrl(attr(link, 'href')).replace(/^\//, ''),
+      title: text(all(a, (n) => n.tagName === 'h2')[0]).trim(),
+      author: text(all(a, (n) => n.tagName === 'span' && /font-\[family-name:var\(--font-mono\)\]/.test(attr(n, 'class') || ''))[0]).replace(/^By\s*/, '').trim(),
+      excerpt: text(all(a, (n) => n.tagName === 'p')[0]).trim(),
+      image: rewriteUrl(attr(imgs[0], 'src')),
+      eager: attr(imgs[0], 'loading') === 'eager',
+    };
+  });
+  const archive = all(main, (n) => n.tagName === 'article' && hasClass(n, 'nw-blog-archive-row')).map((a) => ({
+    slug: rewriteUrl(attr(all(a, (n) => n.tagName === 'a')[0], 'href')).replace(/^\//, ''),
+    title: text(all(a, (n) => n.tagName === 'h3')[0]).trim(),
+    excerpt: text(all(a, (n) => n.tagName === 'p')[0]).trim(),
+    author: text(all(a, (n) => n.tagName === 'span' && /font-\[family-name:var\(--font-mono\)\]/.test(attr(n, 'class') || ''))[0]).replace(/^By\s*/, '').trim(),
+  }));
+  return { featured, archive };
 }

@@ -1,7 +1,7 @@
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from 'react';
 import styles from './button-styles.json';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'outline' | 'icon' | 'disclosure';
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'outline' | 'icon' | 'editorial-disclosure';
 export type ButtonSize = 'm' | 's';
 /** `cta` = display-size label (hero and section calls to action); `compact` = small UI button. */
 export type ButtonDensity = 'cta' | 'compact';
@@ -37,7 +37,7 @@ export function buttonClassName({
 
 /**
  * The site's one button: `primary` (solid), `secondary` (paper), `ghost`, `outline`,
- * `icon` and `disclosure` (the "show more" toggles). Renders an <a> when given an href.
+ * `icon` and `editorial-disclosure` (the "show more" toggles). Renders an <a> when given an href.
  */
 export function Button(props: AsLink | AsButton) {
   const {
@@ -52,7 +52,13 @@ export function Button(props: AsLink | AsButton) {
   const cls = buttonClassName({ variant, size, density, className });
   const inner = (
     <>
-      {bare ? children : <span className={styles.label}>{children}</span>}
+      {bare ? (
+        children
+      ) : (
+        <span className={variant === 'editorial-disclosure' ? styles.labelNoTrim : styles.label}>
+          {children}
+        </span>
+      )}
       <span aria-hidden="true" className="hermes-button-hover-border" />
     </>
   );
@@ -74,6 +80,7 @@ export function Button(props: AsLink | AsButton) {
   return (
     <button
       type="button"
+      tabIndex={0}
       data-slot="button"
       data-variant={variant}
       data-size={size}

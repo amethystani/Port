@@ -5,7 +5,7 @@ import { announcements, type Announcement } from '@/content/announcements';
 const MONO =
   'font-[family-name:var(--font-mono)] font-normal text-inherit uppercase leading-none text-cap-trim cap-mono';
 
-function AnnouncementCard({ url, image, handle, text, date }: Announcement) {
+function AnnouncementCard({ url, image, width, height, handle, text, date }: Announcement) {
   return (
     <a
       className="grid justify-items-start gap-[var(--nw-seam-item)] nw-announcement-card group"
@@ -16,12 +16,12 @@ function AnnouncementCard({ url, image, handle, text, date }: Announcement) {
     >
       <div
         className="relative overflow-clip bg-[var(--nw-ink)] nw-announcement-media rounded-t-md"
-        style={{ aspectRatio: '1000 / 563' }}
+        style={{ aspectRatio: `${width} / ${height}` }}
       >
         <img
           src={image}
-          width={1000}
-          height={563}
+          width={width}
+          height={height}
           alt=""
           className="nw-color-reveal"
           loading="lazy"
@@ -30,8 +30,8 @@ function AnnouncementCard({ url, image, handle, text, date }: Announcement) {
         />
         <img
           src={image}
-          width={1000}
-          height={563}
+          width={width}
+          height={height}
           alt=""
           className="nw-announcement-color nw-color-reveal"
           aria-hidden="true"

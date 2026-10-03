@@ -7,14 +7,21 @@ const CONTAINER =
   'mx-auto w-full max-w-[calc(var(--hw-teams-col)+2*var(--hw-teams-pad-x))] px-[var(--hw-teams-pad-x)]';
 const LINK_CLASS = 'group -ml-1 inline-flex self-start py-[var(--hw-teams-footer-row-pad)] whitespace-nowrap';
 
-function FooterChipLink({ label, href, newTab }: FooterLink) {
+function FooterChipLink({ label, href, prefix, newTab }: FooterLink) {
   const chip = (
     <span
       data-chip=""
       data-tone="plain"
       className="inline-flex h-[var(--hpv2-chip-h)] shrink-0 items-center gap-1.5 rounded-r-xs px-1.5 whitespace-nowrap disabled:pointer-events-none disabled:opacity-50 transition-colors duration-150 ease-out group-hover:bg-[var(--hw-fg)] group-hover:text-[var(--hermes-primary)] group-hover:duration-0"
     >
-      {label}
+      {prefix ? (
+        <span>
+          <span className="opacity-60">{prefix}</span>
+          {label}
+        </span>
+      ) : (
+        label
+      )}
     </span>
   );
   const internal = href.startsWith('/');

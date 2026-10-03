@@ -1,9 +1,11 @@
-export type FooterLink = { label: string; href: string; newTab?: boolean };
-export type FooterColumn = {
-  group: string;
-  title: string;
-  links: FooterLink[];
+export type FooterLink = {
+  label: string;
+  href: string;
+  /** Dimmed text before the label, e.g. "Go to ". */
+  prefix?: string;
+  newTab?: boolean;
 };
+export type FooterColumn = { group: string; title: string; links: FooterLink[] };
 
 /** The four link columns in the footer. */
 export const footerColumns: FooterColumn[] = [
@@ -86,22 +88,26 @@ export const footerColumns: FooterColumn[] = [
     title: 'Community',
     links: [
       {
-        label: 'Go to Discord',
+        label: 'Discord',
+        prefix: 'Go to ',
         href: 'https://discord.gg/nousresearch',
         newTab: true,
       },
       {
-        label: 'Go to Github',
+        label: 'Github',
+        prefix: 'Go to ',
         href: 'https://github.com/NousResearch',
         newTab: true,
       },
       {
-        label: 'Go to x.com',
+        label: 'x.com',
+        prefix: 'Go to ',
         href: 'https://x.com/NousResearch',
         newTab: true,
       },
       {
-        label: 'Go to Youtube',
+        label: 'Youtube',
+        prefix: 'Go to ',
         href: 'https://youtube.com/@NousResearch',
         newTab: true,
       },

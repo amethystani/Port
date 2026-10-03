@@ -1,0 +1,891 @@
+<section>
+  <figure>
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/nous-web/blog/articles/tst-hero.png"
+        alt="Efficient pretraining with token superposition"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/nous-web/blog/articles/tst-hero.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>
+      <a href="https://arxiv.org/abs/2605.06546">
+        <span>arXiv</span>
+        <span>2605.06546</span>
+      </a>
+    </figcaption>
+  </figure>
+  <figure>
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/nous-web/blog/articles/tst-figure-1-loss-curves.png"
+        alt="Loss curves during pretraining of two Qwen3-shaped 10B-A1B MoEs at matched FLOPs per step."
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/nous-web/blog/articles/tst-figure-1-loss-curves.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>
+      <em>Figure 1.</em> Loss curves during pretraining of two Qwen3-shaped 10B-A1B MoEs at matched FLOPs per
+      step. The TST run consumes 2T tokens over its course; the baseline consumes 1.05T. The two runs are
+      stopped at matched final loss, which is how we read speedups at iso-loss off the wall-clock axis.
+    </figcaption>
+  </figure>
+  <blockquote>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <em
+        ><strong>TL;DR.</strong> A 2–3× wall-clock speedup on LLM pretraining at matched FLOPs, without
+        changing the final model architecture, optimizer, tokenizer, or training data. During the first 20–40%
+        of training, the model reads and predicts <em>bags</em> of
+        <code class="nw-article-math-inline">s</code> contiguous tokens — averaging their embeddings on the
+        input side, predicting the next bag with a modified cross-entropy on the output side. For the
+        remainder of the run, it trains normally on next-token prediction. The inference-time model is
+        identical to one produced by conventional pretraining. Validated at 270M, 600M, and 3B dense, and at
+        10B-A1B MoE.</em
+      >
+    </p>
+  </blockquote>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We introduce <em><strong>Token Superposition Training</strong></em> (<em><strong>TST</strong></em
+    >), a modification to the standard LLM pretraining loop that produces substantial wall-clock speedups at
+    fixed compute, without requiring any change to the model architecture, the optimizer, the parallelism
+    strategy, the tokenizer, or the training data. On a 10B-A1B mixture-of-experts model trained to 2T tokens,
+    TST reaches a lower final training loss than a matched-FLOPs baseline in roughly 40% of the wall-clock,
+    and beats that baseline on HellaSwag, ARC-Easy, ARC-Challenge, and MMLU. The method consists of two
+    phases: an initial <em>superposition</em> phase in which the model processes and predicts contiguous bags
+    of tokens rather than individual tokens, and a <em>recovery</em> phase in which it returns to ordinary
+    next-token training for the remainder of the run. The resulting model, at inference time, is identical in
+    every respect to a model produced by conventional pretraining. Only the training loop changes.
+  </p>
+  <figure>
+    <figcaption>
+      Interactive walkthrough of the method on the 10B-A1B MoE run. Drag the slider or use the arrow keys to
+      step through eight slides: pretraining baseline, the bag-fold, the phase-1 plateau, the switch back, and
+      the final crossover to a lower loss in 40% of the wall-clock.
+    </figcaption>
+  </figure>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The idea is motivated by a pair of observations about where pretraining efficiency comes from in the first
+    place. It has been understood for some time that the performance advantage of subword tokenization over
+    byte-level modeling is not, as sometimes claimed, primarily a matter of learned semantic structure. Work
+    by
+    <a href="https://arxiv.org/abs/2604.27263">Gigant et al.</a> and concurrent studies on subword-to-byte
+    distillation (<a href="http://arxiv.org/abs/2512.15586">Minixhofer et al.</a>) and proxy compression (<a
+      href="http://arxiv.org/abs/2602.04289"
+      >Zheng et al.</a
+    >) suggest that a large fraction of the BPE advantage at isoFLOPs comes simply from the fact that subword
+    sequences are shorter, and the model therefore sees more natural-language content per unit of compute. If
+    that is the case, then pretraining efficiency is at least partly a throughput problem, and one can ask
+    whether the throughput lever can be pulled independently of the tokenizer.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The second observation concerns the relationship between training-time and inference-time efficiency.
+    Recent work on chain-of-thought reasoning,
+    <a href="https://arxiv.org/abs/2502.08524">ParScale</a>, looped language models, and speculative decoding
+    has shown that the two can be scaled separately: it is possible to spend more compute at inference than at
+    training, and to improve downstream task performance by doing so. The same decoupling has received less
+    attention in the other direction. Most efforts to improve pretraining efficiency, whether through sparse
+    attention, mixture-of-experts, or alternative tokenizations, simultaneously change the trained artifact.
+    This coupling makes comparisons difficult, introduces confounds between training-time and inference-time
+    gains, and in some cases cancels the training savings against a slower or less capable inference model. We
+    therefore adopt a stricter criterion: any method we are willing to call a pretraining efficiency
+    improvement must leave the inference-time architecture untouched.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The question that follows is whether a training-time-only intervention can substantially increase token
+    throughput at isoFLOPs while preserving the final model. This paper argues that it can, and that a
+    surprisingly simple one works.
+  </p>
+</section>
+<section>
+  <h2
+    id="user-content-the-method"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    The method
+  </h2>
+  <blockquote>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <em>The method is basically just a reshape, a mean, and a summed cross-entropy.</em>
+    </p>
+  </blockquote>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The two modifications TST introduces to standard causal language modeling are as follows. During the
+    superposition phase, we segment the input sequence of length
+    <code class="nw-article-math-inline">L = l \cdot s</code> into
+    <code class="nw-article-math-inline">l</code> non-overlapping bags of
+    <code class="nw-article-math-inline">s</code> contiguous tokens, and replace each bag in the embedding
+    layer with the mean of the <code class="nw-article-math-inline">s</code> token embeddings:
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <code class="nw-article-math-block" tabindex="0" aria-label="Math reference">
+      e'_{\lfloor i/s \rfloor} \;=\; \frac{1}{s} \sum_{k=0}^{s-1} e_{\lfloor i/s \rfloor \cdot s + k}
+    </code>
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The transformer then processes a sequence of length <code class="nw-article-math-inline">l</code>, while
+    the underlying text corresponds to <code class="nw-article-math-inline">L</code> tokens. In PyTorch the
+    input-side change is a reshape:
+  </p>
+  <pre tabindex="0" aria-label="Code reference"><code>if superposition_bag_size &gt; 1:
+    bs, seq = inputs.shape
+    # (bs, seq) -&gt; (bs, seq // s, s)
+    inputs = inputs.reshape(bs, seq // superposition_bag_size, superposition_bag_size)
+</code></pre>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    followed by a mean over the new trailing axis in the embedding lookup. Nothing else in the forward pass
+    changes. Because each latent position corresponds to <code class="nw-article-math-inline">s</code> source
+    tokens, the model processes <code class="nw-article-math-inline">s</code> times as much text per unit of
+    work as it would under standard training.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    At each latent position <code class="nw-article-math-inline">k</code>, the target is the next bag of
+    tokens, and the loss is a mean cross-entropy over the
+    <code class="nw-article-math-inline">s</code> targets:
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <code class="nw-article-math-block" tabindex="0" aria-label="Math reference">
+      \mathcal{L}_{\text{MCE}}(\mathbf{z}, \mathbf{y}) \;=\; \frac{1}{s}\sum_{y \in \mathbf{y}}
+      \mathcal{L}_{\text{CE}}(\mathbf{z}, y)
+    </code>
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    This can be derived from a multi-hot cross-entropy where each valid target token receives probability mass
+    <code class="nw-article-math-inline">1/s</code>; the equivalence is worked out in detail in Appendix B of
+    the paper. The important consequence is that the MCE loss reduces to a sum of ordinary CE terms, which
+    means an implementation can reuse the fused cross-entropy kernel already present in any major pretraining
+    library. There is no new kernel to write, no auxiliary head to add, no change to the output projection.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The objective is semi-autoregressive. The model still reads left to right across latent positions, but
+    within each bag the ordering of the <code class="nw-article-math-inline">s</code> tokens is discarded, and
+    sampling at inference produces mixed distributions over
+    <code class="nw-article-math-inline">s</code> future positions that read as noise. A model trained only
+    under this objective is not a usable next-token model. To recover one, we train under the superposition
+    objective for a fraction <code class="nw-article-math-inline">r</code> of the total steps and then resume
+    from the checkpoint under the standard next-token loss for the remaining
+    <code class="nw-article-math-inline">1 - r</code>. The loss curve shows a spike at the transition,
+    typically between 1 and 2 nats, which resolves within a few thousand steps; the recovered model then
+    crosses below the baseline and remains there for the rest of the run.
+  </p>
+  <figure>
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/nous-web/blog/articles/tst-figure-2-method.png"
+        alt="Diagram placing token superposition alongside next-token prediction, multi-token prediction, and SuperBPE."
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/nous-web/blog/articles/tst-figure-2-method.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>
+      <em>Figure 2.</em> Token superposition placed alongside several methods that superficially resemble it.
+      Next-token prediction is shown for reference. Multi-token prediction (<a
+        href="https://arxiv.org/abs/2404.19737"
+        >Gloeckle et al.</a
+      >) predicts <code class="nw-article-math-inline">k</code> future positions from
+      <code class="nw-article-math-inline">k</code> heads. SuperBPE (<a
+        href="https://arxiv.org/abs/2503.13423"
+        >Liu et al.</a
+      >) merges frequent BPE pairs into larger supertokens at the tokenizer level. TST operates within the
+      model, on averaged bags, and reverts to standard tokens in phase 2. Direct benchmark comparisons against
+      these methods would be meaningless since they target different use cases; the figure is intended as
+      orientation.
+    </figcaption>
+  </figure>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Two hyperparameters control the method: the bag size <code class="nw-article-math-inline">s</code> and the
+    step ratio <code class="nw-article-math-inline">r</code>. We will return to their sensitivity in the
+    experimental section, but the short version is that any <code class="nw-article-math-inline">r</code> in
+    <code class="nw-article-math-inline">[0.2, 0.4]</code> is close to optimal at the scales we studied, and
+    <code class="nw-article-math-inline">s</code> has a flat-bottomed optimum whose location drifts upward
+    with model size.
+  </p>
+</section>
+<section>
+  <h2
+    id="user-content-experiments"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    Experiments
+  </h2>
+  <blockquote>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <em
+        >Matched loss at roughly half the wall-clock on the 3B and 10B runs, consistent across four model
+        scales. The optimal bag size grows with model size.</em
+      >
+    </p>
+  </blockquote>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We train at four scales: 270M and 600M dense (both modified SmolLM2 shapes with untied embeddings and the
+    Llama3-8B tokenizer), 3B dense (SmolLM3 shape), and a 10B-A1B mixture-of-experts in the Qwen3 family. Data
+    is DCLM for the small runs and a 50/50 DCLM / FineWeb-Edu mix for the MoE. All models use AdamW with the
+    Warmup-Stable-Decay schedule; learning rates are swept at 270M and 600M and taken from the respective
+    family's recommendation at 3B and 10B. Training is done in TorchTitan under FSDP on up to 64 B200 GPUs.
+    The full configuration table is in Appendix A of the paper.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    A TST run admits three natural comparisons against its baseline, shown in Figure 3. At matched FLOPs per
+    step and matched total step count, the TST run sees
+    <code class="nw-article-math-inline">s \cdot r + (1-r)</code> times more tokens and reaches a lower final
+    loss. This is the efficiency claim. At matched final loss, TST requires substantially less wall-clock than
+    the baseline; on the 3B and 10B runs the ratio is roughly 2×. At matched total token consumption, TST
+    loses to the baseline, because its effective compute budget per token is smaller. The last comparison is
+    relevant when data is the binding constraint, and we will return to it.
+  </p>
+  <figure>
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/nous-web/blog/articles/tst-figure-3-iso-views.png"
+        alt="The same TST run plotted three ways against a 3B dense baseline: matched FLOPs, matched loss, matched data."
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/nous-web/blog/articles/tst-figure-3-iso-views.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>
+      <em>Figure 3.</em> The same TST run at <code class="nw-article-math-inline">s = 8</code>,
+      <code class="nw-article-math-inline">r = 0.3</code> plotted three ways against a 3B dense baseline:
+      matched FLOPs, matched loss, and matched data.
+    </figcaption>
+  </figure>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Table 1 collects the main results. B200-hours are the wall-clock proxy on our hardware. The TST-tokens
+    column reports the number of tokens consumed during phase 1; the total-tokens column reports the full run.
+  </p>
+  <div class="hw-prose-table" role="region" aria-label="Research table" tabindex="0">
+    <table>
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Params</th>
+          <th>Total steps</th>
+          <th>Bag size</th>
+          <th>Tokens (TST / total)</th>
+          <th>B200-hrs</th>
+          <th>Loss</th>
+          <th>HellaSwag</th>
+          <th>ARC-E</th>
+          <th>ARC-C</th>
+          <th>MMLU</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Baseline</td>
+          <td>270M</td>
+          <td>20k</td>
+          <td>–</td>
+          <td>– / 42B</td>
+          <td>34</td>
+          <td>3.212</td>
+          <td>36.3</td>
+          <td>46.7</td>
+          <td>24.9</td>
+          <td>–</td>
+        </tr>
+        <tr>
+          <td>TST</td>
+          <td>270M</td>
+          <td>20k</td>
+          <td>6</td>
+          <td>75B / 105B</td>
+          <td>34</td>
+          <td><strong>3.142</strong></td>
+          <td><strong>38.6</strong></td>
+          <td><strong>47.6</strong></td>
+          <td><strong>26.4</strong></td>
+          <td>–</td>
+        </tr>
+        <tr>
+          <td>Baseline</td>
+          <td>270M</td>
+          <td>100k</td>
+          <td>–</td>
+          <td>– / 209B</td>
+          <td>170</td>
+          <td>3.092</td>
+          <td>40.2</td>
+          <td>47.5</td>
+          <td><strong>26.2</strong></td>
+          <td>–</td>
+        </tr>
+        <tr>
+          <td>TST</td>
+          <td>270M</td>
+          <td>100k</td>
+          <td>6</td>
+          <td>377B / 524B</td>
+          <td>170</td>
+          <td><strong>3.048</strong></td>
+          <td><strong>42.6</strong></td>
+          <td><strong>50.3</strong></td>
+          <td>25.5</td>
+          <td>–</td>
+        </tr>
+        <tr>
+          <td>Baseline</td>
+          <td>600M</td>
+          <td>20k</td>
+          <td>–</td>
+          <td>– / 42B</td>
+          <td>61</td>
+          <td>3.019</td>
+          <td>43.5</td>
+          <td>51.7</td>
+          <td>25.5</td>
+          <td>–</td>
+        </tr>
+        <tr>
+          <td>TST</td>
+          <td>600M</td>
+          <td>20k</td>
+          <td>6</td>
+          <td>75B / 105B</td>
+          <td>61</td>
+          <td><strong>2.943</strong></td>
+          <td><strong>48.2</strong></td>
+          <td><strong>52.5</strong></td>
+          <td><strong>26.9</strong></td>
+          <td>–</td>
+        </tr>
+        <tr>
+          <td>Baseline</td>
+          <td>3B</td>
+          <td>20k</td>
+          <td>–</td>
+          <td>– / 42B</td>
+          <td><strong>247</strong></td>
+          <td>2.808</td>
+          <td>57.6</td>
+          <td>60.6</td>
+          <td>31.9</td>
+          <td>31.2</td>
+        </tr>
+        <tr>
+          <td>Baseline</td>
+          <td>3B</td>
+          <td>36k</td>
+          <td>–</td>
+          <td>– / 75B</td>
+          <td>443</td>
+          <td>2.677</td>
+          <td>62.3</td>
+          <td>65.9</td>
+          <td>34.9</td>
+          <td>32.7</td>
+        </tr>
+        <tr>
+          <td>Baseline</td>
+          <td>3B</td>
+          <td>50k</td>
+          <td>–</td>
+          <td>– / 105B</td>
+          <td>622</td>
+          <td><strong>2.640</strong></td>
+          <td><strong>63.9</strong></td>
+          <td><strong>67.3</strong></td>
+          <td><strong>36.8</strong></td>
+          <td><strong>33.3</strong></td>
+        </tr>
+        <tr>
+          <td>TST</td>
+          <td>3B</td>
+          <td>20k</td>
+          <td>6</td>
+          <td>75B / 105B</td>
+          <td><strong>247</strong></td>
+          <td>2.676</td>
+          <td>62.4</td>
+          <td>66.3</td>
+          <td>36.0</td>
+          <td>32.8</td>
+        </tr>
+        <tr>
+          <td>Baseline</td>
+          <td>10B-A1B</td>
+          <td>125k</td>
+          <td>–</td>
+          <td>– / 1.05T</td>
+          <td>12311</td>
+          <td>2.252</td>
+          <td>70.1</td>
+          <td>73.8</td>
+          <td>46.3</td>
+          <td>37.4</td>
+        </tr>
+        <tr>
+          <td>TST</td>
+          <td>10B-A1B</td>
+          <td>50k</td>
+          <td>16</td>
+          <td>1.68T / 2T</td>
+          <td><strong>4768</strong></td>
+          <td><strong>2.236</strong></td>
+          <td><strong>71.2</strong></td>
+          <td><strong>74.2</strong></td>
+          <td><strong>47.3</strong></td>
+          <td><strong>39.0</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The pattern is consistent across scales. At 3B, TST at 20k steps matches a 36k-step baseline in final loss
+    while using a similar wall-clock budget and producing essentially identical downstream scores. Pushing the
+    baseline to 50k steps allows it to surpass the 20k-step TST run, which is expected: TST front-loads a
+    fixed speedup, it does not compound indefinitely on a given budget. At 10B-A1B the speedup is cleanest
+    because the budget is largest; the TST run reaches the baseline's final loss in under 40% of the
+    wall-clock and improves by one point or more on each of the four evals reported. The 10B run was a single
+    configuration rather than a cherry-picked sweep. Every downstream benchmark lands above baseline, which is
+    a meaningfully stronger result than a loss improvement alone, given the well-known tendency of
+    training-loss reductions to fail to transfer.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Sensitivity is documented in Figures 4 through 7 of the paper. The sweep over bag size at fixed ratio
+    <code class="nw-article-math-inline">r</code> produces a U-shaped curve: below a certain
+    <code class="nw-article-math-inline">s</code>, the superposition regime is too similar to standard
+    training for the throughput gain to matter; above it, the bag target becomes too lossy, and phase 2 cannot
+    fully recover in the remaining budget. Between these extremes is a wide flat basin, which is the regime in
+    which the method is useful. The basin's location drifts upward with model size. At 270M/42B it sits
+    between <code class="nw-article-math-inline">s = 3</code> and
+    <code class="nw-article-math-inline">s = 8</code>; at 600M/42B between
+    <code class="nw-article-math-inline">s = 6</code> and <code class="nw-article-math-inline">s = 10</code>;
+    at 10B/2T the configuration we ran was <code class="nw-article-math-inline">s = 16</code>. We cannot draw
+    a scaling law from a handful of points, but the direction is at least consistent with the hypothesis that
+    larger models can tolerate coarser superposition. This is the dimension along which we would most like to
+    see further study.
+  </p>
+  <figure>
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/nous-web/blog/articles/tst-figure-4-bag-size-sweep.png"
+        alt="Final loss as a function of bag size at various step ratios."
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/nous-web/blog/articles/tst-figure-4-bag-size-sweep.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>
+      <em>Figure 4.</em> Final loss as a function of bag size <code class="nw-article-math-inline">s</code> at
+      various step ratios <code class="nw-article-math-inline">r</code>. The basin shifts right with model
+      size.
+    </figcaption>
+  </figure>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The step ratio <code class="nw-article-math-inline">r</code> is less sensitive. Values between 0.2 and 0.4
+    are close to optimal in all configurations we tested. At
+    <code class="nw-article-math-inline">r = 0</code> the method reduces to the baseline; at
+    <code class="nw-article-math-inline">r \geq 0.5</code> phase 2 has too few steps remaining to undo the
+    damage that the superposition objective inflicts on the output head, and final loss degrades. Downstream
+    evaluations track the loss curves rather than diverging from them, which is consistent with a view in
+    which TST is not distorting the model's representations in a way that would specifically hurt transfer.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    A small additional refinement concerns the weighting within the bag. In the simplest version of the loss,
+    each of the <code class="nw-article-math-inline">s</code> positions in a target bag contributes equally.
+    At larger bag sizes this is suboptimal. We find that a power-law weighting in which the
+    <code class="nw-article-math-inline">i</code>-th target position contributes
+    <code class="nw-article-math-inline">1/i</code> to the loss produces lower final loss than uniform
+    weighting for <code class="nw-article-math-inline">s \geq 8</code>, while being indistinguishable at
+    smaller <code class="nw-article-math-inline">s</code>. The weighting is motivated by an observation due to
+    <a href="https://doi.org/10.1209/0295-5075/26/4/001">Ebeling and Pöschel</a>, who showed in 1994 that
+    mutual information between pairs of English letters decays as a power law with distance. We measured the
+    equivalent quantity for tokenized DCLM and found the same functional form, with fitted exponent
+    <code class="nw-article-math-inline">k \approx -1.25</code>. Weighting near targets more heavily than far
+    ones is therefore the inductive bias consistent with the statistics of natural text, and it is the
+    weighting that wins empirically; the coincidence struck us as worth recording.
+  </p>
+  <figure>
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/nous-web/blog/articles/tst-figure-mi-decay.png"
+        alt="Mutual information between token pairs in DCLM as a function of distance."
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/nous-web/blog/articles/tst-figure-mi-decay.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>
+      <em>Figure 5.</em> Mutual information between token pairs in DCLM as a function of distance, fitted to a
+      power law <code class="nw-article-math-inline">d \mapsto C_0 + a \cdot d^{k}</code> with
+      <code class="nw-article-math-inline">k \approx -1.25</code>.
+    </figcaption>
+  </figure>
+</section>
+<section>
+  <h2
+    id="user-content-two-mechanisms"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    Two mechanisms
+  </h2>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    TST has two moving parts — the input-side superposition and the output-side multi-hot objective — and each
+    can be ablated independently. Doing so shows that both, on their own, outperform the baseline, and that
+    their effects combine approximately additively when used together (Figure 6). We read this as evidence
+    that TST is not a single trick with two knobs but two distinct mechanisms that happen to be compatible.
+  </p>
+  <figure>
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/nous-web/blog/articles/tst-figure-06-ablation.png"
+        alt="Input-only, output-only, and full superposition compared against a matched baseline."
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/nous-web/blog/articles/tst-figure-06-ablation.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>
+      <em>Figure 6.</em> Input-only, output-only, and full superposition at
+      <code class="nw-article-math-inline">s = 4</code>, <code class="nw-article-math-inline">r = 0.5</code>,
+      each compared against a matched baseline. All three variants improve over baseline; full superposition
+      improves most.
+    </figcaption>
+  </figure>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The output-side mechanism is the easier of the two to place in the existing literature. Next-bag-of-tokens
+    prediction is structurally a form of multi-token prediction, in the sense introduced by
+    <a href="https://arxiv.org/abs/2404.19737">Gloeckle et al.</a>, but with weight sharing across positions:
+    rather than <code class="nw-article-math-inline">s</code> independent heads predicting the
+    <code class="nw-article-math-inline">s</code>
+    future tokens, a single head predicts the mean distribution. This makes it the cheapest member of a family
+    of methods that now includes
+    <a href="https://arxiv.org/abs/2412.19437">DeepSeek-V3</a>'s cascaded MTP,
+    <a href="http://arxiv.org/abs/2508.19228">Zuhri et al.</a>'s token-order prediction,
+    <a href="http://arxiv.org/abs/2602.08984">Liu et al.</a>'s next-concept prediction,
+    <a href="http://arxiv.org/abs/2510.14751">Mahajan et al.</a>'s future-summary prediction, and a concurrent
+    <a href="https://github.com/KellerJordan/modded-nanogpt/pull/178">modded-nanogpt speedrun entry</a>
+    that proposed a similar next-bag objective with exponential weighting and a smooth phase transition rather
+    than a hard switch. The common thread across all of these is that an auxiliary signal drawn from the near
+    future produces a more informative gradient than the per-position one-hot target of standard next-token
+    prediction.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    What is perhaps conceptually interesting about the bag objective in particular is that it discards order
+    information entirely within the bag. The model is not being asked which token will appear at which exact
+    position in the next <code class="nw-article-math-inline">s</code> steps; it is being asked only which
+    tokens appear at all. That this target produces a useful training signal suggests that a substantial
+    portion of what next-token prediction is forcing the model to learn concerns the distribution of
+    near-future tokens rather than their precise ordering, and that the two can be partially separated. Framed
+    this way, the bag target is a form of topic modeling over a short future window, closer in spirit to the
+    bag-of-words summarization of <a href="https://ieeexplore.ieee.org/document/5392672">Luhn</a> and the
+    inverse document frequency of <a href="https://doi.org/10.1108/eb026526">Sparck Jones</a> than to
+    next-token prediction. The closest recent work, as noted, is Mahajan et al.'s future-summary prediction,
+    which also targets a compressed view of the future but attaches an auxiliary head with its own loss on top
+    of the main NTP objective; TST instead keeps a single head and replaces the target.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The input-side mechanism is harder to place. There is no direct analogue in the recent pretraining
+    literature, and we do not have an ablation clean enough to decisively choose between the plausible
+    explanations. Averaging <code class="nw-article-math-inline">s</code> contiguous embeddings produces, in
+    expectation, the centroid of the bag's embedding distribution, and the model is then asked to perform
+    language modeling on a sequence of such centroids rather than on discrete tokens. One possibility is that
+    this amounts to a form of noise reduction: the mean operator is a low-pass filter over the embedding
+    sequence, and may damp the high-frequency variance that makes the early phase of training noisy,
+    particularly at large <code class="nw-article-math-inline">s</code>. A second, not mutually exclusive,
+    possibility is that the operation implicitly regularizes the geometry of the embedding matrix. For the
+    model to extract useful information from an averaged bag, sums of many random
+    <code class="nw-article-math-inline">s</code>-grams of tokens must remain separable in embedding space,
+    which constrains the vocabulary to be laid out with sufficient angular dispersion. Under this reading the
+    superposition phase is a regularizer on the embedding table, applied during phase 1 and inherited at phase
+    2.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    A third framing, which we find the most suggestive though we cannot yet prove it, connects input-side TST
+    to a growing body of work on pre-pretraining.
+    <a href="https://aclanthology.org/2025.acl-long.478/">Hu et al.</a> show that training a language model on
+    <em>formal languages</em> before natural language imparts useful inductive biases and reduces the token
+    budget required to reach a given loss by roughly a third;
+    <a href="https://arxiv.org/abs/2603.10055">Lee et al.</a> obtain a similar effect using synthetic data
+    generated by neural cellular automata, accelerating convergence by 1.6× with 164M pre-pretraining tokens.
+    The recurring observation is that a first training stage conducted on a simpler distribution, one that
+    shares coarse statistical structure with natural language without reproducing all of its complexity, can
+    leave the model better prepared to learn from natural language in a subsequent stage. The superposition
+    phase is such a simpler distribution, in the obvious sense that it is a coarser version of the same text.
+    If the analogy holds, input-side TST may be interpretable as an extremely cheap instance of
+    pre-pretraining, with the pre-pretraining corpus constructed on the fly from the real corpus by averaging.
+    This predicts that certain attention-head circuits acquired in phase 1 should remain functional in phase
+    2, as they do in Hu et al.'s formal-language experiments. We have not performed that analysis, but it
+    seems to us the most direct way to test this hypothesis.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    It is worth locating this work in the broader organization of pretraining efficiency research. One can
+    group the field into three loosely defined categories. Information-maximization methods increase the
+    informational content of each training sample, either through improved input representations (better
+    tokenization, <code class="nw-article-math-inline">n</code>-gram hashing) or through richer supervision
+    signals (auxiliary losses, multi-token prediction, order-augmented objectives). Compute-sparsity methods
+    keep the representation fixed and reduce the FLOPs expended per token, typically by activating a subset of
+    parameters or attending to a subset of positions. Compressive-modeling methods learn to internally
+    compress the input representation so that fewer latent positions flow through the expensive layers.
+    Output-side TST is a variant of the first category. Input-side TST is a variant of the third, with the
+    distinguishing property that the compression is applied only during a first training phase and discarded
+    afterward, so that the inference-time model retains the original tokenization and granularity. This last
+    property is what decouples the training-time efficiency from the inference-time architecture, and is the
+    feature of TST that we find philosophically most useful.
+  </p>
+</section>
+<section>
+  <h2
+    id="user-content-limitations"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    Limitations
+  </h2>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The method trades compute for data. The 600M run at what we labeled a "42B equivalent-token" budget in
+    fact consumes 105B tokens from the data loader. Under the assumption that pretraining compute is the
+    binding constraint, as it has been for most labs through the era that produced the models underlying this
+    paper, this trade is favorable. Under the opposite assumption, where the binding constraint is the
+    available text rather than the available compute, TST is actively counterproductive, because it spends the
+    corpus faster than standard training does.
+    <a href="http://arxiv.org/abs/2509.14786">Kim et al.</a> argue that the compute-bound assumption will
+    weaken in the coming years as the open-web text available for training saturates relative to the compute
+    budgets labs can afford to spend on it. Whether and when that transition will occur is beyond the scope of
+    this work to predict. What we can say is that the output-only variant of TST, which preserves the
+    auxiliary future signal but does not consume extra tokens, is the natural candidate for the data-bound
+    regime. We have not yet benchmarked it head-to-head against multi-token prediction or order-augmented
+    prediction, and that comparison is the most pressing follow-up we are aware of.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Two further limitations deserve mention. The experimental program includes a wide sweep at 270M and 600M,
+    validation at 3B, and a single large-scale run at 10B-A1B. The scaling of the optimal bag size with model
+    size is therefore supported by three data points, which is enough to indicate a trend but not enough to
+    fit a law. Predicting the optimal TST configuration for frontier-scale pretraining would require a proper
+    scaling study, which the existing sweep is explicitly a prelude to rather than a substitute for.
+    Separately, during phase 1 the effective context length in the underlying text is
+    <code class="nw-article-math-inline">s</code> times the sequence length processed by the transformer, so
+    at <code class="nw-article-math-inline">s = 8</code> and an 8k model context the model is exposed to
+    64k-token spans of source text. The consequences of this exposure for long-context behavior at evaluation
+    time are unknown, because we did not evaluate them. The most likely outcome is a small positive effect
+    stemming from the reduced need to truncate long documents during phase 1, but this is a hypothesis rather
+    than a result.
+  </p>
+</section>
+<section>
+  <h2
+    id="user-content-negative-results"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    Negative results
+  </h2>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    For the sake of completeness, a selection of variants that we tried and that did not improve on the
+    default recipe. We mention them because someone trying to reproduce or extend this work is likely to
+    consider them as well.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Introducing positional encodings on the tokens prior to averaging, with the aim of preserving some amount
+    of within-bag order information through the mean, consistently failed to help and often hurt. The
+    invariance of the bag under permutations of its contents appears to be a structural feature of the
+    input-side mechanism rather than a limitation of it.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Several alternative output losses were considered, including binary cross-entropy against a multi-hot
+    target, an analogue of the token-order-prediction head of Zuhri et al., and a hinge-style ranking loss. In
+    all cases, the simpler mean-CE formulation was more stable across settings and produced the best final
+    loss. We suspect this is because the MCE target is more closely aligned with the standard NTP target that
+    phase 2 will switch to, so the recovery phase has less to unlearn.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Rescaling RoPE at the phase transition, on the principle that phase 1 processes
+    <code class="nw-article-math-inline">L/s</code> positions per sample while phase 2 returns to
+    <code class="nw-article-math-inline">L</code>, accelerated the first few thousand steps of recovery but
+    sometimes resulted in a higher final loss. Leaving RoPE unchanged and allowing phase 2 to treat the longer
+    effective range as new territory proved more stable across our runs.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Finally, a middle ground between single-head next-bag prediction and full
+    <code class="nw-article-math-inline">k</code>-head multi-token prediction, in which
+    <code class="nw-article-math-inline">s</code> heads predict the
+    <code class="nw-article-math-inline">s</code> positions of each bag, produced no consistent gain over the
+    single-head MCE objective at the cost of an additional
+    <code class="nw-article-math-inline">s \cdot |V|</code> parameters and an increase in implementation
+    complexity. The simpler version is preferable.
+  </p>
+</section>
+<section>
+  <h2
+    id="user-content-open-questions"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    Open questions and future work
+  </h2>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Beyond the scaling study and the data-bound comparison already mentioned, we see two directions of
+    interest. The first is the possibility of using the phase-1 model for something other than a warmup. By
+    the time phase 1 ends, the model has learned an <code class="nw-article-math-inline">s</code>-to-1
+    compression of the input and can decode distributions over
+    <code class="nw-article-math-inline">s</code>-token futures from the compressed representation. These are
+    the characteristic operations of a speculative-decoding draft model, or of a prefix encoder in a retrieval
+    system. Extracting an auxiliary artifact from phase 1 for use at inference time, while continuing the main
+    training run into phase 2, would impose no additional training cost and might yield a genuinely useful
+    inference-time component. The second is the possibility of retaining the TST head during phase 2 as an
+    auxiliary MTP-style loss rather than discarding it at the phase boundary. The head is already trained and
+    presumably carries information about the near-future distribution that standard NTP training does not
+    reinforce. This is the variant that would most directly address the data-bound regime, and is also the one
+    most compatible with the auxiliary-loss literature.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    If you're interested in working on problems like this, reach out on
+    <a href="https://twitter.com/NousResearch">Twitter</a> or
+    <a href="https://discord.gg/nousresearch">Discord</a>.
+  </p>
+</section>

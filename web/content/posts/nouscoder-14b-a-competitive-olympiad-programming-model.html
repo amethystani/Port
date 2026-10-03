@@ -1,0 +1,1120 @@
+<section>
+  <figure>
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/nous-web/blog/articles/nc2.jpg"
+        alt="NousCoder-14B header image"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/nous-web/blog/articles/nc2.jpg"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+  </figure>
+  <div>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <strong>Model:</strong>
+      <a href="https://huggingface.co/NousResearch/NousCoder-14B"
+        >https://huggingface.co/NousResearch/NousCoder-14B</a
+      >
+    </p>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <strong>Code:</strong>
+      <a href="https://github.com/NousResearch/atropos/pull/296"
+        >https://github.com/NousResearch/atropos/pull/296</a
+      >
+    </p>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <strong>WandB:</strong>
+      <a href="https://api.wandb.ai/links/jli505/ksz3e9w6">https://api.wandb.ai/links/jli505/ksz3e9w6</a>
+    </p>
+  </div>
+</section>
+<section>
+  <h2
+    id="user-content-introduction"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    Introduction
+  </h2>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We introduce NousCoder-14B, a competitive olympiad programming model post-trained on Qwen3-14B via
+    reinforcement learning. On LiveCodeBench v6 (08/01/2024 - 05/01/2025), we achieve a Pass@1 accuracy of
+    67.87%, up 7.08% from the baseline Pass@1 accuracy of 60.79% for Qwen3-14B. We trained on 24k verifiable
+    coding problems using 48 B200s over the course of four days.
+  </p>
+  <figure>
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/nous-web/blog/articles/lcb_score_vs_step.png"
+        alt="Pass@1 accuracy on LiveCodeBench v6"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/nous-web/blog/articles/lcb_score_vs_step.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>
+      Figure 1: Pass@1 accuracy on LiveCodeBench v6. At step 50, the training context window is extended from
+      32k (32,768) to 40k (40,960) tokens. The evaluation context window from step 0 to 120 is 40k tokens. The
+      star represents the evaluation score at 80k (81,920) context length.
+    </figcaption>
+  </figure>
+  <figure>
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/nous-web/blog/articles/performance_params_ratio_1.png"
+        alt="Performance of various models on LiveCodeBench v6"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/nous-web/blog/articles/performance_params_ratio_1.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>
+      Figure 2: Performance of various models on LiveCodeBench v6<sup
+        ><a id="user-content-cite-livecodebench2025leaderboard" href="#ref-livecodebench2025leaderboard"
+          >[10]</a
+        ></sup
+      >.
+    </figcaption>
+  </figure>
+</section>
+<section>
+  <h2
+    id="user-content-dataset"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    Dataset
+  </h2>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Following the success of Agentica x Together AI's DeepCoder-14B<sup
+      ><a id="user-content-cite-togetherai2025deepcoder" href="#ref-togetherai2025deepcoder">[1]</a></sup
+    >, we use the same dataset as them. In particular, our training dataset consists of 24K problems from TACO
+    Verified, PrimeIntellect's SYNTHETIC-1, and LiveCodeBench problems before 07/31/2024. The test dataset we
+    use is LiveCodeBench v6 (08/01/2024–05/01/2025) consisting of 454 problems<sup
+      ><a id="user-content-cite-jain2024livecodebench" href="#ref-jain2024livecodebench">[2]</a></sup
+    >. We verified that there is no contamination between the train and test datasets.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The datasets consist entirely of "competitive programming" problems, which are code generation problems
+    whose solutions must satisfy time and memory constraints and also pass a series of input and output test
+    cases.
+  </p>
+</section>
+<section>
+  <h2
+    id="user-content-rl-environment"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    RL Environment
+  </h2>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We use the Atropos framework to construct our RL environment.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Using the standard LiveCodeBench prompt, we prompt the model to generate Python solutions for each
+    problem. Since each coding problem has a verifiably correct answer, we assign an outcome-based reward to
+    each rollout of the model. In particular, we assign the following rewards:
+  </p>
+  <ul>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <strong>Reward 1</strong> - The LLM-generated code passes all test cases supplied in the dataset for
+      that problem. Each problem contains hundreds of test cases on average.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <strong>Reward -1</strong> - The LLM-generated code outputs the wrong answer, exceeds the maximum time
+      limit of 15 seconds, or exceeds the 4GB memory limit for any of the test cases.
+    </li>
+  </ul>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    To perform sandboxed execution of code in parallel, we use Modal, an autoscaler, to help with the code
+    verification process and to assign rewards to rollouts. We score each generation by launching a Modal
+    container per rollout and evaluating the code on every test case for a single problem. Since problems in
+    LiveCodeBench can have hundreds of test cases, we use Modal to prevent the resource-intensive task of
+    evaluating LLM-generated code from competing with resources used for training and inference.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We also overlap inference and verification as shown in Figure 3. As soon as an inference worker finishes a
+    generation, the completion is sent to a verifier (in Modal) and the inference worker immediately begins
+    generating another completion simultaneously. For instance, assuming we have 256 maximum inference workers
+    and 100 maximum Modal containers, one can see how pipelining inference and verification is useful so that
+    the inference workers are not bottlenecked by Modal. By overlapping inference with verification, the
+    evaluation process remains inference-compute-bound rather than verification-bound. Figure 3 illustrates
+    the pipelined inference and verification process.
+  </p>
+  <figure>
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/nous-web/blog/articles/magistral.png"
+        alt="Pipelined inference, verification, and training"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/nous-web/blog/articles/magistral.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>
+      Figure 3: Pipelined inference, verification, and training<sup
+        ><a id="user-content-cite-rastogi2025magistral" href="#ref-rastogi2025magistral">[3]</a></sup
+      >.
+    </figcaption>
+  </figure>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Parallelizing the verification process is also an interesting problem. There are three approaches for
+    parallelization we experimented with, from coarse to fine-grained:
+  </p>
+  <ul>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      One Modal container per LiveCodeBench problem. Each container evaluates multiple rollouts per problem.
+      The number of rollouts is equivalent to the group size in Group Relative Policy Optimization (GRPO).
+      This is the coarsest level of parallelization.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      One container per rollout. Each container evaluates multiple test cases for one rollout. This is the
+      parallelization level we ultimately used.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      One container per test case. Rather than launching one container per problem, we experimented with a
+      more fine-grained parallelization approach in which each container evaluated one test case for one
+      rollout. This verification process can be further optimized by selecting the top 3-5 hardest test cases
+      (which we heuristically determine based on the length of the test case) and evaluating them first, and
+      if any of these test cases fail, we are done with the verification process for that rollout and no
+      longer need to launch Modal containers for hundreds of other test cases. However, since individual
+      container launches come with overhead in terms of time, and more importantly cost, we ultimately used a
+      per problem, rather than per test case, parallelization approach for verification.
+    </li>
+  </ul>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    All of our RL environment code is open-sourced. Our grader is adapted from rllm and LiveCodeBench's
+    implementations.
+  </p>
+</section>
+<section>
+  <h2
+    id="user-content-training-setup"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    Training Setup
+  </h2>
+  <h3
+    id="user-content-grpo-algorithm"
+    class="font-[family-name:var(--font-rules)] proportional-nums font-bold text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    GRPO Algorithm and Variants
+  </h3>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We experimented with the following three objectives: Dynamic sAmpling Policy Optimization (DAPO)<sup
+      ><a id="user-content-cite-yu2025dapo-1" href="#ref-yu2025dapo">[4]</a></sup
+    >, Group Sequence Policy Optimization (GSPO)<sup
+      ><a id="user-content-cite-zheng2025gspo-1" href="#ref-zheng2025gspo">[5]</a></sup
+    >, and a modified version of GSPO we call GSPO+. If the rewards are given by
+    <code class="nw-article-math-inline">\{R_i\}_{i=1}^G</code>, the advantages for all objectives are given
+    by
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <code class="nw-article-math-block" tabindex="0" aria-label="Math reference"
+      >\hat A_i = \frac{R_i - \text{mean}(R)}{\text{std}(R)}</code
+    >
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The DAPO objective is given by
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <code class="nw-article-math-block" tabindex="0" aria-label="Math reference"
+      >J_{DAPO}(\theta) = \mathbb{E}\left[\frac{1}{\sum_{i=1}^G |o_i|} \sum_{i=1}^G \sum_{j=1}^{|o_i|}
+      \min\left(r_{i,t}(\theta)\hat A_i, \text{clip}(r_{i,t}(\theta), 1-\epsilon_{low}, 1+\epsilon_{high})
+      \hat A_i\right)\right]</code
+    >
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    where the
+    <code class="nw-article-math-inline"
+      >r_{i,t}(\theta) = \frac{\pi_\theta(o_{i,t}|q,o_{i,&lt;t})}{\pi_{old}(o_{i,t}|q,o_{i,&lt;t})}</code
+    >
+    represents the token-level importance ratio and <code class="nw-article-math-inline">o_i</code> is the
+    generation for the <code class="nw-article-math-inline">i</code>-th rollout.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    As a brief summary, the DAPO objective introduces several key improvements over the vanilla GRPO
+    objective:
+  </p>
+  <ul>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <strong>Clip-higher.</strong> This encourages more exploration for low probability tokens.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <strong>Token-level policy gradient loss.</strong> Regardless of the length of the generation, each
+      token is rewarded or penalized equally with respect to the policy gradient.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <strong>Dynamic sampling.</strong> Discard groups that consist entirely of incorrect or correct
+      solutions because the advantage is zero and therefore offers no information for training.
+    </li>
+  </ul>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The GSPO objective is given by
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <code class="nw-article-math-block" tabindex="0" aria-label="Math reference"
+      >J_{GSPO}(\theta) = \mathbb{E}\left[\frac{1}{G} \sum_{i=1}^G \min\left(s_i(\theta)\hat A_i,
+      \text{clip}(s_i(\theta), 1-\epsilon_{low}, 1+\epsilon_{high}) \hat A_i\right)\right]</code
+    >
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    where the sequence-level importance ratio is given by
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <code class="nw-article-math-block" tabindex="0" aria-label="Math reference"
+      >s_i(\theta) = \frac{\pi_\theta(o_i|q)}{\pi_{old}(o_i|q)} = \exp\left(\frac{1}{|o_i|} \sum_{j=1}^{|o_i|}
+      \log \frac{\pi_\theta(o_{i,j}|q,o_{i,&lt;j})}{\pi_{old}(o_{i,j}|q,o_{i,&lt;j})}\right)</code
+    >
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    From the GSPO paper:
+  </p>
+  <blockquote>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      The unit of optimization objective should match the unit of reward. Since the reward is granted to the
+      entire sequence, applying off-policy correction at the token level appears problematic. This motivates
+      us to forego the token-level objective and explore utilizing importance weights and performing
+      optimization directly at the sequence level<sup
+        ><a id="user-content-cite-zheng2025gspo-2" href="#ref-zheng2025gspo">[5]</a></sup
+      >.
+    </p>
+  </blockquote>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The GSPO+ objective is given by
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <code class="nw-article-math-block" tabindex="0" aria-label="Math reference"
+      >J_{GSPO+}(\theta) = \mathbb{E}\left[\frac{1}{\sum_{i=1}^G |o_i|} \sum_{i=1}^G |o_i|
+      \min\left(s_i(\theta)\hat A_i, \text{clip}(s_i(\theta), 1-\epsilon_{low}, 1+\epsilon_{high}) \hat
+      A_i\right)\right]</code
+    >
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The only difference between the GSPO to the GSPO+ objective is that policy gradients per token are now
+    equally weighted regardless of the length of the generation, just like the DAPO objective.
+  </p>
+  <div class="hw-prose-table" role="region" aria-label="Research table" tabindex="0">
+    <table>
+      <thead>
+        <tr>
+          <th>Context Length</th>
+          <th>Qwen3-14B (No RL)</th>
+          <th>DAPO</th>
+          <th>GSPO</th>
+          <th>GSPO+</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>40,960</td>
+          <td>60.79%</td>
+          <td>63.35%</td>
+          <td>63.13%</td>
+          <td>63.06%</td>
+        </tr>
+        <tr>
+          <td>81,920</td>
+          <td>60.79%</td>
+          <td>67.87%</td>
+          <td>66.26%</td>
+          <td>66.52%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Table 1: Pass@1 model performance with different RL algorithms and context lengths.
+  </p>
+  <div class="hw-prose-table" role="region" aria-label="Research table" tabindex="0">
+    <table>
+      <thead>
+        <tr>
+          <th>Context Length</th>
+          <th>Qwen3-14B (No RL)</th>
+          <th>DAPO</th>
+          <th>GSPO</th>
+          <th>GSPO+</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>40,960</td>
+          <td>75.11%</td>
+          <td>79.52%</td>
+          <td>78.19%</td>
+          <td>77.53%</td>
+        </tr>
+        <tr>
+          <td>81,920</td>
+          <td>75.11%</td>
+          <td>78.41%</td>
+          <td>78.63%</td>
+          <td>79.07%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Table 2: Pass@G model performance with different RL algorithms and context lengths.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Looking at Table 1, we find that the DAPO objective performs the best by only a small margin. We also
+    found that throughout our training process, all objectives performed similarly, so we only show the
+    training curves for the DAPO objective as shown in Figure 4. More comprehensive training curves can be
+    found in our WandB dashboard. Surprisingly, the specific objective used does not appear to have a
+    significant impact on the model's performance.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The primary motivation for experimenting with DAPO and GSPO+ was to try to address the issue of length
+    bias where shorter correct solutions and longer incorrect solutions are preferred. When we initially
+    observed the GSPO training curves (which turns out to be nearly identical to the DAPO and GSPO+ training
+    curves), we saw that incorrect solution lengths were consistently longer and increased more over training
+    steps compared to correct solution lengths as shown in Figure 5. As a result, the maximum context window
+    would be quickly saturated. However, our algorithmic changes ultimately did not solve this length bias
+    issue.
+  </p>
+  <figure>
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/nous-web/blog/articles/train_reward_vs_step.png"
+        alt="Training reward vs training step with DAPO objective"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/nous-web/blog/articles/train_reward_vs_step.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>Figure 4: Training reward vs training step with DAPO objective.</figcaption>
+  </figure>
+  <figure>
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/nous-web/blog/articles/lengths_vs_step.png"
+        alt="Length of the model's generation vs training step"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/nous-web/blog/articles/lengths_vs_step.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>Figure 5: Length of the model's generation vs training step.</figcaption>
+  </figure>
+  <h3
+    id="user-content-hyperparameters"
+    class="font-[family-name:var(--font-rules)] proportional-nums font-bold text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Hyperparameters
+  </h3>
+  <div class="hw-prose-table" role="region" aria-label="Research table" tabindex="0">
+    <table>
+      <thead>
+        <tr>
+          <th>Hyperparameter</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Learning Rate</td>
+          <td><code class="nw-article-math-inline">10^{-6}</code></td>
+        </tr>
+        <tr>
+          <td>KL Divergence Coefficient</td>
+          <td><code class="nw-article-math-inline">0</code></td>
+        </tr>
+        <tr>
+          <td>Group Size</td>
+          <td><code class="nw-article-math-inline">8</code></td>
+        </tr>
+        <tr>
+          <td>Batch Size (Sequences Per Batch)</td>
+          <td><code class="nw-article-math-inline">1024</code></td>
+        </tr>
+        <tr>
+          <td><code class="nw-article-math-inline">k</code> value: PPO-off-policy-k</td>
+          <td><code class="nw-article-math-inline">4</code></td>
+        </tr>
+        <tr>
+          <td><code class="nw-article-math-inline">k</code> value: PipelineRL-k</td>
+          <td><code class="nw-article-math-inline">3</code></td>
+        </tr>
+        <tr>
+          <td>Temperature (Training / Evaluation)</td>
+          <td><code class="nw-article-math-inline">1.0 / 0.6</code></td>
+        </tr>
+        <tr>
+          <td>Top-p (Training / Evaluation)</td>
+          <td><code class="nw-article-math-inline">1.0 / 0.95</code></td>
+        </tr>
+        <tr>
+          <td>DAPO Clip Ratio (low/high)</td>
+          <td><code class="nw-article-math-inline">0.2 / 0.28</code></td>
+        </tr>
+        <tr>
+          <td>GSPO Clip Ratio (low/high)</td>
+          <td><code class="nw-article-math-inline">3 \times 10^{-4} / 4 \times 10^{-4}</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Table 3: Hyperparameters used in the training process.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Note that the batch size, PPO-off-policy-k, and PipelineRL-k hyperparameters are all related to the
+    asynchronous RL training setup, which we will discuss later on.
+  </p>
+  <h3
+    id="user-content-context-extension"
+    class="font-[family-name:var(--font-rules)] proportional-nums font-bold text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Iterative Context Extension
+  </h3>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    As in the DeepCoder blog<sup
+      ><a id="user-content-cite-togetherai2025deepcoder-2" href="#ref-togetherai2025deepcoder">[1]</a></sup
+    >, we also adopt an <strong>iterative context lengthening</strong> approach in which we first train the
+    model using a context window of 32k, and then train the model using the maximum Qwen3-14B context window
+    of 40k as shown in Figure 6. This incentivizes the model to first learn at a shorter context window and
+    then extend it to the maximum context window.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We also use the <strong>overlong filtering</strong> approach from DAPO<sup
+      ><a id="user-content-cite-yu2025dapo-2" href="#ref-yu2025dapo">[4]</a></sup
+    >. Whenever the model generation exceeds the maximum context window, we override the previously computed
+    advantage for that rollout and set its advantage to zero. Therefore, the model does not receive a penalty
+    for generating a solution that exceeds the maximum context window. As a result, we're able to see
+    significant improvement when scaling up the context window during test-time.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We select the highest performing model, in terms of LiveCodeBench score evaluated at 40k context, trained
+    at 32k context and use it as the starting point for training at 40k context. Then, we select the highest
+    performing model at 40k context and use YaRN context extension to evaluate the model with a 80k context
+    window.
+  </p>
+  <h3
+    id="user-content-training-tricks"
+    class="font-[family-name:var(--font-rules)] proportional-nums font-bold text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Additional Training Tricks
+  </h3>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We present an experimental technique that was extremely useful for fast iteration and served as an initial
+    test for correctness in choosing hyperparameters, algorithms, and so forth. We selected a fixed subset of
+    64 problems that the base Qwen3-14B model would achieve a
+    <code class="nw-article-math-inline">0 &lt; \text{pass@G} &lt; 1</code> where
+    <code class="nw-article-math-inline">G</code> is the group size. In other words, out of
+    <code class="nw-article-math-inline">G</code> rollouts, the model solves the problem at least once but
+    less than <code class="nw-article-math-inline">G</code> times, and we would train the model using only
+    these problems. The expectation is that the train rewards should noticeably increase. If we use the entire
+    training dataset, the improvement in training reward is less noticeable and takes longer to observe as
+    shown in Figure 4. Figure 6 shows a successful example of this technique, where setting our KL divergence
+    coefficient to zero allowed us to observe noticeable improvement in training reward, whereas our previous
+    experiments yielded no noticeable improvement in training reward when we used a positive KL divergence
+    term. Figure 7 shows that all training examples have at least one correct solution generated by the model.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Additionally, we found that around 10k out of the 24k problems in the training dataset would be
+    consistently solved by the Qwen3-14B model (all rollouts would pass). Therefore, we can filter out these
+    problems offline, prior to training, since they provide no gradient information during training. Then,
+    since the model improves over many epochs of training, we can do online filtering to remove training
+    examples once the model achieves 100% pass@1 on a particular problem. This method significantly reduces
+    inference time.
+  </p>
+  <div>
+    <figure>
+      <span class="nw-article-color-frame nw-article-image-frame"
+        ><img
+          class="nw-color-reveal"
+          src="/assets/nous-web/blog/articles/kl_zero_pass1.png"
+          alt="Pass@1 training reward on a small subset of problems with GRPO"
+          loading="lazy"
+          decoding="async" /><img
+          class="nw-article-color nw-color-reveal"
+          src="/assets/nous-web/blog/articles/kl_zero_pass1.png"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+      /></span>
+      <figcaption>Figure 6: Pass@1 training reward on a small subset of problems with GRPO.</figcaption>
+    </figure>
+    <figure>
+      <span class="nw-article-color-frame nw-article-image-frame"
+        ><img
+          class="nw-color-reveal"
+          src="/assets/nous-web/blog/articles/kl_zero_passk.png"
+          alt="Pass@G training reward on a small subset of problems with GRPO"
+          loading="lazy"
+          decoding="async" /><img
+          class="nw-article-color nw-color-reveal"
+          src="/assets/nous-web/blog/articles/kl_zero_passk.png"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+      /></span>
+      <figcaption>Figure 7: Pass@G training reward on a small subset of problems with GRPO.</figcaption>
+    </figure>
+  </div>
+  <h3
+    id="user-content-async-training"
+    class="font-[family-name:var(--font-rules)] proportional-nums font-bold text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Asynchronous RL Training
+  </h3>
+  <figure>
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/nous-web/blog/articles/pipelinerl.png"
+        alt="Asynchronous RL training setup (PipelineRL)"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/nous-web/blog/articles/pipelinerl.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>
+      Figure 8: Asynchronous RL training setup (PipelineRL)<sup
+        ><a id="user-content-cite-pich2025pipelinerl" href="#ref-pich2025pipelinerl">[6]</a></sup
+      >.
+    </figcaption>
+  </figure>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    To maximize hardware efficiency, we employ a distributed asynchronous RL setup as shown in Figure 8. Our
+    setup closely resembles that of PipelineRL<sup
+      ><a id="user-content-cite-pich2025pipelinerl-2" href="#ref-pich2025pipelinerl">[6]</a></sup
+    >. In particular:
+  </p>
+  <blockquote>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      The Pipeline RL method differs from Conventional RL in two aspects: (1) running training and generation
+      in parallel asynchronously, and (2) updating the generation weights after every optimizer step
+      in-flight, i.e. without stopping the sequence generation<sup
+        ><a id="user-content-cite-pich2025pipelinerl-3" href="#ref-pich2025pipelinerl">[6]</a></sup
+      >.
+    </p>
+  </blockquote>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We define the batch size <code class="nw-article-math-inline">B</code> as the number of rollouts the
+    inference workers collect before sending them to the trainer, which conducts an optimizer step using these
+    <code class="nw-article-math-inline">B</code> sequences and updates the inference model weights. Since
+    inference workers are continuously streaming rollouts along with the trainer, we want to prevent the
+    inference workers from collecting rollouts too far ahead of the trainer. From the notation in ScaleRL<sup
+      ><a id="user-content-cite-khatri2025art" href="#ref-khatri2025art">[7]</a></sup
+    >, we employ PipelineRL-<code class="nw-article-math-inline">k</code>, where
+    <code class="nw-article-math-inline">k</code> indicates the maximum difference between the expected
+    optimizer step for in-progress rollouts and the current optimizer step of the trainer. In other words, at
+    any point in time, the number of active rollouts plus the number of completed rollouts not yet processed
+    by the trainer should never exceed <code class="nw-article-math-inline">k \times B</code>. This helps
+    control how far off-policy the rollouts are.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Furthermore, within a batch we can also take optimizer steps, which ScaleRL calls PPO-off-policy-<code
+      class="nw-article-math-inline"
+      >k</code
+    >. In other words, we take <code class="nw-article-math-inline">k</code> optimizer steps per batch: each
+    gradient step processes <code class="nw-article-math-inline">\frac{B}{k}</code> rollouts.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Given the asynchronous nature of the training setup, we need to carefully handle importance sampling
+    ratios and modify the objective. To motivate this, we will first discuss the objective within a
+    synchronous RL context. As shown by Yao et al.<sup
+      ><a id="user-content-cite-yao2025offpolicy" href="#ref-yao2025offpolicy">[8]</a></sup
+    >
+    and Liu et al.<sup><a id="user-content-cite-liu2025speed" href="#ref-liu2025speed">[9]</a></sup
+    >, even when the parameters between the trainer
+    <code class="nw-article-math-inline">\pi_{learner}</code> and inference model
+    <code class="nw-article-math-inline">\pi_{sampler}</code> are the same, the usage of highly optimized
+    inference engines like vLLM and SGLang can lead to significant differences in the token probabilities. To
+    fix this issue, they propose an objective with truncated importance sampling:
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <code class="nw-article-math-block" tabindex="0" aria-label="Math reference"
+      >\mathbb{E} \left[ \sum_{i=1}^G
+      \text{TIS}(a_i)\min\left(\frac{\pi_{learner}(a_i|q)}{\pi_{learner,old}(a_i|q)}\hat A_t,
+      \text{clip}\left(\frac{\pi_{learner}(a_i|q)}{\pi_{learner,old}(a_i|q)}, 1-\epsilon_{low},
+      1+\epsilon_{high}\right)\hat A_t\right)\right]</code
+    >
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    where <code class="nw-article-math-inline">\pi_{learner,old}</code> is the training policy before the
+    off-policy gradient steps are taken for a batch and
+    <code class="nw-article-math-inline">\text{TIS}(a_i)</code> is the truncated importance sampling ratio
+    given by
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <code class="nw-article-math-block" tabindex="0" aria-label="Math reference"
+      >\text{TIS}(a_i) = \min\left(C, \frac{\pi_{learner,old}(a_i|q)}{\pi_{sampler}(a_i|q)}\right).</code
+    >
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    In our asynchronous RL setup, we adopt this exact objective. Note that a single rollout may be sampled by
+    multiple <code class="nw-article-math-inline">\pi_{sampler}</code> policies since the model will update
+    in-flight without interrupting generation. If
+    <code class="nw-article-math-inline">\pi_{learner,old}</code> represents the policy at the start of
+    <code class="nw-article-math-inline">k</code> gradient steps in PPO-off-policy-<code
+      class="nw-article-math-inline"
+      >k</code
+    >, then it is clear that <code class="nw-article-math-inline">\pi_{sampler}</code> and
+    <code class="nw-article-math-inline">\pi_{learner,old}</code> differ not because of the trainer-inference
+    implementation mismatch when model weights are theoretically the same, but the two policies are now
+    legitimately different. While the objective shown above is for sequence-level importance sampling, it can
+    be easily adapted to token-level importance sampling for DAPO.
+  </p>
+</section>
+<section>
+  <h2
+    id="user-content-future-work"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    Future Work
+  </h2>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Given more time, we would like to try three main things:
+  </p>
+  <ul>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      Train models with larger context windows and find a better way to control response lengths. We found
+      that our response lengths would quickly saturate the context window.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      Multi-turn RL. When our RL environment grades a rollout, it is possible to give the model more feedback
+      than just a final binary reward. Most competitive programming problems have public test cases visible to
+      the programmer, and executing model code on these public test cases can yield valuable information such
+      as compilation errors, time and memory violations, and incorrect answers. All this feedback can be used
+      to guide the model's response in a multi-turn RL setting before the final binary reward is given.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      Problem generation and self-play for competitive programming. Is it possible to train a model to not
+      only solve problems but also to generate solvable problems? How does an LLM know if the problem is
+      solvable? Humans are great at generating interesting and useful problems for other competitive
+      programmers, but it appears that there still exists a significant gap in LLM capabilities in creative
+      problem generation. Once synthetic problem generation is solved, however, self-play becomes a very
+      interesting direction.
+    </li>
+  </ul>
+</section>
+<section>
+  <h2
+    id="user-content-closing-remarks"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    Closing Remarks
+  </h2>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    One of the most remarkable aspects of this work was being able to compare the model's capabilities to my
+    own capabilities as a former competitive programmer. Based on some very rough estimations to determine the
+    model's Codeforces rating from its LiveCodeBench score, the model's comparable Codeforces rating improved
+    from the 1600-1750 range to the 2100-2200 range. Figure 9 shows my own Codeforces rating history. Between
+    the ages of 14 and 16, it took me nearly two years of sustained effort to make that same rating jump,
+    something the model accomplished in just four days of training. Watching that final training run unfold
+    was quite a surreal experience.
+  </p>
+  <figure>
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/nous-web/blog/articles/cf.png"
+        alt="My personal Codeforces rating history"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/nous-web/blog/articles/cf.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>Figure 9: My personal Codeforces rating history.</figcaption>
+  </figure>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    However, I solved around 1k problems to achieve that rating jump, whereas the model needed 24k; I was
+    clearly more sample efficient than the model, which brings us to an interesting discussion on data
+    efficiency. These 24k problems encompass a significant portion of all readily available, verifiable
+    competitive programming problems in a standardized dataset format, and the total number of competitive
+    programming problems on the Internet is roughly the same order of magnitude. This suggests that within the
+    competitive programming domain, we have approached the limits of high-quality data. Moreover, one of the
+    hallmarks of a competitive programmer is the ability to also create interesting and useful problems for
+    other competitive programmers, but LLMs still struggle in this domain. More broadly, this serves as a
+    reflection on modern scaling paradigms; while it is possible to continue scaling compute, data is becoming
+    increasingly finite; it appears that some of the most important research that needs to be done in the
+    future will be in the areas of synthetic data generation and data efficient algorithms and architectures.
+  </p>
+</section>
+<section>
+  <h2
+    id="user-content-acknowledgements"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    Acknowledgements
+  </h2>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    I would like to thank my mentor, Roger Jin, Dakota Mahan, Teknium, and others at the Nous Research team
+    for their invaluable support throughout this project. I would also like to thank Together AI and Agentica
+    for their immensely helpful blog posts on DeepCoder-14B. Finally, thank you to Modal and Lambda for their
+    generous support by providing me with credits.
+  </p>
+</section>
+<section>
+  <h2
+    id="user-content-references"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    References
+  </h2>
+  <ol class="">
+    <li
+      id="user-content-ref-togetherai2025deepcoder"
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      Michael Luo et al.<br />
+      <a
+        href="https://pretty-radio-b75.notion.site/DeepCoder-A-Fully-Open-Source-14B-Coder-at-O3-mini-Level-1cf81902c14680b3bee5eb349a512a51"
+        ><em>DeepCoder: A Fully Open-Source 14B Coder at O3-mini Level</em></a
+      >.<br />
+      Notion Blog, 2025.
+      <a title="Back to text" href="#cite-togetherai2025deepcoder">↩</a>
+    </li>
+    <li
+      id="user-content-ref-jain2024livecodebench"
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      Naman Jain et al.<br />
+      <a href="https://arxiv.org/abs/2403.07974"
+        ><em
+          >LiveCodeBench: Holistic and Contamination Free Evaluation of Large Language Models for Code</em
+        ></a
+      >.<br />
+      arXiv:2403.07974, 2024.
+      <a title="Back to text" href="#cite-jain2024livecodebench">↩</a>
+    </li>
+    <li
+      id="user-content-ref-rastogi2025magistral"
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      Mistral AI.<br />
+      <a href="https://arxiv.org/abs/2506.10910"><em>Magistral</em></a
+      >.<br />
+      arXiv:2506.10910, 2025.
+      <a title="Back to text" href="#cite-rastogi2025magistral">↩</a>
+    </li>
+    <li
+      id="user-content-ref-yu2025dapo"
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      Qiying Yu et al.<br />
+      <a href="https://arxiv.org/abs/2503.14476"
+        ><em>DAPO: An Open-Source LLM Reinforcement Learning System at Scale</em></a
+      >.<br />
+      arXiv:2503.14476, 2025.
+      <a title="Back to text" href="#cite-yu2025dapo-1">↩</a>
+    </li>
+    <li
+      id="user-content-ref-zheng2025gspo"
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      Chujie Zheng et al.<br />
+      <a href="https://arxiv.org/abs/2507.18071"><em>Group Sequence Policy Optimization</em></a
+      >.<br />
+      arXiv:2507.18071, 2025.
+      <a title="Back to text" href="#cite-zheng2025gspo-1">↩</a>
+    </li>
+    <li
+      id="user-content-ref-pich2025pipelinerl"
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      Alexandre Piché et al.<br />
+      <a href="https://arxiv.org/abs/2509.19128"
+        ><em>PipelineRL: Faster On-policy Reinforcement Learning for Long Sequence Generation</em></a
+      >.<br />
+      arXiv:2509.19128, 2025.
+      <a title="Back to text" href="#cite-pich2025pipelinerl">↩</a>
+    </li>
+    <li
+      id="user-content-ref-khatri2025art"
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      Devvrit Khatri et al.<br />
+      <a href="https://arxiv.org/abs/2510.13786"
+        ><em>The Art of Scaling Reinforcement Learning Compute for LLMs</em></a
+      >.<br />
+      arXiv:2510.13786, 2025.
+      <a title="Back to text" href="#cite-khatri2025art">↩</a>
+    </li>
+    <li
+      id="user-content-ref-yao2025offpolicy"
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      Feng Yao et al.<br />
+      <a href="https://fengyao.notion.site/off-policy-rl"
+        ><em>Your Efficient RL Framework Secretly Brings You Off-Policy RL Training</em></a
+      >.<br />
+      Notion Blog, 2025.
+      <a title="Back to text" href="#cite-yao2025offpolicy">↩</a>
+    </li>
+    <li
+      id="user-content-ref-liu2025speed"
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      Jiacai Liu et al.<br />
+      <a
+        href="https://yingru.notion.site/When-Speed-Kills-Stability-Demystifying-RL-Collapse-from-the-Training-Inference-Mismatch-271211a558b7808d8b12d403fd15edda"
+        ><em>When Speed Kills Stability: Demystifying RL Collapse from the Training-Inference Mismatch</em></a
+      >.<br />
+      Notion Blog, 2025.
+      <a title="Back to text" href="#cite-liu2025speed">↩</a>
+    </li>
+    <li
+      id="user-content-ref-livecodebench2025leaderboard"
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      LiveCodeBench Team.<br />
+      <a href="https://livecodebench.github.io/leaderboard.html"><em>LiveCodeBench Leaderboard</em></a
+      >.<br />
+      2025.
+      <a title="Back to text" href="#cite-livecodebench2025leaderboard">↩</a>
+    </li>
+  </ol>
+</section>

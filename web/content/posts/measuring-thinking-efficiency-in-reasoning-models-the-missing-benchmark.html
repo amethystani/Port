@@ -1,0 +1,1550 @@
+<section>
+  <figure>
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/main.png"
+        alt="Main feature illustration"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/main.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+  </figure>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Large Reasoning Models (LRMs) employ a novel paradigm known as test-time scaling, leveraging reinforcement
+    learning to teach the models to generate extended chains of thought (CoT) during reasoning tasks. This
+    enhances their problem-solving capabilities beyond what their base models could achieve independently.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    While cost and efficiency trade-off curves ("the Pareto frontier") typically focus on model intelligence
+    versus cost per million completion tokens, token efficiency — the number of tokens used for reasoning
+    relative to the solution — is a critical factor that is recently receiving more attention.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Anecdotal evidence suggests open weight models produce significantly more tokens for similar tasks than
+    closed weight models.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    This report systematically investigates these observations. We confirm this trend to be generally true,
+    but observe significant differences depending on problem domain.
+  </p>
+  <div>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <strong>TL;DR:</strong>
+      Closed models (OpenAI, Grok-4) optimize for fewer tokens to cut costs, while open models (DeepSeek,
+      Qwen) use more tokens, possibly for better reasoning. Open weight models use 1.5–4× more tokens than
+      closed ones (up to 10× for simple knowledge questions), making them sometimes more expensive per query
+      despite lower per‑token costs. OpenAI leads in token efficiency for math. Among open models,
+      <code class="">llama-3.3-nemotron-super-49b-v1</code>
+      is most efficient, while Magistral models are outliers with exceptionally high token usage. The release
+      of OpenAI's
+      <code class="">gpt-oss</code>
+      open weight models with extremely short CoT can serve as a reference to optimize token usage in other
+      open weight models.
+    </p>
+  </div>
+</section>
+<section>
+  <h2
+    id="user-content-why-is-it-of-interest-to-measure-token-efficiency"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    Why is it of interest to measure token efficiency?
+  </h2>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <strong>Token efficiency is a critical metric for several practical reasons:</strong>
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    First, while hosting open weight models may be cheaper, this cost advantage could be easily offset if they
+    require more tokens to reason about a given problem. Second, an increased number of tokens will lead to
+    longer generation times and increased latency. Finally, inefficient token usage may exhaust the available
+    context window, limiting the model's ability to process complex queries effectively.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <strong>We address three questions:</strong>
+  </p>
+  <ol>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      Do open weight models systematically require more tokens than closed weight models for comparable tasks?
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      What are the cost implications when token efficiency is factored into total inference expenses?
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      Are there specific task categories where this efficiency gap is more pronounced?
+    </li>
+  </ol>
+</section>
+<section>
+  <h2
+    id="user-content-how-can-we-measure-token-efficiency"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    How can we measure token efficiency?
+  </h2>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Measuring the length of the thinking process, the Chain-of-Thought, presents some issues because most
+    recent closed source models will not share their raw reasoning traces. The rationale behind this is to
+    prevent competitors from fine-tuning on their reasoning traces. Instead, they use smaller language models
+    to transcribe the chain of thought into summaries or compressed representations. This means the original
+    reasoning process remains hidden, with only the final answer and a transcribed version of the CoT
+    available for analysis.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    However, since models are usually billed by the number of output tokens for the full prompt completion
+    (thinking and final answer output), we can use the number of completion tokens as a proxy for the total
+    effort required to generate an answer.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    To investigate which models transcribe the CoT and which make them directly available, we analyzed the
+    relationship between total characters for completion (the sum of thinking trace and final output) versus
+    the number of tokens billed for completion across all prompts in this study.
+  </p>
+  <figure id="user-content-fig1">
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/tokens_vs_characters_selected_models.png"
+        alt="Relationship between completion tokens and total characters across models"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/tokens_vs_characters_selected_models.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>
+      Figure 1: Relationship between completion tokens and total characters across models
+    </figcaption>
+  </figure>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <a href="#fig1">Figure 1</a> illustrates the relationship between total characters for completion
+    (combining thinking trace and final output) versus the number of tokens billed for completion across all
+    prompts in this study. Each model shows a linear relationship, but with different slopes depending on the
+    specific model implementation.
+  </p>
+  <figure id="user-content-fig2">
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/characters_per_token_by_model.png"
+        alt="Slopes of characters per completion vs. billed tokens for each model"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/characters_per_token_by_model.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>Figure 2: Slopes of characters per completion vs. billed tokens for each model</figcaption>
+  </figure>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <a href="#fig2">Figure 2</a> presents the extracted slopes for each model, revealing interesting patterns.
+  </p>
+  <ul>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <strong>Open weight models</strong> show a consistent character-to-token ratio of approximately 3-3.4,
+      which is typical for tokenizers. This suggests that no transcription took place for these models.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <strong>Claude 3.7 Sonnet</strong> exhibits a ratio of 2.8, suggesting that the CoT is mostly intact,
+      but the lower ratio may indicate that some filtering took place, possibly through simple word filtering
+      or substitution.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <strong>Gemini models</strong> show a slope of ~1, which suggests a text densification ratio of 3:1.
+      While the original CoT is not available, the output remains proportional to chain of thought length and
+      should reflect the reasoning process.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <strong>OpenAI and Claude models</strong> show a ratio of 0.3, with closer examination of the scatter
+      plot revealing that character count doesn't increase with CoT length, suggesting only a summary of the
+      entire CoT is provided rather than transcription. This behavior seems to be specific to chat
+      completions, as continuous updates are seen in streaming mode.
+    </li>
+  </ul>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Some models also provide information about reasoning tokens as part of the API response. However, we found
+    this number to be unreliable in many cases as some models (Claude) would only return the number of tokens
+    of the transcribed CoT, while others would provide token counts that exceeded the total completion length.
+    We introduced consistency checks to decide how to extract the reasoning token count, as described in the
+    appendix.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Based on these findings, we use completion tokens to assess overall effort, supplemented by reasoning
+    tokens from APIs where available.
+  </p>
+</section>
+<section>
+  <h2
+    id="user-content-dataset"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    Dataset
+  </h2>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    To systematically evaluate token efficiency across different reasoning domains, we curated a dataset
+    consisting of three categories:
+  </p>
+  <ul>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <strong>Knowledge questions</strong>: Can be answered in one sentence from the model's pre-training
+      corpus.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <strong>Math problems</strong>: Math problems should exhibit the most optimized behavior of reasoning
+      models.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <strong>Logic puzzles</strong>: Logic puzzles require both semantic understanding and logical reasoning.
+    </li>
+  </ul>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The questions were chosen to be solvable within the 30,000 token limit to avoid truncated responses.
+  </p>
+</section>
+<section>
+  <h2
+    id="user-content-findings"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    Findings
+  </h2>
+  <h3
+    id="user-content-knowledge-questions"
+    class="font-[family-name:var(--font-rules)] proportional-nums font-bold text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Knowledge questions
+  </h3>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    This part of the evaluation consists of 5 trivial knowledge questions that can be answered in one word and
+    that do not require reasoning at all. E.g.
+  </p>
+  <ol>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      What is the capital of Australia?
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      How many days are there in February during a leap year?
+    </li>
+  </ol>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    All models were able to respond to these prompts correctly. The purpose of these questions is to probe for
+    superfluous reasoning. Efficient models should be able to determine that no reasoning is required.
+  </p>
+  <figure id="user-content-fig3">
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/knowledge/token_composition_by_prompt_chart.png"
+        alt="Average token composition by knowledge question prompt across all models"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/knowledge/token_composition_by_prompt_chart.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>
+      Figure 3: Average token composition by knowledge question prompt across all models
+    </figcaption>
+  </figure>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <a href="#fig3">Figure 3</a> shows the average number of reasoning and output tokens for each prompt. We
+    can see that, on average, reasoning models spend hundreds of tokens pondering simple knowledge questions.
+  </p>
+  <figure id="user-content-fig4">
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/knowledge/token_composition_stacked_chart.png"
+        alt="Token composition breakdown by model for knowledge questions"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/knowledge/token_composition_stacked_chart.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>Figure 4: Token composition breakdown by model for knowledge questions</figcaption>
+  </figure>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Resolving this per model reveals stark differences.
+    <a href="#fig4">Figure 4</a> shows that closed-weight frontier lab models are far more token efficient
+    than open weight models.
+  </p>
+  <figure id="user-content-fig5">
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/knowledge/average_relative_completion_tokens_chart.png"
+        alt="Average relative completion tokens for knowledge questions by model"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/knowledge/average_relative_completion_tokens_chart.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>Figure 5: Average relative completion tokens for knowledge questions by model</figcaption>
+  </figure>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    To better quantify the excess token ratio, we normalized the token count for each prompt relative to the
+    most optimized closed weight models (reference). This approach considers the excess token ratio for all
+    prompts equally, which contrasts with averaging across all completion lengths, which would be dominated by
+    long completions.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <a href="#fig5">Figure 5</a> shows the mean excess token ratio for different LLMs. The recently released
+    Magistral models are an extreme outlier with up to 10x excess tokens. We also see that most other open
+    weight models show an excess token ratio of around 4, meaning that they use four times as many tokens as
+    the most optimized closed weight models. The recently released <code class="">gpt-oss-120b</code> by
+    OpenAI leads all other models in token efficiency.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    How does this affect inference costs? Figure 6 shows the mean cost per model for knowledge questions,
+    based on minimum and maximum completion pricing on the OpenRouter API in July 2025. The better token
+    efficiency of closed weight models often compensates for the higher API pricing of those models.
+  </p>
+  <figure id="user-content-fig6">
+    <div>
+      <span class="nw-article-color-frame nw-article-image-frame"
+        ><img
+          class="nw-color-reveal"
+          src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/knowledge/mean_cost_knowledge.png"
+          alt="Mean inference cost for knowledge questions by model"
+          loading="lazy"
+          decoding="async" /><img
+          class="nw-article-color nw-color-reveal"
+          src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/knowledge/mean_cost_knowledge.png"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+      /></span>
+      <figcaption>Figure 6: Mean inference cost for knowledge questions by model</figcaption>
+    </div>
+    <div>
+      <span class="nw-article-color-frame nw-article-image-frame"
+        ><img
+          class="nw-color-reveal"
+          src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/model_pricing_comparison.png"
+          alt="Model pricing comparison showing min/max costs per million tokens"
+          loading="lazy"
+          decoding="async" /><img
+          class="nw-article-color nw-color-reveal"
+          src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/model_pricing_comparison.png"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+      /></span>
+      <figcaption>Figure A: Model pricing comparison showing min/max costs per million tokens</figcaption>
+    </div>
+  </figure>
+  <h3
+    id="user-content-math-problems"
+    class="font-[family-name:var(--font-rules)] proportional-nums font-bold text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Math problems
+  </h3>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Most reasoning models are specifically trained to solve mathematical problems. One reason for this is that
+    math problems are usually easily verifiable, which is a key advantage for reinforcement learning.
+    Furthermore, math problems are also an easy benchmark target for reasoning models as there are many widely
+    available problem sets.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    For this study, we selected a set of six problems to test token efficiency in the math domain. Three
+    problems were sourced from
+    <a href="https://artofproblemsolving.com/wiki/index.php/American_Invitational_Mathematics_Examination"
+      >AIME</a
+    >
+    2025, and one problem was taken from AIME 2023. Easier problems were chosen to prevent models from
+    exceeding the 30,000 token limit. To further investigate the role of memorization in problem-solving, we
+    created two modified problems by changing the variables in one AIME 2025 problem and the AIME 2023
+    problem. The rationale behind this approach is that unknown problems may require a longer chain of
+    thought, as the model cannot rely on memorized solutions. The AIME 2025 problems are too new to be in the
+    pre-training data of any model, while some may have seen the AIME 2023 problems during pre-training.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Example
+  </p>
+  <div>
+    <div>
+      <p
+        class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+        style="font-size: 16px; line-height: 1.5"
+      >
+        AIME2025I Problem 2 (Original)
+      </p>
+      <div>
+        <p
+          class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+          style="font-size: 16px; line-height: 1.5"
+        >
+          <strong
+            >Find the sum of all positive integers <code class="nw-article-math-inline">n</code> such that
+            <code class="nw-article-math-inline">n+2</code> divides the product
+            <code class="nw-article-math-inline">3(n+3)(n^2+9).</code></strong
+          >
+        </p>
+      </div>
+    </div>
+
+    <div>
+      <p
+        class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+        style="font-size: 16px; line-height: 1.5"
+      >
+        AIME2025I Problem 2 (Modified)
+      </p>
+      <div>
+        <p
+          class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+          style="font-size: 16px; line-height: 1.5"
+        >
+          <strong
+            >Find the sum of all positive integers <code class="nw-article-math-inline">n</code> such that
+            <code class="nw-article-math-inline">n+2</code> divides the product
+            <code class="nw-article-math-inline">3(n+3)(n^2+7).</code></strong
+          >
+        </p>
+      </div>
+    </div>
+  </div>
+  <figure id="user-content-fig7">
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/math/success_rate_heatmap.png"
+        alt="Success rate All Math Prompts"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/math/success_rate_heatmap.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>Figure 7: Success rate All Math Prompts</figcaption>
+  </figure>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    With a few exceptions, all models were able to solve the math problems correctly
+    <a href="#fig7">Figure 7</a>.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We can see that, on average, fewer than 10,000 tokens are required to solve the selected problems (<a
+      href="#fig8"
+      >Figure 8</a
+    >). The more complex problems from the AIME2025 set would easily require more than 30,000 tokens in some
+    models and were therefore not used for this evaluation to avoid skewing the distribution due to
+    truncation.
+  </p>
+  <figure id="user-content-fig8">
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/math/token_composition_by_prompt_chart.png"
+        alt="Token Composition by Math Prompt"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/math/token_composition_by_prompt_chart.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>Figure 8: Token Composition by Math Prompt</figcaption>
+  </figure>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Remarkably, the number of tokens required to solve the pairs of original and modified problems is almost
+    identical. This could suggest two trends across all LLMs:
+  </p>
+  <ul>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      These math problems are not solved based on memorization, but algorithmically.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      The number of tokens is identical for similar problems.
+    </li>
+  </ul>
+  <figure id="user-content-fig9">
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/math/average_relative_completion_tokens_chart.png"
+        alt="Average Relative Completion Tokens Across All Math Prompts"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/math/average_relative_completion_tokens_chart.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>Figure 9: Average Relative Completion Tokens Across All Math Prompts</figcaption>
+  </figure>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <a href="#fig9">Figure 9</a> shows the relative excess token ratio compared to the reference. In contrast
+    to the trends observed for knowledge questions, the relative ratio between models is much lower.
+    <code class="">o4-mini-high-long</code> is a notable outlier with a surprisingly low token count — 3x
+    fewer tokens than other commercial models. This suggests that o4-mini has been specifically optimized for
+    token efficiency in mathematical problems. The same optimizations seem to be shared by the OpenAI open
+    weight model <code class="">gpt-oss-120b</code>. The recently released <code class="">grok-4</code> also
+    seems to have been optimized for token efficiency in math problems. The most efficient open weight model
+    is <code class="">llama-3.3-nemotron-super-49b-v1</code>, which uses fewer tokens than most closed weight
+    models. <code class="">magistral-small</code> and <code class="">magistral-medium</code> remain the
+    highest token count models, but show only 3x the ratio of the reference models.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Generally, there is a very clear trend toward higher reasoning token usage for open weight models in math
+    problems, compared to closed weight models. This may suggest an optimization toward benchmarking
+    performance rather than production efficiency.
+  </p>
+  <figure>
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/math/mean_cost_math.png"
+        alt="Min/Max Completion Cost - Math Prompts"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/math/mean_cost_math.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>Min/Max Completion Cost - Math Prompts</figcaption>
+  </figure>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Examining completion costs reveals that since token consumption is relatively similar across most models
+    for math problems, those with higher per-token pricing naturally incur the highest completion costs.
+    However, the exceptional token efficiency of
+    <code class="">o4-mini-high-long</code> and <code class="">gpt-oss-120b</code> enables them to achieve
+    very competitive total completion costs despite potentially higher per-token costs, demonstrating how
+    optimization can offset pricing disadvantages.
+  </p>
+  <h3
+    id="user-content-logic-puzzles"
+    class="font-[family-name:var(--font-rules)] proportional-nums font-bold text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Logic puzzles
+  </h3>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Logic puzzles are a curious domain for reasoning models. They require a combination of semantic
+    understanding and logical reasoning, making them an interesting test case for evaluating reasoning
+    capabilities.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    However, many well-known logic puzzles are commonly found in pre-training data, which causes models to be
+    over-fitted on specific solutions. Non-reasoning models will often have difficulty recognizing small
+    changes to logic problems and tend to answer them based on memorization of the original problem. The
+    <a href="https://github.com/cpldcpu/MisguidedAttention">Misguided Attention</a>
+    evaluation showcases this issue. Reasoning models can often overcome the bias of their pre-training data
+    in the CoT and solve modified problems correctly.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    To explore the effect of memorization, variants of two well-known logic puzzles were selected in addition
+    to a generic logic puzzle (roses problem).
+  </p>
+  <h4>Bridge and torch problem</h4>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The
+    <a href="https://en.wikipedia.org/wiki/Bridge_and_torch_problem">bridge and torch problem</a>
+    requires finding the minimum time for four people with a torch to cross a bridge at night. The original
+    problem and three variants were included:
+  </p>
+  <div class="hw-prose-table" role="region" aria-label="Research table" tabindex="0">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Problem Variant</th>
+          <th scope="col">Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>bridge_torch_default</td>
+          <td>The <em>unmodified problem</em> in its most well-known version with a 17-minute solution</td>
+        </tr>
+        <tr>
+          <td>bridge_torch_easy</td>
+          <td><em>Ambiguous</em> version where two solutions exist: 10 and 17 minutes</td>
+        </tr>
+        <tr>
+          <td>bridge_torch_easy_10m</td>
+          <td><em>Simplified</em> version with a 10-minute solution</td>
+        </tr>
+        <tr>
+          <td>bridge_torch_impossible</td>
+          <td>
+            Constraints that make the problem
+            <em>impossible</em> to solve
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Generally, we found that even more recent reasoning models struggle with logic problems that have
+    ambiguous or impossible solutions.
+  </p>
+  <h4>Monty Hall problem</h4>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The
+    <a href="https://en.wikipedia.org/wiki/Monty_Hall_problem">Monty Hall problem</a>
+    is a very well-known and famously unintuitive probability puzzle. All base models used for reasoning
+    models are severely over-fitted on this problem and are biased toward solutions of the Monty Hall problem
+    even for remotely similar scenarios.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The original problem and two variants were included:
+  </p>
+  <div class="hw-prose-table" role="region" aria-label="Research table" tabindex="0">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Problem Variant</th>
+          <th scope="col">Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>monty_hall_default</td>
+          <td>The <em>unmodified</em> Monty Hall problem</td>
+        </tr>
+        <tr>
+          <td>monty_hall_inverse</td>
+          <td>A <em>modified</em> version of the Monty Hall problem with the opposite solution</td>
+        </tr>
+        <tr>
+          <td>monty_appliance_simple</td>
+          <td>
+            An <em>ambiguous</em> problem that can be easily answered by humans, but is usually answered in
+            the context of the Monty Hall problem by reasoning models
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <figure id="user-content-fig10">
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/logic_puzzles/success_rate_heatmap.png"
+        alt="Success rate for logic puzzle prompts by model"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/logic_puzzles/success_rate_heatmap.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>Figure 10: Success rate for logic puzzle prompts by model</figcaption>
+  </figure>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <a href="#fig10">Figure 10</a> shows the success rates across different logic puzzle problems. Unlike the
+    math problems, success rates vary significantly across both models and problem types. Only the default
+    problems were solved by all models, while many models struggle with modified problems, indicating strong
+    influence of pre-existing bias in the model.
+  </p>
+  <figure id="user-content-fig11">
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/logic_puzzles/token_composition_by_prompt_chart.png"
+        alt="Token composition by logic puzzle prompt"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/logic_puzzles/token_composition_by_prompt_chart.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>Figure 11: Token composition by logic puzzle prompt</figcaption>
+  </figure>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <a href="#fig11">Figure 11</a> shows the average token consumption for all prompts. Remarkably, the number
+    of reasoning tokens is the lowest for the default problems, while it significantly increases for modified
+    problems. This is unlike the observation for math problems and suggests that pre-existing bias allows
+    solving the problems with a shorter CoT for the default problems. The impossible problem generates the
+    longest CoT as the models tend to try many solutions before giving up.
+  </p>
+  <figure id="user-content-fig12">
+    <div>
+      <span class="nw-article-color-frame nw-article-image-frame"
+        ><img
+          class="nw-color-reveal"
+          src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/logic_puzzles/token_composition_stacked_chart.png"
+          alt="Token composition breakdown by model for logic puzzles"
+          loading="lazy"
+          decoding="async" /><img
+          class="nw-article-color nw-color-reveal"
+          src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/logic_puzzles/token_composition_stacked_chart.png"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+      /></span>
+      <figcaption>Figure 12: Token composition breakdown by model for logic puzzles</figcaption>
+    </div>
+    <div>
+      <span class="nw-article-color-frame nw-article-image-frame"
+        ><img
+          class="nw-color-reveal"
+          src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/logic_puzzles/average_relative_completion_tokens_chart.png"
+          alt="Average relative completion tokens for logic puzzles by model"
+          loading="lazy"
+          decoding="async" /><img
+          class="nw-article-color nw-color-reveal"
+          src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/logic_puzzles/average_relative_completion_tokens_chart.png"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+      /></span>
+      <figcaption>Figure 13: Average relative completion tokens for logic puzzles by model</figcaption>
+    </div>
+  </figure>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Similar to the patterns observed in other categories,
+    <a href="#fig12">Figure 12</a> shows that open-weight models use more tokens than closed-weight models for
+    logic puzzles. However, the gap is far less pronounced than for math and knowledge questions.
+    <code class="">magistral-small</code> and <code class="">magistral-medium</code> still present an
+    exception for high token usage. <code class="">claude-opus-4</code> uses the fewest reasoning tokens, a
+    trend generally observed across problem domains. The extreme token optimization that was observed for
+    <code class="">o4-mini-high</code> cannot be seen for logic puzzles.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Similar to the math domain, Nvidia's model
+    <code class="">llama-3.3-nemotron-super-49b-v1</code>
+    stands out as the most token efficient open weight model before the release of
+    <code class="">gpt-oss-120b</code>.
+  </p>
+  <figure id="user-content-fig14">
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/logic_puzzles/mean_cost_logic_puzzle.png"
+        alt="Mean inference cost for logic puzzles by model"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/logic_puzzles/mean_cost_logic_puzzle.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>Figure 14: Mean inference cost for logic puzzles by model</figcaption>
+  </figure>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The cost analysis for the logic puzzle prompts reveals few surprises; since the variation in tokens is
+    modest for logic prompts, the completion cost mostly scales with token pricing.
+  </p>
+</section>
+<section>
+  <h2
+    id="user-content-chain-of-thought-optimization"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    Chain of Thought Optimization
+  </h2>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Since the chain of thought of
+    <code class="">gpt-oss-120b</code> is freely accessible, it allows us to inspect some of the length
+    optimizations that are likely also part of the other OpenAI models. Below, we compare the CoT of
+    <code class="">gpt-oss-120b</code> with the CoT of <code class="">Deepseek-R1-0528</code> for selected
+    knowledge, math and logic prompts.
+  </p>
+  <h3
+    id="user-content-knowledge"
+    class="font-[family-name:var(--font-rules)] proportional-nums font-bold text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Knowledge
+  </h3>
+  <h4>Question</h4>
+  <div>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      PROMPT
+    </p>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      Which continent is Brazil located on?
+    </p>
+  </div>
+  <div>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      RESPONSE DeepSeek R1-0528
+    </p>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      Okay, the user is asking which continent Brazil is located on. This seems like a straightforward
+      geography question. Hmm, I recall that Brazil is the largest country in South America. Let me
+      double-check that fact to be sure. Yes, definitely South America. The user just wants a simple answer
+      without any extra details, so I'll keep it concise. No need to mention neighboring countries or other
+      continents. I wonder if they're asking for a school assignment or just casual curiosity. Either way, the
+      answer is clear. Should I add that it's in the southern hemisphere? No, the question only asks for the
+      continent. Best to stick to what was asked. "South America" it is. Short and accurate.
+    </p>
+  </div>
+  <div>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      RESPONSE gpt-oss-120b
+    </p>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      The user asks: "Which continent is Brazil located on?" Answer: South America.
+    </p>
+  </div>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We can see that
+    <code class="">gpt-oss-120b</code> omits a lot of superfluous reasoning and directly provides the answer.
+  </p>
+  <h3
+    id="user-content-math"
+    class="font-[family-name:var(--font-rules)] proportional-nums font-bold text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Math
+  </h3>
+  <h4>Question (AIME2023II P1)</h4>
+  <div>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      PROMPT
+    </p>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      The numbers of apples growing on each of six apple trees form an arithmetic sequence where the greatest
+      number of apples growing on any of the six trees is double the least number of apples growing on any of
+      the six trees. The total number of apples growing on all six trees is
+      <code class="nw-article-math-inline">990.</code> Find the greatest number of apples growing on any of
+      the six trees.
+    </p>
+  </div>
+  <div>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      RESPONSE DeepSeek R1-0528 (middle part omitted for brevity)
+    </p>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      The problem states that the apples on six trees form an arithmetic sequence, with the greatest number
+      being double the least number. The total apples are 990, and I need to find the greatest number of
+      apples. An arithmetic sequence has each term after the first obtained by adding a constant difference.
+      So, if I denote the first term (the least number) as <code class="nw-article-math-inline"> a </code>,
+      and the common difference as <code class="nw-article-math-inline"> d </code>, then the sequence is
+      <code class="nw-article-math-inline"> a, a+d, a+2d, a+3d, a+4d, a+5d </code>. Since it's six trees, the
+      terms are \( a, a+d, a+2d, a+3d, a+4d, a+5d \). The greatest number is
+      <code class="nw-article-math-inline"> a + 5d </code>, and it's given that this is double the least
+      number, which is <code class="nw-article-math-inline"> a </code>. So,
+      <code class="nw-article-math-block" tabindex="0" aria-label="Math reference"> a + 5d = 2a </code> Let me
+      write that down:
+      <code class="nw-article-math-block" tabindex="0" aria-label="Math reference"> a + 5d = 2a </code> Then,
+      simplifying:
+      <code class="nw-article-math-block" tabindex="0" aria-label="Math reference"> 5d = 2a - a </code>
+      <code class="nw-article-math-block" tabindex="0" aria-label="Math reference"> 5d = a </code> ...middle
+      part omitted... Therefore, the greatest number is 220. ... Further 30 lines omitted... Thus, the
+      greatest number is 220. So I think that's the answer.
+    </p>
+  </div>
+  <div>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      RESPONSE gpt-oss-120b
+    </p>
+
+    We need to solve: Six terms in arithmetic sequence, with max = 2 * min. Sum = 990. Find max. Let sequence:
+    a, a+d, a+2d, a+3d, a+4d, a+5d, where a is first term (least? Actually could be smallest or largest? It
+    says "greatest number ... is double the least number". In arithmetic sequence, the terms are increasing if
+    d&gt;0. So smallest is a, largest is a+5d. Then a+5d = 2a (since greatest = double least). So a+5d = 2a
+    =&gt; 5d = a =&gt; a = 5d. So first term a =5d. Then terms are: 5d, 6d, 7d, 8d, 9d, 10d. Indeed smallest
+    5d, largest 10d = double. Good. Sum = (5d+6d+7d+8d+9d+10d) = (5+6+7+8+9+10)d = (45) d? Let's compute:
+    5+6=11, +7=18, +8=26, +9=35, +10=45. Yes sum =45 d? Given total sum =990 =&gt; 45 d =990 =&gt;
+    d=990/45=22? 45*22 = 990 indeed. So d=22. Then greatest number = 10d = 220. Check: smallest =5d=110,
+    largest=220, sum=990. Answer: 220. But ensure integer conditions. Yes. Thus answer: 220. Now produce final
+    answer.
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    ></p>
+  </div>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <code class="">DeepSeek-R1-0528</code> generates on average 3,104 reasoning tokens while
+    <code class="">gpt-oss-120b</code> generates only 268 for this prompt. We can observe a number of curious
+    optimizations in the CoT of <code class="">gpt-oss-120b</code>:
+  </p>
+  <ul>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      It uses extremely abbreviated language, avoiding any unnecessary words.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      Formatting in the CoT is notably reduced, compared to the output: No markdown sequences, very limited
+      use of math formatting.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      Much fewer iterations are used to check the results once they are found.
+    </li>
+  </ul>
+  <h3
+    id="user-content-logic-puzzles-2"
+    class="font-[family-name:var(--font-rules)] proportional-nums font-bold text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Logic puzzles
+  </h3>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    For brevity, only examples of
+    <code class="">gpt-oss-120b</code> traces are shown here.
+  </p>
+  <h4>Original Monty Hall Problem</h4>
+  <div>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      RESPONSE gpt-oss-120b
+    </p>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      We need to answer the classic Monty Hall problem. The answer: you should always swap, because it gives
+      2/3 chance of winning the car. Provide explanation.
+    </p>
+  </div>
+  <h4>Inverted Monty Hall Problem</h4>
+  <div>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      RESPONSE gpt-oss-120b
+    </p>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      We need to answer: "You're on a game show... three doors: 1 donkey, 2 cars. You pick one. Host opens one
+      of the others revealing a luxury car. Then you can keep or swap. What should you do to win a car?" This
+      is a variation of Monty Hall but with two cars and one donkey. We need to compute probabilities.
+    </p>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      Initially, you pick a door randomly. Probability you initially picked donkey = 1/3, car = 2/3. There are
+      two cars and one donkey.
+    </p>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      ... middle part omitted ...
+    </p>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      Thus answer: Keep initial (do not swap). Provide explanation.
+    </p>
+    <p
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      Make answer concise.
+    </p>
+  </div>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    A very curious finding is that the model is able to distinguish between logic problems where the solution
+    is known from the training data, e.g., the Monty Hall problem, and modified problems that require
+    additional reasoning, such as the <em>inverted</em> Monty Hall problem. It will only initiate a long CoT
+    for the unknown problem.
+  </p>
+</section>
+<section>
+  <h2
+    id="user-content-model-evolution"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    Model evolution
+  </h2>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    While we have only looked at recent model variants above, it is also of interest to look at the historic
+    evolution between different reasoning model variants.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The figures below show how the relative completion tokens changed across the different problem domains for
+    iterations of models within the labs.
+  </p>
+  <figure id="user-content-fig15a">
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/knowledge/grouped_relative_tokens_chart.png"
+        alt="Knowledge - Grouped relative tokens chart"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/knowledge/grouped_relative_tokens_chart.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>Figure 15a: Grouped relative tokens across domains — Knowledge</figcaption>
+  </figure>
+  <figure id="user-content-fig15b">
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/math/grouped_relative_tokens_chart.png"
+        alt="Math - Grouped relative tokens chart"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/math/grouped_relative_tokens_chart.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>Figure 15b: Grouped relative tokens across domains — Math</figcaption>
+  </figure>
+  <figure id="user-content-fig15c">
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/logic_puzzles/grouped_relative_tokens_chart.png"
+        alt="Logic Puzzles - Grouped relative tokens chart"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/logic_puzzles/grouped_relative_tokens_chart.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>Figure 15c: Grouped relative tokens across domains — Logic Puzzles</figcaption>
+  </figure>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We can observe four key trends:
+  </p>
+  <ul>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      Closed weight models have been iteratively optimized to use fewer tokens to reduce inference cost.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      The open weight models (<em>DeepSeek</em> and <em>Qwen</em>) have increased their token usage for newer
+      versions, possibly reflecting a priority toward better reasoning performance.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      OpenAI models stand out for extreme token efficiency in math problems, even beginning with o1. It
+      appears that X-AI is taking a similar approach with
+      <code class="">grok-4</code>, with significant improvements compared to
+      <code class="">grok-3-mini</code>.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      The recently released
+      <code class="">gpt-oss-120b</code> and <code class="">gpt-oss-20b</code> seem to inherit the CoT density
+      optimization from the o-mini models.
+    </li>
+  </ul>
+</section>
+<section>
+  <h2
+    id="user-content-summary"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    Summary
+  </h2>
+  <figure id="user-content-fig16">
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/average_relative_completion_tokens_chart.png"
+        alt="Relative tokens across all domains"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/average_relative_completion_tokens_chart.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+    <figcaption>Figure 16: Relative tokens across all domains</figcaption>
+  </figure>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We find that open-weight models use consistently more tokens than closed-weight models for equivalent
+    tasks. However, the efficiency gap depends on the workload and is most pronounced for superfluous
+    reasoning in knowledge questions. On average, 3x more tokens are required for knowledge prompts. The gap
+    reduces to less than 2x for math problems and logic puzzles.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Furthermore, many closed weight models allow steering of the reasoning effort, which provides an effective
+    way to reduce token usage for simple tasks.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <code class="">llama-3.3-nemotron-super-49b-v1</code>
+    stands out as the most token efficient open weight model across all domains prior to the release of the
+    <code class="">gpt-oss</code> models, while the Magistral models represent an unusual outlier toward the
+    high end.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The recent release of
+    <code class="">gpt-oss-120b</code> and <code class="">gpt-oss-20b</code> as open weight and
+    state-of-the-art token efficient reasoning models with <strong>freely accessible CoT</strong> could serve
+    as a reference for further optimization of other models.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We note the continued trend of closed weight reasoning models to improve token efficiency also in
+    non-benchmark domains and suggest this as an important avenue for future open weight models. A more
+    densified CoT will also allow for more efficient context usage and may counter context degradation during
+    challenging reasoning tasks.
+  </p>
+</section>
+<section>
+  <h2
+    id="user-content-acknowledgments"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    Acknowledgments
+  </h2>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Thanks to Teknium and Billy for providing feedback on early drafts of this report and encouragement for
+    its creation. Also thanks to Rishav for preparation of the web version from the draft. Nous Research is
+    acknowledged for providing tokens for this investigation.
+  </p>
+</section>
+<section>
+  <h2
+    id="user-content-methods"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    Methods
+  </h2>
+  <h3
+    id="user-content-general"
+    class="font-[family-name:var(--font-rules)] proportional-nums font-bold text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    General
+  </h3>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    All models were accessed through OpenRouter, with the exception of Deephermes, which was accessed via the
+    Nous API, and DeepSeek R1-0528, which was accessed through the DeepSeek API. Generation limits were set to
+    30,000 tokens with reasoning effort configured to "high" in the OpenRouter API. In cases where models
+    timed out before generating the full 30,000 tokens, queries were restarted and the provider was adjusted
+    as needed to ensure completion when the query did not complete initially. Typical reasons for failure to
+    complete were timeouts.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Statistical analysis was conducted with N=5 samples for each prompt and language model combination.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The <code class="">gpt-oss-120b</code> and <code class="">gpt-oss-20b</code> models were accessed through
+    the OpenAI API on the day of their first release using Groq as a provider. There is some uncertainty in
+    the way the API interprets the reasoning effort settings, which may lead to deviations in the number of
+    reasoning tokens generated. We will monitor the situation and update the report if necessary.
+  </p>
+  <h3
+    id="user-content-acquiring-response-and-thinking-token-data"
+    class="font-[family-name:var(--font-rules)] proportional-nums font-bold text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Acquiring response and thinking token data
+  </h3>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    While many models directly provide reasoning token counts through their API responses, we found these
+    numbers to be unreliable in numerous cases. For instance, Anthropic models would only return the length of
+    the transcribed Chain of Thought rather than the actual CoT lengths, while other models would occasionally
+    report CoT lengths that exceeded the total completion length—a logical impossibility.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    To address these inconsistencies, our evaluation scripts implemented consistency checks to assess the
+    validity of returned CoT lengths. When the provided reasoning token counts failed validation, we employed
+    fallback estimation methods using the following formulas:
+  </p>
+  <ul>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      When CoT text is not available: CoT tokens = Completion tokens - (Answer length in characters / 3.1)
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      When CoT text is available: CoT tokens = Completion tokens × (CoT length in characters / completion
+      length in characters)
+    </li>
+  </ul>
+  <h3
+    id="user-content-model-pricing"
+    class="font-[family-name:var(--font-rules)] proportional-nums font-bold text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Model pricing
+  </h3>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Pricing data for completion tokens (measured in $/1M tokens) was automatically extracted from the
+    OpenRouter API for each model in July 2025, with the exception of Deephermes3. The pricing information
+    captures both minimum and maximum rates available through different providers, as illustrated in Figure A
+    below.
+  </p>
+  <figure>
+    <span class="nw-article-color-frame nw-article-image-frame"
+      ><img
+        class="nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/model_pricing_comparison.png"
+        alt="Model pricing comparison showing min/max costs per million tokens"
+        loading="lazy"
+        decoding="async" /><img
+        class="nw-article-color nw-color-reveal"
+        src="/assets/external/5jdxmo9ix2ncv3a2.public.blob.vercel-storage.com/azure_cot_blogpost/model_pricing_comparison.png"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+    /></span>
+  </figure>
+  <h3
+    id="user-content-dataset-harness-and-evaluation-code"
+    class="font-[family-name:var(--font-rules)] proportional-nums font-bold text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Dataset, harness and evaluation code
+  </h3>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    All datasets and code can be found in this repository:<br />
+    <a href="https://github.com/cpldcpu/LRMTokenEconomy/">(https://github.com/cpldcpu/LRMTokenEconomy/)</a>
+  </p>
+</section>

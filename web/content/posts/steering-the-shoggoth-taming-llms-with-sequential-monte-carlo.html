@@ -1,0 +1,1506 @@
+<section>
+  <span><a href="https://x.com/yaboilyrical">by Nightwing</a></span
+  ><span>•</span><span>June 1, 2025</span>
+  <figure>
+    <a title="Open full-size research figure" href="/assets/nous-web/blog/articles/3137bc21b04b8d28.png"
+      ><span class="nw-article-color-frame nw-article-image-frame"
+        ><img
+          class="nw-color-reveal"
+          src="/assets/nous-web/blog/articles/3137bc21b04b8d28.png"
+          alt="Sequential Monte Carlo visualization showing particle filtering and resampling process"
+          loading="lazy"
+          decoding="async" /><img
+          class="nw-article-color nw-color-reveal"
+          src="/assets/nous-web/blog/articles/3137bc21b04b8d28.png"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async" /></span
+    ></a>
+  </figure>
+  <figure>
+    <figcaption>Haiku for the Cheese Cat</figcaption>
+    <pre tabindex="0" aria-label="Code reference">
+The cheese cat sat on
+the kitchen counter all day
+and dreamed of cheese dreams</pre>
+  </figure>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    In this blog post, we present our findings from an exciting direction in controlling text generation with
+    large language models. We can programmatically define constraints on the output of a model, ensuring it
+    adheres to specific formats or styles, and then can use the
+    <a href="https://en.wikipedia.org/wiki/Particle_filter">Sequential Monte Carlo method</a>
+    to generate samples that satisfy these constraints.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <strong>Sequential Monte Carlo steering</strong> (or <span>SMC</span> steering), offers some advantages
+    over existing methods:
+  </p>
+  <ul>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      Optimized search for possible completions similar to beam search
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      Hard constraints (i.e. requiring output to follow a specific grammar)
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      Soft constraints (i.e. enforcing a particular writing style)
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      A more global approach to constraint satisfaction than techniques like token masking
+    </li>
+  </ul>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We will briefly cover the core concepts and potential applications of
+    <span>SMC</span>, and will also present a summary of our experiments with <span>SMC</span> to constrain
+    the length of reasoning traces.
+  </p>
+</section>
+<section>
+  <h2
+    id="user-content-section-0"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    Introduction
+  </h2>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Controlling the output of large language models with any degree of certainty remains a significant
+    challenge, even with fine-tuning and reinforcement learning techniques. We found
+    <a href="https://arxiv.org/abs/2306.03081"
+      >Sequential Monte Carlo Steering of Large Language Models using Probabilistic Programs</a
+    >, a novel framework for constrained language decoding, to be the right fit for addressing this issue.
+    <span>SMC</span> steering offers a powerful approach to constrained language decoding by leveraging the
+    parallel exploration of potential text completions, represented as "particles".
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Compared to methods like token masking, which applies constraints locally by filtering tokens at each
+    step, and <a href="https://en.wikipedia.org/wiki/Beam_search">beam search</a>, which focuses on finding
+    maximum-probability completions, SMC steering approximates a
+    <a href="https://en.wikipedia.org/wiki/Posterior_probability">global Bayesian posterior distribution</a>
+    of the output. This enables SMC to satisfy complex constraints while avoiding the pitfalls greedy decoding
+    methods can encounter.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    This approach is made possible through the Feynman-Kac Transformer probabilistic model, based on the
+    <a href="https://en.wikipedia.org/wiki/Feynman%E2%80%93Kac_formula">Feynman-Kac formula</a>. Later on, we
+    will explain how this model enables constraint-driven generation, show how to define both hard and soft
+    constraints, and showcase the power of SMC steering across a handful of tasks.
+  </p>
+</section>
+<section>
+  <h2
+    id="user-content-section-1"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    Sequential Monte Carlo at a Glance
+  </h2>
+
+  The star of the show in
+  <span>SMC</span> steering, the Feynman-Kac Transformer, is comprised of a three-tuple:
+
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <span><code class="nw-article-math-inline">(s_0, \{M_t\}_{t \geq 1}, \{G_t\}_{t \geq 1})</code></span>
+  </p>
+  <ul>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <span><code class="nw-article-math-inline">S_0 \in \mathcal{S}</code></span> The initial state. This
+      starts as an empty string.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <span><code class="nw-article-math-inline">M_t(s_t | s_{t-1}, f_\theta)</code></span> A Markov kernel
+      (conditional probability) from <code class="nw-article-math-inline">s_{t-1}</code> to
+      <code class="nw-article-math-inline">s_t</code>, parameterized by the Transformer
+      <code class="nw-article-math-inline">f_\theta</code>.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <span><code class="nw-article-math-inline">G_t(s_{t-1}, s_t, f_\theta)</code></span> A potential
+      function, assigning a non-negative score to the pair
+      <code class="nw-article-math-inline">(s_{t-1}, s_t)</code>.
+    </li>
+  </ul>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The Markov kernel, denoted as <code class="nw-article-math-inline">M(s'|s)</code>, defines a
+    <a href="https://en.wikipedia.org/wiki/Markov_chain">Markov chain</a>
+    that generates text by repeatedly modifying the string <code class="nw-article-math-inline">s</code>
+    according to probabilistic rules, resulting in a new string
+    <code class="nw-article-math-inline">s'</code>. This process continues until an EOS (end-of-sequence)
+    token is reached, at which point the string stops changing. The potential function, denoted as
+    <code class="nw-article-math-inline">\phi(s)</code>, assigns scores to states
+    <code class="nw-article-math-inline">s</code>, guiding the generation process toward desired outcomes.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We define a probability distribution that reweights the Markov kernel according to the potential function.
+    The following is adapted from <strong>Section 2.1</strong> of the <span>SMC</span> paper.
+  </p>
+  <h4>Step-t Filtering Posteriors</h4>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The core formula expresses the probability of being in state
+    <code class="nw-article-math-inline">s_t</code> at step <code class="nw-article-math-inline">t</code>,
+    with reweighting by potential functions:
+  </p>
+  <pre tabindex="0" aria-label="Code reference">
+$$\mathbb{P}_t(s_t) = \frac{\mathbb{E}_M \left[ \prod_{i=1}^{t \wedge T} G_i(S_{i-1}, S_i, f_\theta) \cdot [S_t = s_t] \right]}{\mathbb{E}_M \left[ \prod_{i=1}^{t \wedge T} G_i(S_{i-1}, S_i, f_\theta) \right]}$$
+                </pre>
+  <h5>Where:</h5>
+  <ul>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code class="nw-article-math-inline">t \wedge T</code> represents the minimum of
+      <code class="nw-article-math-inline">t</code> (the current step) and
+      <code class="nw-article-math-inline">T</code> (the stopping time, i.e., when the EOS token is
+      generated). This ensures the product is taken only over the steps that have actually occurred.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code class="nw-article-math-inline">[S_t = s_t]</code> is an indicator function, which equals 1 if the
+      random variable <code class="nw-article-math-inline">S_t</code> (the state at step
+      <code class="nw-article-math-inline">t</code>) is equal to the specific string
+      <code class="nw-article-math-inline">s_t</code>, and 0 otherwise.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code class="nw-article-math-inline">\mathbb{E}_M</code> denotes the expectation taken with respect to
+      the Markov chain <code class="nw-article-math-inline">M</code>.
+    </li>
+  </ul>
+  <h5>Formula Breakdown:</h5>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The numerator $\mathbb{E}_M \left[ \prod_{i=1}^{t \wedge T} G_i(S_{i-1}, S_i, f_\theta) \cdot [S_t = s_t]
+    \right]$ calculates the expected value (generalized weighted average over possible outcomes) of the
+    product of the potential functions <code class="nw-article-math-inline">G_i</code> along the trajectories
+    of the Markov chain <code class="nw-article-math-inline">M</code>, up to step
+    <code class="nw-article-math-inline">t \wedge T</code>, and conditioned on the event that the state at
+    step <code class="nw-article-math-inline">t</code> is exactly
+    <code class="nw-article-math-inline">s_t</code>.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The denominator $\mathbb{E}_M \left[ \prod_{i=1}^{t \wedge T} G_i(S_{i-1}, S_i, f_\theta) \right]$ is the
+    normalizing factor. It calculates the expected value of the product of the potential functions
+    <code class="nw-article-math-inline">G_i</code> over all possible trajectories of the Markov chain
+    <code class="nw-article-math-inline">M</code> up to step
+    <code class="nw-article-math-inline">t \wedge T</code>.
+  </p>
+  <h4>Overall Posterior Distribution</h4>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    From these step-wise probabilities, we can derive the complete posterior distribution
+    <code class="nw-article-math-inline">\mathbb{P}(s)</code> over sequences
+    <code class="nw-article-math-inline">s</code> by taking the limit as
+    <code class="nw-article-math-inline">t</code> approaches infinity:
+  </p>
+  <pre tabindex="0" aria-label="Code reference">
+$$\mathbb{P}(s) = \lim_{t \rightarrow \infty} \mathbb{P}_t(s)$$
+                </pre>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    With this mathematical foundation established, we can understand how potential functions "filter" the
+    trajectories of the Markov chain, giving higher probability to sequences that better satisfy our
+    constraints. This mathematical framework is what enables SMC to steer language model generation toward
+    desired outcomes while maintaining coherence and quality.
+  </p>
+
+  Initial Particles Reweighting Resampling
+</section>
+<section>
+  <h2
+    id="user-content-section-2"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    In Code
+  </h2>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    To define these constraints, the researchers behind SMC developed
+    <a href="https://github.com/genlm/llamppl"><code>llamppl</code></a
+    >, a library that enables stepwise constraints for language decoding using
+    <a
+      href="https://en.wikipedia.org/wiki/Probabilistic_programming:~:text%3DProbabilistic%2520programming%2520attempts%2520to%2520unify,in%2520the%2520face%2520of%2520uncertainty."
+      >probabilistic programming</a
+    >.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    In short, probabilistic programming is a way to build models that include both regular code and elements
+    of randomness. It allows programmers to specify how likely different outcomes are and then perform
+    inference to reason about those probabilities, which goes hand in hand with our goal of constrained
+    language decoding.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    From a code perspective,
+    <code>llamppl</code> provides a
+    <a href="https://genlm.org/llamppl/reference/llamppl/__init__/">set of intuitive methods</a>:
+  </p>
+  <ul>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>self.condition(bool)</code>
+      This constrains a Boolean expression to be
+      <code>true</code>. It filters out any generation paths that would violate the condition.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>self.observe(dist, val)</code>
+      This samples a value
+      <code>val</code> from a distribution <code>dist</code> and then *forces* the model to act as if it
+      "intended" to generate that specific value.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>self.intervene(dist, val)</code>
+      Similar to <code>observe()</code>, this samples <code>val</code> from <code>dist</code>, but it
+      *doesn't* condition on the sampled value.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>self.sample(dist)</code>
+      This method samples from the given distribution
+      <code>dist</code>, allowing for the model's inherent probabilities to guide the generation.
+    </li>
+  </ul>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    With just these four methods, you can programmatically define a wide range of constraints, enabling
+    powerful and flexible steering of language models with
+    <span>SMC</span>.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <strong>A sample constraint for controlling sentence length:</strong>
+  </p>
+  <pre tabindex="0" aria-label="Code reference"><code>async def step(self):
+    """Generate exactly num_tokens tokens with a coherent sentence ending in period."""
+    current_length = len(self.generated_tokens)
+
+    if current_length &gt;= self.num_tokens:
+        # Condition on exact length and ending with a period
+        self.condition(current_length == self.num_tokens)
+        self.condition(self.generated_tokens[-1].token_id in self.period_tokens)
+        self.finish()
+        return
+
+    next_dist = self.context.next_token()
+
+    if current_length == self.num_tokens - 1:
+        # For the last token, force it to be one ending with period
+        period_mask = self.period_tokens
+        await self.observe(self.context.mask_dist(period_mask), True)
+    else:
+        # For non-final tokens, prevent period tokens and EOS
+        non_period_mask = set(range(len(self.lm.vocab))) - self.period_tokens - {self.lm.tokenizer.eos_token_id}
+        await self.observe(self.context.mask_dist(non_period_mask), True)
+
+    # Sample the next token
+    token = await self.sample(next_dist)
+    self.generated_tokens.append(token)</code></pre>
+</section>
+<section>
+  <h2
+    id="user-content-section-3"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    A Journey Through SMC's Potential
+  </h2>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Our initial demos with the
+    <span>SMC</span> framework involved a series of use cases designed to push its capabilities and uncover
+    interesting behaviors, especially around more abstract constraint design and some 'softer' steering
+    targets. Here's a summary of our key exploration areas:
+  </p>
+  <h4>Steering Away from Tokens and Related Concepts</h4>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We began by investigating the possibility of steering language model generation away from undesirable
+    words and concepts.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Our approach involved creating a "blocklist" of words (e.g., "car," "vehicle") and then using the model's
+    input embeddings to identify the top 25 most semantically similar tokens. This often produced not only
+    variations of the target words but also related terms (e.g., "truck" for "car") and the target word in
+    other languages.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We first start with steering away from only "car" and related tokens:
+  </p>
+  <ul>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>Car</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>car</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>Car</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>_car</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>-car</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>(car</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>CAR</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>.car</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>cars</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>/car</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>.Car</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>CAR</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>_CAR</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>&lt;Car</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>cars</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>车</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>carb</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>Cars</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>軒</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>Кар</code>
+    </li>
+  </ul>
+
+  When you turn 16 in this country you can legally drive a motorcycle, right? What if you have never ridden
+  one before, just like that? Would you do that?
+
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We then add "motorcycle" to our blocklist, which is a combination of "motor" and "cycle" tokens:
+  </p>
+  <ul>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>Motor</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>motor</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>Motor</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>MOTOR</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>_motor</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>motors</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>موتور</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>mot</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>Motors</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>motorcycles</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>OTOR</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>motorcycle</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>_mot</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>Motorcycle</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>moto</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>motorists</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>двиг</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>otor</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>Motorola</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>Mot</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>cycle</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>Cycle</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>Cycle</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>-cycle</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>cycles</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>_cycle</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>cycles</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>.cycle</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>_CYCLE</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>ciclo</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>_cycles</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>cycling</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>ycle</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>цикл</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>Cycling</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>ycles</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>cyclists</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>cyclist</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>周期</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>cyk</code>
+    </li>
+  </ul>
+
+  When you turn 16 in this country you can legally drive a vehicle. That's 16. But the same goes for other
+  countries. So, why the difference?
+
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Finally, we add "vehicle" to the list of things we want to steer away from:
+  </p>
+  <ul>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>vehicle</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>Vehicle</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>Vehicle</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>vehicles</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>_vehicle</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>(vehicle</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>vehicles</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>Vehicles</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>.vehicle</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>ehicle</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>EHICLE</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>veh</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>ehicles</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>автомоб</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>veh</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>자동차</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>汽车</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>voiture</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>车</code>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <code>車</code>
+    </li>
+  </ul>
+
+  When you turn 16 in this country you can legally drive a scooter. But what about your parents? At 16, you
+  can drive a scooter legally, but do you have the do so with or without the supervision of your parents?
+
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    This could go on and on, and it's fun to observe the model behaviors when incrementally restricting the
+    words it can use
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    This technique could be very valuable for content moderation, enabling models to generate natural sounding
+    completions while avoiding NSFW or otherwise inappropriate content.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    It's worth noting that SMC steering offers a distinct advantage over simple token masking. Instead of just
+    suppressing the probability of certain tokens, SMC aims to generate completions that the model would have
+    produced if it had genuinely "intended" to avoid those words in the first place. See
+    <a href="https://x.com/arithmoquine/status/1906944008880001418">here</a> for an example of the effects of
+    simple token-masking.
+  </p>
+  <figure>
+    <a title="Open full-size research figure" href="/assets/nous-web/blog/articles/861e89edb9881587.png"
+      ><span class="nw-article-color-frame nw-article-image-frame"
+        ><img
+          class="nw-color-reveal"
+          src="/assets/nous-web/blog/articles/861e89edb9881587.png"
+          alt=""
+          loading="lazy"
+          decoding="async" /><img
+          class="nw-article-color nw-color-reveal"
+          src="/assets/nous-web/blog/articles/861e89edb9881587.png"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async" /></span
+    ></a>
+  </figure>
+  <h4>Entropy-Based Triggering</h4>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Inspired by the efforts behind
+    <a href="https://github.com/xjdr-alt/entropix">entropix</a>, we experimented with entropy-based triggering
+    to insertion of a string like "wait..." while generating.
+  </p>
+
+  Not by much, but 9.11 is larger.<br /><span>wait...</span> no it is not.<br />9.9 is larger than 9.11.
+
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    In this setup, we calculated the entropy of the model's next-token predictions at each step. If the
+    entropy exceeded a predefined threshold, we used the
+    <code>observe</code> method to insert a token like "wait..." into the generation sequence, effectively
+    prompting the model to reconsider its trajectory.
+  </p>
+
+  ? Let's think... which one has more numbers<br /><span>wait...</span> no, I'm kidding.<br />This is a trick
+  question to get you to think that the larger number is 9.11 because it has an extra digit, but it's not that
+  simple.
+
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    The insertion of the "wait..." token here is our soft constraint, with the explicit goal of steering the
+    model towards generation patterns that mimic natural backtracking, where a reasoner might temporarily go
+    down a wrong path before correcting itself.
+  </p>
+  <h4>Control Vector Triggering</h4>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We explored the integration of SMC steering with <a href="https://github.com/vgel/repeng">repeng</a>, a
+    project focused on training and inference using control vectors.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    While it's technically straightforward to insert a ControlModel (the result of 'wrapping' LLMs to use
+    control vectors in <code>repeng</code>) within the <code>llamppl</code> framework, we observed that this
+    can disrupt SMC's probabilistic nature. Control vectors, by design, alter the LLM's logits or activations,
+    which in turn modifies the probability distribution. This modification violates SMC's assumption that it
+    samples from the inherent distribution of the LLM, leading to unreliable importance weights when
+    resampling particles.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Specifically, direct use of a ControlModel with SMC could push the generation process into mode collapse,
+    resulting in regions of the model's output space far removed from its typical distribution, which would
+    make it difficult for SMC to recover.
+  </p>
+
+  The Fibonacci sequence starts with two initial values, 0 and 1,<br />and each subsequent value is computed
+  by summing the<br /><span
+    >two preceding values. These values are known as the coulomb-fehhhyyyyeyyya, dream, dreams, earth,</span
+  ><br />elephant, end, energy, equal, era, error, everything, experience, expression, eye, fire, first, fish,
+  form, following, foot, fool, footy, forest, four, fresh, freshy, fruit,
+
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    To address this issue, we employed a strategy involving two model instances: a standard model and a
+    ControlModel (with the control vector activated), hosted on separate GPUs. We then used the ControlModel's
+    logits as a "proposal distribution" for SMC to steer the base model, where we don't generate directly from
+    the distribution we ultimately care about, but instead, generate from the "proposal" and incorporate the
+    importance weight <code class="nw-article-math-inline">( \frac{dist(v)}{proposal(v)} )</code> into the
+    potential function. This corrects for the discrepancy between the proposal and the true distribution in
+    the SMC algorithm when using control vectors.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Our "constraint" here is designed with the goal of producing completions where the triggering of the
+    control vector doesn't disrupt the natural flow of language. Instead, the model is encouraged to generate
+    text that reflects the control vector's influence as a deliberate choice within its own generation
+    process.
+  </p>
+
+  1. Dear Parents,<br />2. I am writing to inform you of a new PTA initiative: the upcoming book fair.<br /><span
+    >3. There will be colorful, vibrant displays of dazzling lights and rectangles of wondrous artifacts.<br />4.
+    Multitudes</span
+  >
+  of stories await to be unwrapped like precious gifts, just waiting to be explored.<br />5. Come and immerse
+  yourself in the world of imagination and discovery, with tales and treasures to be cherished for generations
+  to come.<br />6. There
+
+  <h4>Length Control</h4>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We also investigated the use of SMC for controlling the length of generations, a task that showcases a
+    'hard' constraint with a clear, objective success measure. Enforcing LLM output to be a coherent sentence
+    of a precise length (e.g., exactly 10, 20, or 150 tokens) is a challenging problem on its own, but with
+    the use of SMC it becomes a simple matter of constraint design (see above code sample for the constraint
+    used here).
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Some example completions for different sentence length constraints:
+  </p>
+  <h4>Token Length Control Examples</h4>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    SMC can generate coherent text of <em>exactly</em> the specified length while maintaining quality.
+  </p>
+
+  Prompt: I love cheese because it is a fantastic ingredient in so many dishes and meals. Length:
+  <span>10</span> tokens exactly a dairy product that comes from cows, goats, and sheep that are milked to
+  produce cheese. Length: <span>20</span> tokens exactly an incredibly versatile ingredient that can add
+  flavor and richness to a wide variety of dishes, from savory soups and stews to sweet desserts. There are so
+  many different types of cheese to choose from, each with its own unique flavor profile and texture. Length:
+  <span>50</span> tokens exactly creamy, smooth, and melts beautifully in my mouth! I also love how many
+  different varieties of cheese there are in the world, each with its own unique flavor and texture. The most
+  popular cheeses in the world are cheddar, mozzarella, gouda, and parmesan. But there are so many more
+  delicious cheeses out there waiting to be explored! What are your favorite cheeses and why? I would love to
+  know what makes them special to you and why you enjoy them so much. Length: <span>100</span> tokens exactly
+
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    This exploration was motivated by the broader goal of controlling "reasoning length", where we compress
+    the reasoning trace to fit within a target token limit, as detailed below.
+  </p>
+</section>
+<section>
+  <h2
+    id="user-content-section-4"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    A Note on Benchmarking
+  </h2>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Initially, benchmarking SMC posed quite the challenge. The <code>llamppl</code> framework's design, which
+    uses a Python library as the primary inference entry point (rather than an API endpoint or HuggingFace
+    weights), makes traditional benchmarking difficult to perform.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Wrapping an API endpoint around a single SMC instance is inefficient because it requires dedicating an
+    entire GPU to store the cached activations for that instance. This necessitates having as many models as
+    available GPUs to maximize inference request processing.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    To overcome this, we developed a quick repository to set up a server capable of parallelized SMC inference
+    and experimentation across multiple GPUs. As of 02/19/2025, the <code>llamppl</code> framework was updated
+    to use a vLLM backend (thanks to <a href="https://github.com/benlebrun">@benlebrun</a>!), which has
+    greatly improved our ability to conduct efficient benchmarking.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <a href="https://github.com/NousResearch/smc-inference-server"
+      >https://github.com/NousResearch/smc-inference-server</a
+    >
+  </p>
+</section>
+<section>
+  <h2
+    id="user-content-section-5"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    Investigating Reasoning Length
+  </h2>
+  <h4>Hypothesis</h4>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We hypothesized that in reasoning tasks,
+    <span>LLMs</span> might "overthink" or "think past" the correct answer if their reasoning traces are
+    excessively long. In other words, there could be an optimal "Goldilocks" zone for reasoning length – not
+    too short, not too long, just right – that maximizes accuracy.
+  </p>
+  <h4>Experiment Setup</h4>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    To explore this further, we used the SMC framework and our inference server to evaluate thinking-length
+    constraints with the
+    <a href="https://huggingface.co/NousResearch/DeepHermes-3-Llama-3-8B-Preview"
+      >DeepHermes-3-Llama-3-8B-Preview model</a
+    >. This model was chosen specifically because it provides visibility into the model's reasoning traces,
+    allowing us to analyze the impact of controlling reasoning length on the full
+    <a href="https://huggingface.co/datasets/cais/mmlu">MMLU</a> set.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We selected three initial target thinking lengths: 100 tokens, 250 tokens, and 500 tokens. For each target
+    length, we used SMC with 3 particles to approximate reasoning traces. As a reminder, the overall aim here
+    is to constrain the reasoning steps to fit in X number of tokens <strong>coherently</strong>, meaning that
+    the entire CoT trace fits within that number of tokens.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We acknowledge that inference costs present an obstacle when steering with length-control constraints. The
+    computation involved in re-weighting each particle at step
+    <code class="nw-article-math-inline">(t)</code> involves revisiting potential function evaluations for all
+    previous steps <code class="nw-article-math-inline">(1, 2, ..., t)</code>, which leads to a linear
+    increase in computational cost per particle with respect to sequence length. In future work, we plan to
+    experiment with similar constraint designs and to benchmark with longer reasoning traces.
+  </p>
+  <h4>Baselines</h4>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    To provide context for our
+    <span>SMC</span> results, we established the following baselines:
+  </p>
+  <ul>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <strong>DeepHermes with no reasoning trace.</strong>
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <strong>DeepHermes with unconstrained reasoning traces.</strong>
+    </li>
+  </ul>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We evaluated performance on the full <span>MMLU</span> suite by extracting answers after the reasoning
+    trace using regular expressions, rather than relying on next-token log probabilities for scoring.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    For each baseline, we generated 3 responses and used majority voting to determine the final answer. Each
+    of the subsequent <span>SMC</span> benchmarks are run with 3 particles.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <a title="Open full-size research figure" href="/assets/nous-web/blog/articles/8a5b54ed5dea8034.png"
+      ><span class="nw-article-color-frame nw-article-image-frame"
+        ><img
+          class="nw-color-reveal"
+          src="/assets/nous-web/blog/articles/8a5b54ed5dea8034.png"
+          alt=""
+          loading="lazy"
+          decoding="async" /><img
+          class="nw-article-color nw-color-reveal"
+          src="/assets/nous-web/blog/articles/8a5b54ed5dea8034.png"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async" /></span
+    ></a>
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We then tested a simple reasoning length truncation method without <span>SMC</span>. This involved forcing
+    the "end of reasoning" by inserting an end-of-thought token (`&lt;/think&gt;`) at token indices 100, 250,
+    and 500 respectively.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <a title="Open full-size research figure" href="/assets/nous-web/blog/articles/a2ed7b7ba1271ba0.png"
+      ><span class="nw-article-color-frame nw-article-image-frame"
+        ><img
+          class="nw-color-reveal"
+          src="/assets/nous-web/blog/articles/a2ed7b7ba1271ba0.png"
+          alt=""
+          loading="lazy"
+          decoding="async" /><img
+          class="nw-article-color nw-color-reveal"
+          src="/assets/nous-web/blog/articles/a2ed7b7ba1271ba0.png"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async" /></span
+    ></a>
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Our results here indicate that simple truncation of the reasoning trace outperforms
+    <span>SMC</span>-constrained reasoning, which aims to generate the entire Chain-of-Thought
+    (<span>CoT</span>) trace within the specified token limit. In contrast, truncation abruptly terminates the
+    <span>CoT</span> generation at exactly 100, 250, or 500 tokens. More detail on this below.
+  </p>
+  <h4>Unpacking the Implications of Reasoning Length Control</h4>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <a title="Open full-size research figure" href="/assets/nous-web/blog/articles/57c5dde6b3cfe8eb.png"
+      ><span class="nw-article-color-frame nw-article-image-frame"
+        ><img
+          class="nw-color-reveal"
+          src="/assets/nous-web/blog/articles/57c5dde6b3cfe8eb.png"
+          alt="Best of 3 comparison of DeepHermes-3-Llama-3-8B-Preview reasoning mode OFF to SMC reasoning length control at various lengths, 3 particles"
+          loading="lazy"
+          decoding="async" /><img
+          class="nw-article-color nw-color-reveal"
+          src="/assets/nous-web/blog/articles/57c5dde6b3cfe8eb.png"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async" /></span
+    ></a>
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Our experiments yielded several intriguing observations that warrant further discussion:
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <strong>The "Turing Tape" Analogy:</strong> As shown above, we observed a general trend of increasing
+    performance with longer reasoning lengths. This pattern echoes findings from OpenAI regarding the benefits
+    of increased "thinking time" for the
+    <a href="https://openai.com/index/openai-o3-mini/">o3 model series</a>, reminiscent of the idea that
+    <span>LLMs</span>, given more steps, can better approximate solutions, similar to a Turing tape.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <strong><span>SMC</span> vs. Truncation:</strong>
+    A compressed reasoning trace, in comparison to an abrupt interruption of a (likely) much longer reasoning
+    trace, performs worse for all target lengths we tested. Since the latter is reasoning towards a more
+    'correct' answer on average, without even outputting the actual reasoning tokens, the model might, in some
+    sense, "know" its answer even before fully engaging in the reasoning process. <span>SMC</span> could be
+    steering towards a more 'high-level' or coarse grained reasoning summary.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <strong>CoT Faithfulness:</strong> This last observation appears to align with emerging research that
+    explores how language
+    <a href="https://www.anthropic.com/research/reasoning-models-dont-say-think"
+      >models might not be faithful</a
+    >
+    in their reasoning process. Ultimately, the discrepancy between
+    <span>SMC</span>-constrained and truncated reasoning challenges the assumption that Chain-of-Thought
+    traces accurately reflect the model's underlying reasoning process.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We would like to note that the above observations seem contradictory: how could increasing the thinking
+    length linearly improve performance, while truncation of a long CoT performs better than a constrained
+    trace of the same length? Does the reasoning trace matter or not?
+  </p>
+
+  The larger one is 9.11.<br />9.9 is <span>wait...</span> No, 9.9 is actually smaller than 9.11.<br />Wait,
+  no, 9.9 is larger than 9.11.
+
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We lastly ran benchmarks for 100 thinking tokens across different particle numbers, to gauge the
+    effectiveness of increasing particle count on our <span>MMLU</span> evaluations. We found that while
+    increasing particle count improves the 'fidelity' of the approximation (of the true posterior),
+    performance increase was barely noticeable. This may be due to our constraint design, and there are likely
+    better alternatives that best define the structure of a compressed thinking trace, but for this experiment
+    we felt this justifies a low particle count for our evaluations.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    <a title="Open full-size research figure" href="/assets/nous-web/blog/articles/7a8738eada360d65.png"
+      ><span class="nw-article-color-frame nw-article-image-frame"
+        ><img
+          class="nw-color-reveal"
+          src="/assets/nous-web/blog/articles/7a8738eada360d65.png"
+          alt="Comparison of DeepHermes-3-Llama-3-8B-Preview SMC reasoning length control at various particle counts"
+          loading="lazy"
+          decoding="async" /><img
+          class="nw-article-color nw-color-reveal"
+          src="/assets/nous-web/blog/articles/7a8738eada360d65.png"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async" /></span
+    ></a>
+  </p>
+</section>
+<section>
+  <h2
+    id="user-content-section-6"
+    class="font-[family-name:var(--font-rules-gothic-cnd)] font-normal text-inherit normal-case"
+    style="font-size: 28px; line-height: 1.4"
+  >
+    Charting the Course for Future Steering
+  </h2>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    This work has illuminated many directions for extending the capabilities of <span>LLM</span> steering. For
+    instance, future research could explore training high-level reasoning control vectors (perhaps with
+    attributes like "pragmatic" or "exploratory") and dynamically triggering them based on high entropy in
+    next-token selection. Benchmarking these techniques on <span>MMLU</span> and other evaluation suites would
+    be a logical next step, given the encouraging preliminary results we've observed with both entropy-based
+    methods and control vector triggering within <span>SMC</span>.
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    Our long-term vision is to develop with
+    <code>llamppl</code> to produce a general-purpose, extensible steering framework that will enhance
+    <span>LLM</span> performance across diverse domains. The observed impact of various
+    <span>SMC</span> techniques on constrained language decoding reinforces the feasibility of this goal.
+  </p>
+  <h4>Future Work</h4>
+  <ul>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <strong>Evaluating entropy-based triggering:</strong> We have not fully explored the possibilities of
+      entropy-based token insertion, specifically wrt. benchmarks performance. It would be sensible to provide
+      some evaluation on the effectiveness of this technique.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <strong>Prompt intersection:</strong> Investigating "multiplayer prompting" scenarios, where multiple
+      users with varying goals interact with the same LLM, could lead to interesting and potentially
+      adversarial dynamics. This is done through proposal distributions or the use of the 'observe' method
+      from different users'
+      <a href="https://genlm.org/llamppl/reference/llamppl/distributions/lmcontext/">distributions</a>.
+    </li>
+    <li
+      class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+      style="font-size: 16px; line-height: 1.5"
+    >
+      <strong>Creative writing applications:</strong> The unique and sometimes unexpected effects of control
+      vector triggering offer interesting possibilities for creative writing use cases and diverse outputs.
+    </li>
+  </ul>
+
+  1. Gather all the necessary ingredients.<br />2. Preheat the oven to the temperature specified in the
+  recipe.<br />3. <span>Melt the colors in the liquid inspiration</span><br />4. Mix the colors with the sugar
+  and into the batter.<br />5. Mix in the dry ingredients one at a time.<br />Step 1: Gather all the necessary
+  ingredients.<br />Step 2: Preheat the oven to the temperature specified in the recipe.<br />Step 3: Melt the
+  colors in the liquid inspiration
+
+  <h4>Closing Thoughts</h4>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    In summary, we've found the SMC framework to be a rich environment for experimentation, and we believe
+    that the ability to achieve guaranteed, constrained language output has large implications, particularly
+    with respect to varying the "scope" of constraints (i.e., soft vs. hard).
+  </p>
+  <p
+    class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
+    style="font-size: 16px; line-height: 1.5"
+  >
+    We extend our gratitude to the team behind SMC, especially Gabe Grand, whose invaluable contributions made
+    this work possible. We look forward to continued collaboration on future endeavors in the language model
+    steering space.
+  </p>
+  <figure>
+    <a title="Open full-size research figure" href="/assets/nous-web/blog/articles/ddbebfa3ccf6e995.png"
+      ><span class="nw-article-color-frame nw-article-image-frame"
+        ><img
+          class="nw-color-reveal"
+          src="/assets/nous-web/blog/articles/ddbebfa3ccf6e995.png"
+          alt=""
+          loading="lazy"
+          decoding="async" /><img
+          class="nw-article-color nw-color-reveal"
+          src="/assets/nous-web/blog/articles/ddbebfa3ccf6e995.png"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async" /></span
+    ></a>
+  </figure>
+</section>
