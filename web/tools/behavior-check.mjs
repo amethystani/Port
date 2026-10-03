@@ -1,0 +1,84 @@
+// Drives the running rebuild (default http://localhost:3100) and checks the client-side behaviours.
+//   npx next start -p 3100 &  node tools/behavior-check.mjs
+import fs from 'node:fs';
+import { chromium } from 'playwright';
+
+const BASE = process.env.LOCAL ?? 'http://localhost:3100';
+const exe = process.env.CHROMIUM_PATH ?? ['/opt/pw-browsers/chromium-1194/chrome-linux/chrome'].find((p) => fs.existsSync(p));
+const browser = await chromium.launch(exe ? { executablePath: exe } : {});
+let failures = 0;
+const check = (name, ok, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? '  ' + detail : ''}`); if (!ok) failures++; };
+
+async function open(path, viewport = { width: 1440, height: 900 }) {
+  const ctx = await browser.newContext({ viewport });
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('console', (m) => m.type() === 'error' && !/Failed to load resource/.test(m.text()) && errors.push(m.text()));
+  await page.goto(BASE + path, { waitUntil: 'networkidle' });
+  await page.waitForTimeout(800);
+  return { page, errors, ctx };
+}
+const attr = (page, sel, name) => page.$eval(sel, (el, n) => el.getAttribute(n), name);
+
+// ---------------------------------------------------------------- home, desktop
+{
+  const { page, errors, ctx } = await open('/');
+  check('html has data-hydrated + data-research-theme', (await page.evaluate(() => document.documentElement.dataset.hydrated === 'true' && ['light', 'dark'].includes(document.documentElement.dataset.researchTheme))));
+  check('pinned nav hidden at the top', (await attr(page, '.bg-hermes-paper', 'class')).includes('-translate-y-full') && (await page.$eval('.bg-hermes-paper', (e) => e.hasAttribute('inert'))));
+
+  await page.evaluate(() => window.scrollTo(0, 900)); await page.waitForTimeout(900);
+  check('pinned nav shows after scrolling', (await attr(page, '.bg-hermes-paper', 'class')).includes('translate-y-0') && !(await page.$eval('.bg-hermes-paper', (e) => e.hasAttribute('inert'))));
+  const frame = await page.$eval('.hw-frame-scroll', (e) => e.style.getPropertyValue('--scroll-y'));
+  check('frame --scroll-y follows scroll', /^\d+(\.\d+)?%$/.test(frame) && parseFloat(frame) > 10, frame);
+
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight)); await page.waitForTimeout(1500);
+  const vars = await page.$eval('.hw-footer-reveal', (e) => ({ o: e.style.getPropertyValue('--hw-footer-opacity'), l: e.style.getPropertyValue('--hw-footer-lift') }));
+  check('footer reveal sets opacity 1 / lift 0 at the bottom', vars.o === '1.000' && parseFloat(vars.l) === 0, JSON.stringify(vars));
+  check('pinned nav hides again at the footer', (await attr(page, '.bg-hermes-paper', 'class')).includes('-translate-y-full'));
+  await page.evaluate(() => window.scrollTo(0, 0)); await page.waitForTimeout(800);
+
+  // dropdown
+  check('dropdown not in DOM until used or closed', (await page.$eval('#research-navigation', (e) => e.getAttribute('data-open'))) === 'false');
+  await page.click('header [data-research-target="Hermes"]'); await page.waitForTimeout(500);
+  check('clicking Hermes opens its panel', (await attr(page, '#research-navigation', 'data-open')) === 'true' && (await attr(page, '#research-navigation', 'data-preset')) === 'Hermes');
+  check('panel lists Hermes links', (await page.$$eval('#research-navigation .nw-subnav-link', (l) => l.length)) === 9);
+  check('trigger aria-expanded is true', (await attr(page, 'header [data-research-target="Hermes"]', 'aria-expanded')) === 'true');
+  const box = await page.$eval('#research-navigation', (e) => { const r = e.getBoundingClientRect(); return { left: Math.round(r.left), top: Math.round(r.top), w: Math.round(r.width) }; });
+  check('panel sits under the trigger (left 411, top 108/109, 720 wide)', box.left === 411 && box.w === 720 && (box.top === 108 || box.top === 109), JSON.stringify(box));
+  await page.keyboard.press('Escape'); await page.waitForTimeout(500);
+  check('Escape closes it', (await attr(page, '#research-navigation', 'data-open')) === 'false');
+  await page.click('header [data-research-target="Community"]'); await page.waitForTimeout(400);
+  const community = await page.$eval('#research-navigation', (e) => { const r = e.getBoundingClientRect(); return Math.round(r.right); });
+  check('right-hand trigger aligns the panel to its right edge (1019)', community === 1019, String(community));
+  await page.mouse.click(700, 800); await page.waitForTimeout(400);
+  check('clicking outside closes it', (await attr(page, '#research-navigation', 'data-open')) === 'false');
+
+  // theme
+  const before = await page.evaluate(() => document.documentElement.dataset.researchTheme);
+  await page.click('.nw-research-theme-fold'); await page.waitForTimeout(1500);
+  const after = await page.evaluate(() => document.documentElement.dataset.researchTheme);
+  check('theme fold toggles light/dark', before !== after, `${before} -> ${after}`);
+  check('theme is remembered', (await page.evaluate(() => localStorage.getItem('nous-research-theme'))) === after);
+  check('no console errors on home', errors.length === 0, errors.slice(0, 2).join(' | '));
+  await ctx.close();
+}
+
+// ---------------------------------------------------------------- an editorial page
+{
+  const { page, errors, ctx } = await open('/releases');
+  check('releases: 9 shown + "Show more (34)"', (await page.$$eval('#release-list > div:not([hidden])', (d) => d.length)) === 9 && /Show more \(34\)/.test(await page.$eval('#release-list-more', (e) => e.textContent)));
+  await page.click('#release-list-more button'); await page.waitForTimeout(300);
+  check('Show more reveals the next 9', (await page.$$eval('#release-list > div:not([hidden])', (d) => d.length)) === 18);
+  check('no console errors on /releases', errors.length === 0, errors.slice(0, 2).join(' | '));
+  await ctx.close();
+}
+{
+  const { page, ctx } = await open('/blog');
+  check('blog archive shows all 14 on desktop (pagination is mobile-only)', /Showing 14 of 14/.test(await page.$eval('#blog-archive-list + button + span, #blog-archive-list ~ span.sr-only', (e) => e.textContent).catch(() => '')));
+  await ctx.close();
+}
+
+await browser.close();
+console.log(failures ? `\n${failures} check(s) failed` : '\nall checks passed');
+process.exitCode = failures ? 1 : 0;

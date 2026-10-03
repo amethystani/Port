@@ -16,6 +16,12 @@ import '@/styles/09-prose-table.css';
 import '@/styles/custom.css';
 
 import { Frame } from '@/components/chrome/Frame';
+import { FooterReveal } from '@/components/behavior/FooterReveal';
+import { SmoothScroll } from '@/components/behavior/SmoothScroll';
+import { ThemeToggle } from '@/components/behavior/ThemeToggle';
+import { ResearchNavigation } from '@/components/research/ResearchNavigation';
+import { ResearchUiController } from '@/components/research/ResearchUiController';
+import { themeInitScript } from '@/lib/theme';
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -29,7 +35,10 @@ export const viewport: Viewport = { width: 'device-width', initialScale: 1 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="min-h-screen">
         <div className="hermes-web min-h-dvh w-full bg-[var(--hermes-primary)] text-[var(--hermes-white)] hw-teams-page my-0 nw-research-shell">
           <div className="bg-hermes mx-auto min-h-dvh w-full md:w-[var(--hw-teams-page-w)] nous-web-viewport relative">
@@ -42,6 +51,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           />
           <Frame />
         </div>
+        <SmoothScroll />
+        <FooterReveal />
+        <ResearchUiController />
+        <ResearchNavigation />
+        <ThemeToggle />
       </body>
     </html>
   );

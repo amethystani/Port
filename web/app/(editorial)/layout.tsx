@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Footer } from '@/components/chrome/Footer';
-import { Header, PinnedHeader } from '@/components/chrome/Header';
+import { Header } from '@/components/chrome/Header';
+import { PinnedHeader } from '@/components/chrome/PinnedHeader';
 import { SignoffFooter } from '@/components/chrome/SignoffFooter';
 
 import '@/styles/editorial.css';
