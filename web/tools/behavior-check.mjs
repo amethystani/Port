@@ -88,6 +88,30 @@ const attr = (page, sel, name) => page.$eval(sel, (el, n) => el.getAttribute(n),
   await ctx.close();
 }
 
+// ---------------------------------------------------------------- the phone menu
+{
+  const { page, errors, ctx } = await open('/', { width: 390, height: 844 });
+  const menu = () => page.$('#research-mobile-menu');
+  const sections = () => page.$$eval('.nw-research-accordion-nav section', (s) => s.map((x) => x.querySelector('button').getAttribute('aria-expanded') + ':' + x.querySelectorAll('a').length));
+  check('menu starts closed', !(await menu()));
+  await page.click('button[aria-label="Open menu"]'); await page.waitForTimeout(700);
+  check('burger opens the menu, "Nous" expanded with 4 links', !!(await menu()) && (await sections())[0] === 'true:4');
+  check('page scroll is locked while open', (await page.evaluate(() => document.documentElement.style.overflow)) === 'hidden');
+  await page.click('.nw-research-accordion-toggle:has-text("Hermes")'); await page.waitForTimeout(600);
+  check('opening Hermes closes Nous and lists 9 links', (await sections()).join() === 'false:0,true:9,false:0,false:0');
+  await page.click('.nw-research-accordion-toggle:has-text("Hermes")'); await page.waitForTimeout(600);
+  check('a section can be collapsed again', (await sections()).every((x) => x.startsWith('false')));
+  for (let i = 0; i < 12; i++) await page.keyboard.press('Tab');
+  check('Tab stays inside the open menu', await page.evaluate(() => !!document.activeElement?.closest('#research-mobile-menu')));
+  await page.keyboard.press('Escape'); await page.waitForTimeout(600);
+  check('Escape closes it, unlocks scroll and returns focus to the burger', !(await menu()) && (await page.evaluate(() => document.documentElement.style.overflow)) === '' && (await page.evaluate(() => document.activeElement?.getAttribute('aria-label'))) === 'Open menu');
+  await page.click('button[aria-label="Open menu"]'); await page.waitForTimeout(600);
+  await page.click('.nw-research-accordion-nav a:has-text("Blog")'); await page.waitForURL('**/blog'); await page.waitForTimeout(600);
+  check('choosing a page navigates and closes the menu', !(await menu()));
+  check('no console errors from the menu', errors.length === 0, errors.slice(0, 2).join(' | '));
+  await ctx.close();
+}
+
 // ---------------------------------------------------------------- an editorial page
 {
   const { page, errors, ctx } = await open('/releases');

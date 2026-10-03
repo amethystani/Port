@@ -20,6 +20,7 @@ import { FooterReveal } from '@/components/behavior/FooterReveal';
 import { SmoothScroll } from '@/components/behavior/SmoothScroll';
 import { ThemeToggle } from '@/components/behavior/ThemeToggle';
 import { Composer } from '@/components/research/Composer';
+import { MobileMenu } from '@/components/research/MobileMenu';
 import { ResearchNavigation } from '@/components/research/ResearchNavigation';
 import { ResearchUiController } from '@/components/research/ResearchUiController';
 import { themeInitScript } from '@/lib/theme';
@@ -57,6 +58,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <ResearchUiController />
         <ResearchNavigation />
         <Composer />
+        <MobileMenu />
         <ThemeToggle />
       </body>
     </html>
