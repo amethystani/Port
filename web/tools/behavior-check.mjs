@@ -64,6 +64,30 @@ const attr = (page, sel, name) => page.$eval(sel, (el, n) => el.getAttribute(n),
   await ctx.close();
 }
 
+// ---------------------------------------------------------------- the composer (⌘K)
+{
+  const { page, errors, ctx } = await open('/');
+  const state = () => page.evaluate(() => document.querySelector('#research-composer')?.getAttribute('data-open'));
+  check('composer starts closed', (await state()) === 'false');
+  await page.keyboard.press('Control+k'); await page.waitForTimeout(400);
+  check('Ctrl+K opens the composer and focuses the field', (await state()) === 'true' && (await page.evaluate(() => document.activeElement?.classList.contains('nw-composer-search-input'))));
+  check('shows 3 suggested questions', (await page.$$('.nw-prompt-question')).length === 3);
+  await page.click('.nw-prompt-question'); await page.waitForTimeout(250);
+  check('a question opens its curated answer', (await page.$$('.nw-composer-answer h3')).length === 1);
+  await page.click('[aria-label="Back to questions"]');
+  await page.click('[aria-label="Next questions"]'); await page.waitForTimeout(150);
+  check('the arrows page through the other questions', (await page.$eval('.nw-prompt-study', (e) => e.getAttribute('data-question-page'))) === '1');
+  await page.fill('.nw-composer-search-input', 'hermes'); await page.waitForTimeout(1500);
+  check('typing searches the site', (await page.$$('[data-search-result]')).length > 3);
+  await page.keyboard.press('Escape'); await page.waitForTimeout(250);
+  check('Escape closes it', (await state()) === 'false');
+  await page.keyboard.press('Control+k'); await page.waitForTimeout(300);
+  await page.mouse.click(10, 500); await page.waitForTimeout(250);
+  check('clicking outside closes it', (await state()) === 'false');
+  check('no console errors from the composer', errors.length === 0, errors.slice(0, 2).join(' | '));
+  await ctx.close();
+}
+
 // ---------------------------------------------------------------- an editorial page
 {
   const { page, errors, ctx } = await open('/releases');

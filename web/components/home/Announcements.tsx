@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import { XIcon } from '@/components/icons';
+import { DragScroll } from '@/components/behavior/DragScroll';
 import { announcements, type Announcement } from '@/content/announcements';
 
 const MONO =
@@ -112,6 +113,7 @@ export function Announcements() {
           <AnnouncementCard key={card.url} {...card} />
         ))}
       </div>
+      <DragScroll selector=".nw-announcement-scroll" />
       <span className="sr-only" role="status">
         {announcements.length} announcements loaded
       </span>

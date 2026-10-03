@@ -19,6 +19,7 @@ import { Frame } from '@/components/chrome/Frame';
 import { FooterReveal } from '@/components/behavior/FooterReveal';
 import { SmoothScroll } from '@/components/behavior/SmoothScroll';
 import { ThemeToggle } from '@/components/behavior/ThemeToggle';
+import { Composer } from '@/components/research/Composer';
 import { ResearchNavigation } from '@/components/research/ResearchNavigation';
 import { ResearchUiController } from '@/components/research/ResearchUiController';
 import { themeInitScript } from '@/lib/theme';
@@ -55,6 +56,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <FooterReveal />
         <ResearchUiController />
         <ResearchNavigation />
+        <Composer />
         <ThemeToggle />
       </body>
     </html>

@@ -1,7 +1,8 @@
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from 'react';
 import styles from './button-styles.json';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'outline' | 'icon' | 'editorial-disclosure';
+export type ButtonVariant =
+  'primary' | 'secondary' | 'ghost' | 'outline' | 'icon' | 'editorial-disclosure' | 'hero-ghost';
 export type ButtonSize = 'm' | 's';
 /** `cta` = display-size label (hero and section calls to action); `compact` = small UI button. */
 export type ButtonDensity = 'cta' | 'compact';
