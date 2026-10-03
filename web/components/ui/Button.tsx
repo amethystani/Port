@@ -1,8 +1,15 @@
-import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from 'react';
+import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode, Ref } from 'react';
 import styles from './button-styles.json';
 
 export type ButtonVariant =
-  'primary' | 'secondary' | 'ghost' | 'outline' | 'icon' | 'editorial-disclosure' | 'hero-ghost';
+  | 'primary'
+  | 'secondary'
+  | 'ghost'
+  | 'outline'
+  | 'icon'
+  | 'editorial-disclosure'
+  | 'hero-ghost'
+  | 'underline';
 export type ButtonSize = 'm' | 's';
 /** `cta` = display-size label (hero and section calls to action); `compact` = small UI button. */
 export type ButtonDensity = 'cta' | 'compact';
@@ -17,7 +24,15 @@ type Common = {
 };
 
 type AsLink = Common & { href: string } & Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'children'>;
-type AsButton = Common & { href?: undefined } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'>;
+type AsButton = Common & { href?: undefined; ref?: Ref<HTMLButtonElement> } & Omit<
+    ButtonHTMLAttributes<HTMLButtonElement>,
+    'children'
+  >;
+
+const LABEL: Partial<Record<ButtonVariant, string>> = {
+  'editorial-disclosure': styles.labelNoTrim,
+  underline: styles.labelUnderline,
+};
 
 export function buttonClassName({
   variant = 'secondary',
@@ -51,16 +66,13 @@ export function Button(props: AsLink | AsButton) {
     ...rest
   } = props;
   const cls = buttonClassName({ variant, size, density, className });
+  const disabled = 'disabled' in rest && Boolean(rest.disabled);
   const inner = (
     <>
-      {bare ? (
-        children
-      ) : (
-        <span className={variant === 'editorial-disclosure' ? styles.labelNoTrim : styles.label}>
-          {children}
-        </span>
+      {bare ? children : <span className={LABEL[variant] ?? styles.label}>{children}</span>}
+      {variant !== 'underline' && !disabled && (
+        <span aria-hidden="true" className="hermes-button-hover-border" />
       )}
-      <span aria-hidden="true" className="hermes-button-hover-border" />
     </>
   );
   if ('href' in rest && rest.href !== undefined) {
@@ -86,6 +98,7 @@ export function Button(props: AsLink | AsButton) {
       data-variant={variant}
       data-size={size}
       className={cls}
+      {...(disabled ? { 'data-disabled': '' } : {})}
       {...(rest as ButtonHTMLAttributes<HTMLButtonElement>)}
     >
       {inner}

@@ -10,6 +10,22 @@ type Kind = 'home' | 'blog' | 'catalogue' | 'article';
 const CATALOGUE_REVEAL =
   '.nw-catalogue-hero > *, .nw-catalogue-section-head, .nw-catalogue-row > :not(.nw-catalogue-tags), .nw-catalogue-tags > *, .nw-career-art, .nw-catalogue-message, .nw-career-apply-copy > *';
 
+/** What an article fades in as it scrolls into view (the wide figures stay put). */
+const ARTICLE_REVEAL =
+  '.nw-article-hero > *, .nw-article-prose > section > :not(.nw-article-wide), .nw-article-attribution, .nw-blog-related-row';
+
+function articleMotion(): () => void {
+  const main = document.querySelector('main');
+  const cleanups = [
+    observeColorBand(
+      document.querySelectorAll('.nw-article-color-frame'),
+      toggleClass('nw-article-color-active'),
+    ),
+  ];
+  if (main) cleanups.push(revealOnScroll(main, ARTICLE_REVEAL, 'nw-blog', { belowFoldOnly: true }));
+  return () => cleanups.forEach((fn) => fn());
+}
+
 function toggleClass(name: string) {
   return (el: Element, active: boolean) => el.classList.toggle(name, active);
 }
@@ -177,7 +193,7 @@ function blogMotion(): () => void {
  *  - home:      hero fade, parallax, mission reveal, colour-on-scroll for phones
  *  - blog:      staggered reveal, colour-on-scroll, drifting feature pictures
  *  - catalogue: staggered reveal for releases / careers / job pages
- *  - article:   colour-on-scroll for pictures on phones
+ *  - article:   staggered reveal, plus colour-on-scroll for pictures on phones
  * Renders nothing; it acts on the server-rendered markup after hydration.
  */
 export function PageMotion({ kind }: { kind: Kind }) {
@@ -186,11 +202,7 @@ export function PageMotion({ kind }: { kind: Kind }) {
     const run = () => {
       if (kind === 'home') return homeMotion();
       if (kind === 'blog') return blogMotion();
-      if (kind === 'article')
-        return observeColorBand(
-          document.querySelectorAll('.nw-article-color-frame'),
-          toggleClass('nw-article-color-active'),
-        );
+      if (kind === 'article') return articleMotion();
       const main = document.querySelector('main');
       return main ? revealOnScroll(main, CATALOGUE_REVEAL, 'nw-release') : () => undefined;
     };

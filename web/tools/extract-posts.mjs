@@ -1,4 +1,5 @@
 // One-off: turns the captured blog posts into content/posts.ts + content/posts/<slug>.html.
+// BODIES_ONLY=1 rewrites just the .html bodies and leaves content/posts.ts (which has hand edits) alone.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -28,6 +29,17 @@ function avatarOf(span) {
   if (img) return { image: rewriteUrl(attr(img, 'src')) };
   if (all(span, (n) => n.tagName === 'svg').length) return { badge: true };
   return { initials: text(span).trim() };
+}
+
+/**
+ * Formats a body, except that math blocks keep their exact text: they render with `white-space: pre`,
+ * so a line break inside one is visible and prettier must not re-flow it.
+ */
+async function formatBody(html) {
+  const kept = [];
+  const masked = html.replace(/<code class="nw-article-math-block"[^>]*>[\s\S]*?<\/code>/g, (m) => `<code data-keep="${kept.push(m) - 1}"></code>`);
+  const out = await prettier.format(masked, { parser: 'html', printWidth: 110 });
+  return out.replace(/<code data-keep="(\d+)">\s*<\/code>/g, (_, i) => kept[i]);
 }
 
 const idx = blogIndex(load('blog/index.html'));
@@ -62,7 +74,7 @@ for (const entry of order) {
   const headingText = new Map(all(prose, (n) => /^h[23]$/.test(n.tagName) && attr(n, 'id')).map((h) => [attr(h, 'id'), text(h).replace(/\s+/g, ' ').trim()]));
   const contentsLabels = Object.fromEntries(navLinks.map((a) => [attr(a, 'href').slice(1), text(a).replace(/\s+/g, ' ').trim()]).filter(([id, label]) => headingText.has(id) && headingText.get(id) !== label));
   rewriteTree(prose);
-  const html = await prettier.format(serialize(prose), { parser: 'html', printWidth: 110 });
+  const html = await formatBody(serialize(prose));
   fs.writeFileSync(path.join(ROOT, 'content/posts', `${entry.slug}.html`), html);
 
   const ogImage = rewriteUrl(meta(doc, 'og:image') ?? '');
@@ -135,6 +147,6 @@ export type Post = {
 /** Blog posts in display order: featured first, then the archive (newest first). */
 export const posts: Post[] = ${JSON.stringify(posts, null, 2)};
 `;
-fs.writeFileSync(path.join(ROOT, 'content/posts.ts'), await prettier.format(body, { parser: 'typescript', singleQuote: true, printWidth: 110 }));
+if (!process.env.BODIES_ONLY) fs.writeFileSync(path.join(ROOT, 'content/posts.ts'), await prettier.format(body, { parser: 'typescript', singleQuote: true, printWidth: 110 }));
 console.log(`wrote ${posts.length} posts`);
 for (const p of posts) console.log(`  ${p.slug.slice(0, 50).padEnd(50)} ${JSON.stringify(p.avatar).slice(0, 22).padEnd(24)} ${(p.dateLabel ?? "(none)").padEnd(14)} rel:${p.related.length} ${p.ogImage ? 'og≠cover' : ''}`);

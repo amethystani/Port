@@ -291,9 +291,7 @@
     class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
     style="font-size: 16px; line-height: 1.5"
   >
-    <code class="nw-article-math-block" tabindex="0" aria-label="Math reference"
-      >\hat A_i = \frac{R_i - \text{mean}(R)}{\text{std}(R)}</code
-    >
+    <code class="nw-article-math-block" tabindex="0" aria-label="Math reference">\hat A_i = \frac{R_i - \text{mean}(R)}{\text{std}(R)}</code>
   </p>
   <p
     class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
@@ -305,11 +303,9 @@
     class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
     style="font-size: 16px; line-height: 1.5"
   >
-    <code class="nw-article-math-block" tabindex="0" aria-label="Math reference"
-      >J_{DAPO}(\theta) = \mathbb{E}\left[\frac{1}{\sum_{i=1}^G |o_i|} \sum_{i=1}^G \sum_{j=1}^{|o_i|}
-      \min\left(r_{i,t}(\theta)\hat A_i, \text{clip}(r_{i,t}(\theta), 1-\epsilon_{low}, 1+\epsilon_{high})
-      \hat A_i\right)\right]</code
-    >
+    <code class="nw-article-math-block" tabindex="0" aria-label="Math reference">J_{DAPO}(\theta) = \mathbb{E}\left[\frac{1}{\sum_{i=1}^G |o_i|} \sum_{i=1}^G \sum_{j=1}^{|o_i|}
+                \min\left(r_{i,t}(\theta)\hat A_i, \text{clip}(r_{i,t}(\theta), 1-\epsilon_{low}, 1+\epsilon_{high})
+                \hat A_i\right)\right]</code>
   </p>
   <p
     class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
@@ -361,10 +357,8 @@
     class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
     style="font-size: 16px; line-height: 1.5"
   >
-    <code class="nw-article-math-block" tabindex="0" aria-label="Math reference"
-      >J_{GSPO}(\theta) = \mathbb{E}\left[\frac{1}{G} \sum_{i=1}^G \min\left(s_i(\theta)\hat A_i,
-      \text{clip}(s_i(\theta), 1-\epsilon_{low}, 1+\epsilon_{high}) \hat A_i\right)\right]</code
-    >
+    <code class="nw-article-math-block" tabindex="0" aria-label="Math reference">J_{GSPO}(\theta) = \mathbb{E}\left[\frac{1}{G} \sum_{i=1}^G \min\left(s_i(\theta)\hat A_i,
+                \text{clip}(s_i(\theta), 1-\epsilon_{low}, 1+\epsilon_{high}) \hat A_i\right)\right]</code>
   </p>
   <p
     class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
@@ -376,10 +370,9 @@
     class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
     style="font-size: 16px; line-height: 1.5"
   >
-    <code class="nw-article-math-block" tabindex="0" aria-label="Math reference"
-      >s_i(\theta) = \frac{\pi_\theta(o_i|q)}{\pi_{old}(o_i|q)} = \exp\left(\frac{1}{|o_i|} \sum_{j=1}^{|o_i|}
-      \log \frac{\pi_\theta(o_{i,j}|q,o_{i,&lt;j})}{\pi_{old}(o_{i,j}|q,o_{i,&lt;j})}\right)</code
-    >
+    <code class="nw-article-math-block" tabindex="0" aria-label="Math reference">s_i(\theta) = \frac{\pi_\theta(o_i|q)}{\pi_{old}(o_i|q)} = \exp\left(\frac{1}{|o_i|}
+                \sum_{j=1}^{|o_i|} \log
+                \frac{\pi_\theta(o_{i,j}|q,o_{i,&lt;j})}{\pi_{old}(o_{i,j}|q,o_{i,&lt;j})}\right)</code>
   </p>
   <p
     class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
@@ -410,11 +403,9 @@
     class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
     style="font-size: 16px; line-height: 1.5"
   >
-    <code class="nw-article-math-block" tabindex="0" aria-label="Math reference"
-      >J_{GSPO+}(\theta) = \mathbb{E}\left[\frac{1}{\sum_{i=1}^G |o_i|} \sum_{i=1}^G |o_i|
-      \min\left(s_i(\theta)\hat A_i, \text{clip}(s_i(\theta), 1-\epsilon_{low}, 1+\epsilon_{high}) \hat
-      A_i\right)\right]</code
-    >
+    <code class="nw-article-math-block" tabindex="0" aria-label="Math reference">J_{GSPO+}(\theta) = \mathbb{E}\left[\frac{1}{\sum_{i=1}^G |o_i|} \sum_{i=1}^G |o_i|
+                \min\left(s_i(\theta)\hat A_i, \text{clip}(s_i(\theta), 1-\epsilon_{low}, 1+\epsilon_{high}) \hat
+                A_i\right)\right]</code>
   </p>
   <p
     class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
@@ -827,12 +818,10 @@
     class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
     style="font-size: 16px; line-height: 1.5"
   >
-    <code class="nw-article-math-block" tabindex="0" aria-label="Math reference"
-      >\mathbb{E} \left[ \sum_{i=1}^G
-      \text{TIS}(a_i)\min\left(\frac{\pi_{learner}(a_i|q)}{\pi_{learner,old}(a_i|q)}\hat A_t,
-      \text{clip}\left(\frac{\pi_{learner}(a_i|q)}{\pi_{learner,old}(a_i|q)}, 1-\epsilon_{low},
-      1+\epsilon_{high}\right)\hat A_t\right)\right]</code
-    >
+    <code class="nw-article-math-block" tabindex="0" aria-label="Math reference">\mathbb{E} \left[ \sum_{i=1}^G
+                \text{TIS}(a_i)\min\left(\frac{\pi_{learner}(a_i|q)}{\pi_{learner,old}(a_i|q)}\hat A_t,
+                \text{clip}\left(\frac{\pi_{learner}(a_i|q)}{\pi_{learner,old}(a_i|q)}, 1-\epsilon_{low},
+                1+\epsilon_{high}\right)\hat A_t\right)\right]</code>
   </p>
   <p
     class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
@@ -847,9 +836,7 @@
     class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
     style="font-size: 16px; line-height: 1.5"
   >
-    <code class="nw-article-math-block" tabindex="0" aria-label="Math reference"
-      >\text{TIS}(a_i) = \min\left(C, \frac{\pi_{learner,old}(a_i|q)}{\pi_{sampler}(a_i|q)}\right).</code
-    >
+    <code class="nw-article-math-block" tabindex="0" aria-label="Math reference">\text{TIS}(a_i) = \min\left(C, \frac{\pi_{learner,old}(a_i|q)}{\pi_{sampler}(a_i|q)}\right).</code>
   </p>
   <p
     class="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"

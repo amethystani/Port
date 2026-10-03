@@ -112,6 +112,46 @@ const attr = (page, sel, name) => page.$eval(sel, (el, n) => el.getAttribute(n),
   await ctx.close();
 }
 
+// ---------------------------------------------------------------- an article: dialogs, rail, dock
+{
+  const slug = '/measuring-thinking-efficiency-in-reasoning-models-the-missing-benchmark';
+  const { page, errors, ctx } = await open(slug);
+  await ctx.grantPermissions(['clipboard-read', 'clipboard-write']);
+  const dialog = () => page.$('[role="dialog"]');
+  await page.click('button[aria-label="Share article"]'); await page.waitForTimeout(600);
+  check('Share opens a side panel with focus on its close button', !!(await dialog()) && (await page.evaluate(() => document.activeElement?.getAttribute('aria-label'))) === 'Close');
+  check('the page behind the panel is inert', await page.evaluate(() => document.querySelector('main')?.closest('[inert]') !== null));
+  await page.click('[role="dialog"] button:has-text("Copy link")'); await page.waitForTimeout(300);
+  check('Copy link puts the article URL on the clipboard', /\/measuring-thinking/.test(await page.evaluate(() => navigator.clipboard.readText())));
+  await page.keyboard.press('Escape'); await page.waitForTimeout(500);
+  check('Escape closes it and returns focus to the Share button', !(await dialog()) && (await page.evaluate(() => document.activeElement?.getAttribute('aria-label'))) === 'Share article');
+  await page.click('button[aria-label="Listen to article"]'); await page.waitForTimeout(600);
+  check('Listen explains when no device voice exists', /voice|supported/i.test(await page.$eval('[role="dialog"] [role="status"]', (e) => e.textContent)));
+  await page.mouse.click(200, 500); await page.waitForTimeout(500);
+  check('clicking outside closes the panel', !(await dialog()));
+  const height = await page.evaluate(() => document.documentElement.scrollHeight);
+  await page.evaluate((y) => scrollTo(0, y), Math.round(height * 0.3)); await page.waitForTimeout(800);
+  const rail = await page.$eval('.nw-article-reading-rail', (r) => ({ hidden: r.hidden, n: r.children.length }));
+  check('the reading rail appears beside the text with one tick per section', !rail.hidden && rail.n === 19, JSON.stringify(rail));
+  await page.hover('.nw-article-reading-rail a:nth-child(3)'); await page.waitForTimeout(300);
+  check('hovering a tick previews that section', (await page.$$('.nw-article-reading-rail a[data-preview]')).length === 1);
+  check('headings and figures fade in as they scroll into view', (await page.$$('.nw-blog-reveal')).length > 50);
+  check('no console errors on an article', errors.length === 0, errors.slice(0, 2).join(' | '));
+  await ctx.close();
+}
+{
+  const { page, ctx } = await open('/measuring-thinking-efficiency-in-reasoning-models-the-missing-benchmark', { width: 390, height: 844 });
+  const dock = () => page.$eval('.nw-article-dock', (d) => ({ hidden: d.hidden, open: d.querySelector('button').getAttribute('aria-expanded') }));
+  check('the contents dock is hidden at the top', (await dock()).hidden);
+  await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight * 0.3)); await page.waitForTimeout(800);
+  check('the dock shows once the contents list scrolls away', !(await dock()).hidden);
+  await page.click('.nw-article-dock button'); await page.waitForTimeout(300);
+  check('tapping it lists the sections', (await dock()).open === 'true' && (await page.$$('.nw-article-dock-list a')).length === 19);
+  await page.keyboard.press('Escape'); await page.waitForTimeout(200);
+  check('Escape closes the list', (await dock()).open === 'false');
+  await ctx.close();
+}
+
 // ---------------------------------------------------------------- an editorial page
 {
   const { page, errors, ctx } = await open('/releases');

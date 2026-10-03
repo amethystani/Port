@@ -1,10 +1,13 @@
 import Link from 'next/link';
 import { PageMotion } from '@/components/behavior/PageMotion';
 import { Button } from '@/components/ui/Button';
-import { ChevronIcon, ListenIcon, NousBadgeFilled, NousBadgeOutline, ShareIcon } from '@/components/icons';
+import { NousBadgeFilled, NousBadgeOutline } from '@/components/icons';
+import { ArticleReading } from '@/components/article/ArticleReading';
+import { ArticleToolbar } from '@/components/article/ArticleToolbar';
 import { Mono } from '@/components/ui/Type';
 import { WRAP } from '@/components/catalogue/CatalogueHero';
 import type { Post } from '@/content/posts';
+import { site } from '@/lib/site';
 import { articleHeadings, cardTitle, getPost, type Heading } from '@/lib/posts';
 
 const CAPTION =
@@ -82,38 +85,6 @@ function ColorFrame({
   );
 }
 
-/** One anchor per section; the first is marked as the current location. */
-function ContentsLinks({ headings }: { headings: Heading[] }) {
-  return headings.map((heading, i) => (
-    <a key={heading.id} href={`#${heading.id}`} {...(i === 0 ? { 'aria-current': 'location' as const } : {})}>
-      {heading.text}
-    </a>
-  ));
-}
-
-function ToolbarButton({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <Button
-      variant="icon"
-      bare
-      className="nw-article-icon"
-      aria-label={label}
-      title={label}
-      aria-haspopup="dialog"
-      aria-expanded="false"
-      data-icon-only="true"
-      data-state="closed"
-    >
-      <span
-        aria-hidden="true"
-        className="inline-flex shrink-0 items-center justify-center order-first size-[var(--hpv2-icon)]"
-      >
-        {children}
-      </span>
-    </Button>
-  );
-}
-
 function RelatedRow({ post }: { post: Post }) {
   return (
     <article className="nw-blog-related-row">
@@ -139,7 +110,7 @@ function RelatedRow({ post }: { post: Post }) {
 
 /**
  * One blog post. `body` is the HTML from content/posts/<slug>.html; the toolbar, contents dock and
- * share/listen dialogs are enhanced by ArticleEnhancements.
+ * listen/share dialogs are client components (ArticleToolbar, ArticleReading).
  */
 export function ArticlePage({ post, body }: { post: Post; body: string }) {
   const headings = articleHeadings(body, post.contentsLabels);
@@ -174,57 +145,14 @@ export function ArticlePage({ post, body }: { post: Post; body: string }) {
             )}
           </header>
           <div className={`${WRAP} nw-article-reading`}>
-            <div className="nw-article-toolbar">
-              <div className="nw-article-audio">
-                <ToolbarButton label="Listen to article">
-                  <ListenIcon width={16} height={16} fill="currentColor" aria-hidden="true" />
-                </ToolbarButton>
-                <span>Listen</span>
-              </div>
-              {post.publishedTime && <time dateTime={post.publishedTime}>{post.dateLabel}</time>}
-              <div className="nw-article-sharing">
-                <span>Share</span>
-                <ToolbarButton label="Share article">
-                  <ShareIcon width={16} height={16} fill="currentColor" aria-hidden="true" />
-                </ToolbarButton>
-              </div>
-            </div>
-            <nav className="nw-article-contents" aria-label="Article contents" hidden={headings.length === 0}>
-              <h2>Contents</h2>
-              {headings.map((heading, i) => (
-                <a
-                  key={heading.id}
-                  href={`#${heading.id}`}
-                  {...(i === 0 ? { 'aria-current': 'location' as const } : {})}
-                >
-                  {heading.text}
-                </a>
-              ))}
-            </nav>
-            <nav className="nw-article-reading-rail" aria-label="Reading section previews" hidden />
-            <nav className="nw-article-dock" aria-label="Quick article contents" hidden>
-              <Button variant="outline" bare aria-expanded="false" aria-controls="article-dock-list">
-                <span className="leading-none whitespace-nowrap cap-mono text-cap-trim relative -top-[var(--hpv2-cap-nudge)] cap-fallback:top-[var(--hpv2-nudge)]!">
-                  Contents / {headings[0]?.text ?? 'Introduction'}
-                </span>
-                <span
-                  aria-hidden="true"
-                  className="relative inline-flex shrink-0 self-center order-last size-[var(--hpv2-icon)]"
-                  style={{ height: '0' }}
-                >
-                  <span className="absolute top-1/2 flex -translate-y-1/2 items-center justify-center size-[var(--hpv2-icon)]">
-                    <ChevronIcon
-                      fill="currentColor"
-                      aria-hidden="true"
-                      className="block shrink-0 size-full"
-                    />
-                  </span>
-                </span>
-              </Button>
-              <div id="article-dock-list" hidden className="nw-article-dock-list">
-                <ContentsLinks headings={headings} />
-              </div>
-            </nav>
+            <ArticleToolbar
+              slug={post.slug}
+              title={post.title}
+              url={`${site.url}/${post.slug}`}
+              publishedTime={post.publishedTime}
+              dateLabel={post.dateLabel}
+            />
+            <ArticleReading headings={headings} />
             <div className="nw-article-prose" id="article-prose" dangerouslySetInnerHTML={{ __html: body }} />
             {post.sourceTools && (
               <aside className="nw-article-source-tools" aria-labelledby="source-tools-heading">
