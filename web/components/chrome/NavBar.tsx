@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { GitHubIcon, LinkedInIcon, Logo } from '@/components/icons';
+import { GitHubIcon, LinkedInIcon, Logo, PixelSearch } from '@/components/icons';
 import { navigation } from '@/content/navigation';
 import { BrandLink } from './BrandLink';
 
@@ -28,6 +28,24 @@ function NavTrigger({ label, variant, align }: { label: string; variant: Variant
   );
 }
 
+/** Opens the site-wide search palette (also on Cmd/Ctrl+K). Wired by ResearchUiController via data-composer-target. */
+function SearchButton() {
+  return (
+    <button
+      type="button"
+      className="nw-search-pill px-box max-md:hidden"
+      data-composer-target="Questions"
+      aria-controls="research-composer"
+      aria-expanded="false"
+      aria-label="Search the site"
+    >
+      <PixelSearch />
+      <span>Search</span>
+      <kbd aria-hidden="true">⌘K</kbd>
+    </button>
+  );
+}
+
 /** The brand mark in the header (sized by .nw-research-badge in styles/custom.css). */
 function BadgePair({ className }: { className: string; width?: number; height?: number }) {
   return <Logo aria-hidden="true" weight={9} className={className} />;
@@ -52,7 +70,17 @@ function SocialLinks({ items }: { items: { label: keyof typeof SOCIAL_ICONS; hre
 
 function MenuButton() {
   return (
-    <div className="flex items-center gap-3 md:hidden">
+    <div className="flex items-center gap-1 md:hidden">
+      <button
+        type="button"
+        className="nw-search-icon"
+        data-composer-target="Questions"
+        aria-controls="research-composer"
+        aria-expanded="false"
+        aria-label="Search the site"
+      >
+        <PixelSearch />
+      </button>
       <button
         aria-controls="research-mobile-menu"
         aria-expanded="false"
@@ -104,6 +132,7 @@ export function NavBar({
         {navigation.right.map((label) => (
           <NavTrigger key={label} label={label} variant={variant} align="right" />
         ))}
+        <SearchButton />
       </div>
       <MenuButton />
     </nav>
