@@ -235,7 +235,7 @@ export function MobileMenu() {
     >
       <div className="flex items-center justify-between px-[var(--hw-teams-pad-x)] pt-10 pb-5 nw-research-menu-top">
         <Link href="/" aria-label="Animesh Mishra" onClick={close}>
-          <Logo aria-hidden="true" style={{ width: 88, height: 'auto' }} />
+          <Logo aria-hidden="true" weight={9} style={{ width: 120, height: 'auto' }} />
         </Link>
         <div className="flex items-center gap-3">
           <div />

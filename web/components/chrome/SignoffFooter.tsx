@@ -22,27 +22,7 @@ export function SignoffFooter({ home = false }: { home?: boolean }) {
             <p>© 2026, Animesh Mishra</p>
           </div>
           <div className="flex items-center gap-5 max-md:order-1 max-md:basis-full max-md:justify-center">
-            <span
-              aria-hidden="true"
-              className="h-[57px] w-10 bg-current"
-              style={{
-                maskImage: 'url(/assets/hermes-landing/nous-portal-badge.svg)',
-                maskPosition: 'center',
-                maskRepeat: 'no-repeat',
-                maskSize: 'contain',
-              }}
-            />
-            <Logo role="img" aria-label="Logo" style={{ height: 40, width: 'auto', flexShrink: 0 }} />
-            <span
-              aria-hidden="true"
-              className="h-[57px] w-10 bg-current"
-              style={{
-                maskImage: 'url(/assets/hermes-landing/hermes-agent-badge.svg)',
-                maskPosition: 'center',
-                maskRepeat: 'no-repeat',
-                maskSize: 'contain',
-              }}
-            />
+            <Logo role="img" aria-label="Animesh Mishra" weight={9} style={{ height: 48, width: 'auto', flexShrink: 0 }} />
           </div>
           <div className="flex min-w-0 flex-1 flex-col items-end gap-[1em] text-right max-md:order-3 max-md:basis-[calc(50%-12px)]">
             <p>

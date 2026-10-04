@@ -30,7 +30,7 @@ function NavTrigger({ label, variant, align }: { label: string; variant: Variant
 
 /** The brand mark in the header (sized by .nw-research-badge in styles/custom.css). */
 function BadgePair({ className }: { className: string; width?: number; height?: number }) {
-  return <Logo aria-hidden="true" className={className} />;
+  return <Logo aria-hidden="true" weight={9} className={className} />;
 }
 
 const SOCIAL_ICONS = { GitHub: GitHubIcon, LinkedIn: LinkedInIcon } as const;

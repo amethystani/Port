@@ -94,7 +94,7 @@ export function Footer() {
           className={`${CONTAINER} hw-teams-footer-grid font-[family-name:var(--font-mono)] uppercase relative grid grid-cols-2 gap-x-6 gap-y-10 pb-10 text-[length:var(--hw-teams-label-sm)] leading-none tracking-normal md:grid-cols-[minmax(0,320px)_repeat(4,minmax(0,1fr))] md:gap-5`}
         >
           <div className="flex flex-col gap-5 max-md:col-span-2">
-            <Logo aria-hidden="true" style={{ width: 132, height: 'auto' }} />
+            <Logo aria-hidden="true" weight={9} style={{ width: 168, height: 'auto' }} />
             <p>Research and building cool stuff.</p>
             <a
               className="underline decoration-from-font opacity-60 hover:opacity-100"

@@ -1,7 +1,7 @@
 """Traces the signature photo (tools/assets/signature-source.webp: black ink on textured paper) into an SVG path.
 
     python3 tools/trace-signature.py   # writes tools/assets/signature-path.json {viewBox, d, width, height}
-                                       # and public/assets/brand/signature*.svg
+                                       # and public/assets/brand/signature-*.svg
 Needs Pillow, numpy and potracer. The paper texture is removed by subtracting a heavily blurred copy
 (so uneven lighting does not matter), then the ink is thresholded and traced at 4x for smooth curves.
 """
@@ -45,13 +45,18 @@ d = ''.join(parts)
 json.dump({'width': w, 'height': h, 'viewBox': f'0 0 {w} {h}', 'd': d}, open(OUT, 'w'))
 print('traced', len(plist), 'shapes', f'viewBox 0 0 {w} {h}', 'path chars', len(d))
 
-# ---- outputs: standalone SVGs. signature.svg is the mask used by components/icons/Signature.tsx (colour comes
-# from CSS, so it follows the theme); the coloured copies are for <img>, downloads and sharing.
+# ---- outputs
+# signature-sprite.svg: a bare path with id="signature" and no fill, referenced by <use> in components/icons/Logo.tsx
+#   so fill, stroke and weight come from the page (theme colour, and a stroke that thickens the hairlines when it is small).
+# signature-{blue,white}.svg: coloured copies for downloads and sharing.
 root = os.path.join(HERE, '..')
 outdir = os.path.join(root, 'public', 'assets', 'brand')
 os.makedirs(outdir, exist_ok=True)
-for name, colour in [('', '#000000'), ('-blue', '#0000ff'), ('-white', '#ffffff')]:
-    open(os.path.join(outdir, f'signature{name}.svg'), 'w').write(
+for old in ('signature.svg',):
+    if os.path.exists(os.path.join(outdir, old)): os.remove(os.path.join(outdir, old))
+open(os.path.join(outdir, 'signature-sprite.svg'), 'w').write(
+    f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}"><path id="signature" d="{d}"/></svg>\n')
+for name, colour in [('blue', '#0000ff'), ('white', '#ffffff')]:
+    open(os.path.join(outdir, f'signature-{name}.svg'), 'w').write(
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}"><title>Animesh Mishra signature</title><path fill="{colour}" d="{d}"/></svg>\n')
-json.dump({'aspect': round(w / h, 4)}, open(os.path.join(HERE, 'assets', 'signature-meta.json'), 'w'))
-print('wrote public/assets/brand/signature{,-blue,-white}.svg, aspect', round(w / h, 4))
+print('wrote public/assets/brand/signature-sprite.svg and signature-{blue,white}.svg')

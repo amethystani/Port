@@ -28,9 +28,9 @@
  *   --nw-key-ink                            body copy and keyboard hints
  */
 
-/* The brand mark in the header: a wide mark, so it is sized by width rather than height. */
+/* The logo (the signature) in the header: a wide mark, so it is sized by width rather than height. */
 .nw-research-badge {
-  width: 92px;
+  width: 168px;
   height: auto;
 }
 

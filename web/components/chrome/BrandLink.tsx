@@ -11,7 +11,7 @@ export const isArticlePath = (pathname: string) =>
   /^\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(pathname) && !SECTION_ROUTES.includes(pathname.slice(1));
 
 function Badges({ className = 'nw-research-badge' }: { className?: string }) {
-  return <Logo aria-hidden="true" className={className} />;
+  return <Logo aria-hidden="true" weight={9} className={className} />;
 }
 
 /**
@@ -24,7 +24,7 @@ export function BrandLink() {
     return (
       <Link href="/blog" className="nw-research-brand-link" aria-label="Blog">
         <span className="nw-research-blog-mark max-md:hidden">
-          <Logo aria-hidden="true" style={{ width: 56, height: 'auto' }} />
+          <Logo aria-hidden="true" weight={9} style={{ width: 96, height: 'auto' }} />
           <span>Blog</span>
         </span>
         <span className="md:hidden">

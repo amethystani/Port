@@ -78,7 +78,7 @@ external index to maintain.
 ## Adapt it to your own site
 
 1. `lib/site.ts`: name, URL, description, social links.
-2. Replace the images in `public/assets/`. The logo is already yours (see `trace-logo.py` / `make-brand-assets.mjs` below); the tile pictures on the home page, the announcement card art and the demo video are still the original's product shots and artwork.
+2. Replace the images in `public/assets/`. The logo is already yours: it is your signature (see `trace-signature.py` / `make-brand-assets.mjs` below); the tile pictures on the home page, the announcement card art and the demo video are still the original's product shots and artwork.
 3. Replace the fonts (`public/font/`, declared with `@font-face` in `styles/06-app.css`); see the licensing note below.
 4. Re-theme in `styles/custom.css`, which loads last. The site is two blues, a bright one (frame, buttons,
    headings, links) and a darker one for body copy; `custom.css` explains each variable and has them ready to copy:
@@ -146,8 +146,7 @@ Not part of the site; used to build and verify it.
 | `dom-diff.mjs`, `compare.mjs`, `behavior-check.mjs` | verification (above) |
 | `html-to-jsx.mjs` | converts captured HTML into JSX components |
 | `extract-posts.mjs`, `extract-lists.mjs`, `extract-shared.mjs`, `write-content.mjs` | one-off extraction of the content files from the captured pages |
-| `trace-logo.py`, `make-brand-assets.mjs` | trace the logo (`tools/assets/logo-source.jpg`) into a vector and generate every logo asset: the `Logo` component, orb stamps, favicon and share card. To change the logo: replace the source image and run both |
-| `trace-signature.py` | traces the signature photo (`tools/assets/signature-source.webp`) into `public/assets/brand/signature{,-blue,-white}.svg`; `<Signature />` draws it as a CSS mask so it follows the theme colour. Used in the home page signoff |
+| `trace-signature.py`, `make-brand-assets.mjs` | trace the signature photo (`tools/assets/signature-source.webp`) into a vector and generate every logo asset: `public/assets/brand/signature-sprite.svg` (what `<Logo />` draws, in the theme colour), the `Logo` component, orb stamps, favicon and share card. To change the logo: replace the source photo and run both |
 | `obscure-poster.py` | blurs and halftones the two background portraits on the home poster (original kept in `tools/assets/`); needs Pillow |
 | `localize-external.mjs` | copies hot-linked third-party images into `public/` |
 
