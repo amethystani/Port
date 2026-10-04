@@ -48,3 +48,23 @@ html[data-research-theme='dark'] .pf-hero,
 html[data-research-theme='dark'] .pf-eyebrow {
   color: var(--nw-theme-heading);
 }
+
+/* Desktop: show the whole poster. It is fitted to the screen height (below the pinned header) so nothing
+   is cropped top or bottom, and the space beside it continues the poster's own paper colour (see
+   poster-edges.css), so the band still runs edge to edge. */
+@media (min-width: 768px) {
+  .pf-poster {
+    position: relative;
+    isolation: isolate;
+    height: clamp(480px, calc(100svh - 112px), 1100px);
+  }
+  .pf-poster {
+    background:
+      var(--pf-edge-left) left / 50% 100% no-repeat,
+      var(--pf-edge-right) right / 50% 100% no-repeat;
+  }
+  .pf-poster img {
+    object-fit: contain;
+    object-position: 50% 50%;
+  }
+}

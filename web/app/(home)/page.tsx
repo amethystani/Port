@@ -11,6 +11,7 @@ import { site } from '@/lib/site';
 
 import '@/styles/home-announcements.css';
 import '@/styles/portfolio.css';
+import '@/styles/poster-edges.css';
 import '@/styles/home-orb.css';
 
 export const metadata = pageMetadata({
