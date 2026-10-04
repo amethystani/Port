@@ -1,5 +1,6 @@
 'use client';
 
+import { portfolio } from '@/content/portfolio';
 import { type CSSProperties, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
@@ -367,7 +368,7 @@ function SearchPanel({
                     {result.matches.map((match) => (
                       <li key={match.id} className="nw-search-match">
                         <a
-                          href={`mailto:recruiting@nousresearch.com?subject=${encodeURIComponent(match.title)}`}
+                          href={`mailto:${portfolio.email}?subject=${encodeURIComponent(match.title)}`}
                           className="nw-composer-hit nw-search-result nw-search-role"
                           data-search-result=""
                           aria-label={`Apply for ${match.title}`}

@@ -3,6 +3,8 @@ export const portfolio = {
   name: 'Animesh Mishra',
   role: 'ML/NLP Researcher',
   affiliation: 'NCA',
+  /** Where "contact" links (footer, apply buttons, search results) send mail. */
+  email: 'animeshmishra0567@gmail.com',
   /** The poster shown as the main photo on the home page. */
   poster: {
     src: '/assets/portfolio/animesh-mishra-poster.webp',

@@ -1,3 +1,4 @@
+import { portfolio } from '@/content/portfolio';
 import { ArtShader } from './ArtShader';
 import type { CSSProperties } from 'react';
 import Link from 'next/link';
@@ -97,9 +98,9 @@ export function Footer() {
             <p>The Internet&apos;s Own AI.</p>
             <a
               className="underline decoration-from-font opacity-60 hover:opacity-100"
-              href="mailto:info@nousresearch.com"
+              href={`mailto:${portfolio.email}`}
             >
-              info@nousresearch.com
+              {portfolio.email}
             </a>
           </div>
           {footerColumns.map((column) => (

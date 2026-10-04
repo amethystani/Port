@@ -1,3 +1,5 @@
+import { portfolio } from './portfolio';
+
 export type FooterLink = {
   label: string;
   href: string;
@@ -36,7 +38,7 @@ export const footerColumns: FooterColumn[] = [
       },
       {
         label: 'Contact',
-        href: 'mailto:info@nousresearch.com',
+        href: `mailto:${portfolio.email}`,
       },
     ],
   },

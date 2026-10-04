@@ -1,3 +1,4 @@
+import { portfolio } from './portfolio';
 export type JobSection = { heading: string; items: string[] };
 
 export type Job = {
@@ -693,4 +694,4 @@ export const applicationChecklist: string[] = [
   'A portfolio showcasing your work',
 ];
 
-export const recruitingEmail = 'recruiting@nousresearch.com';
+export const recruitingEmail = portfolio.email;
