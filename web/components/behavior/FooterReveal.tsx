@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 // How far down the footer starts to appear and how long the fade takes (as fractions of the viewport),
 // and how strongly the page "lifts" off the footer.
@@ -14,8 +15,11 @@ const clamp = (n: number) => Math.min(1, Math.max(0, n));
  * Drives the footer reveal: as you reach the end of the page the footer fades in
  * (--hw-footer-opacity) and the page content eases upward (--hw-footer-lift).
  * The CSS lives on `.hw-footer-reveal`; this only sets the two variables on scroll.
+ * Each route group renders its own footer, so the effect re-runs on every navigation to pick up the new
+ * element (otherwise the new footer would stay faded and blurred).
  */
 export function FooterReveal() {
+  const pathname = usePathname();
   useEffect(() => {
     const el = document.querySelector<HTMLElement>('.hw-footer-reveal');
     if (!el) return;
@@ -64,6 +68,6 @@ export function FooterReveal() {
       removeEventListener('resize', measure);
       reduced.removeEventListener('change', measure);
     };
-  }, []);
+  }, [pathname]);
   return null;
 }
