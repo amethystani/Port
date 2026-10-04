@@ -10,7 +10,7 @@
 }
 html[data-research-theme='dark'] .af {
   --af-ink: var(--nw-theme-heading);
-  --af-paper: #0d0e22;
+  --af-paper: #1b0305;
 }
 
 .af-block {

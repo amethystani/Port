@@ -95,11 +95,11 @@ export async function mountOrbSigil(
     // A small studio of three coloured panels, baked into an environment map for reflections.
     const scene = new THREE.Scene();
     const studio = new THREE.Scene();
-    studio.background = new THREE.Color(0xdde1ed);
+    studio.background = new THREE.Color(0xe9dfd5);
     for (const { x, y, z, w, h, color } of [
       { x: -3, y: 3, z: 4, w: 3, h: 5, color: 0xffffff },
-      { x: 4, y: 1, z: 2, w: 2, h: 4, color: 0xd3faff },
-      { x: 0, y: -3, z: -3, w: 4, h: 2, color: 0xe9dbff },
+      { x: 4, y: 1, z: 2, w: 2, h: 4, color: 0xf7e4d2 },
+      { x: 0, y: -3, z: -3, w: 4, h: 2, color: 0xf2d4cc },
     ]) {
       const panel = new THREE.Mesh(
         track(new THREE.PlaneGeometry(w, h)),
@@ -123,7 +123,7 @@ export async function mountOrbSigil(
     scene.add(medal, rings);
 
     const ringMaterial = track(
-      new THREE.LineBasicMaterial({ color: 0x6565ff, transparent: true, opacity: 0, depthWrite: false }),
+      new THREE.LineBasicMaterial({ color: 0xc4585a, transparent: true, opacity: 0, depthWrite: false }),
     );
     for (let i = 0; i < 4; i++) {
       const points = Array.from(
@@ -178,16 +178,16 @@ export async function mountOrbSigil(
       medal.add(face);
       const rim = new THREE.Mesh(
         track(new THREE.TorusGeometry(1, 0.006, 8, 96)),
-        track(new THREE.MeshStandardMaterial({ color: 0xe5e5f2, metalness: 0.95, roughness: 0.18 })),
+        track(new THREE.MeshStandardMaterial({ color: 0xece2d8, metalness: 0.95, roughness: 0.18 })),
       );
       rim.position.z = 0.047 * side;
       medal.add(rim);
     }
 
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x33336a, 2));
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x4a1215, 2));
     const key = new THREE.DirectionalLight(0xffffff, 3);
     key.position.set(-2, 3, 4);
-    const fill = new THREE.DirectionalLight(0x8888ff, 1.5);
+    const fill = new THREE.DirectionalLight(0xe89a98, 1.5);
     fill.position.set(3, -1, -2);
     scene.add(key, fill);
     stage.append(renderer.domElement);

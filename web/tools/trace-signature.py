@@ -48,7 +48,7 @@ print('traced', len(plist), 'shapes', f'viewBox 0 0 {w} {h}', 'path chars', len(
 # ---- outputs
 # signature-sprite.svg: a bare path with id="signature" and no fill, referenced by <use> in components/icons/Logo.tsx
 #   so fill, stroke and weight come from the page (theme colour, and a stroke that thickens the hairlines when it is small).
-# signature-{blue,white}.svg: coloured copies for downloads and sharing.
+# signature-{cherry,cream}.svg: coloured copies for downloads and sharing.
 root = os.path.join(HERE, '..')
 outdir = os.path.join(root, 'public', 'assets', 'brand')
 os.makedirs(outdir, exist_ok=True)
@@ -56,7 +56,7 @@ for old in ('signature.svg',):
     if os.path.exists(os.path.join(outdir, old)): os.remove(os.path.join(outdir, old))
 open(os.path.join(outdir, 'signature-sprite.svg'), 'w').write(
     f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}"><path id="signature" d="{d}"/></svg>\n')
-for name, colour in [('blue', '#0000ff'), ('white', '#ffffff')]:
+for name, colour in [('cherry', '#9a0002'), ('cream', '#efe6de')]:
     open(os.path.join(outdir, f'signature-{name}.svg'), 'w').write(
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}"><title>Animesh Mishra signature</title><path fill="{colour}" d="{d}"/></svg>\n')
-print('wrote public/assets/brand/signature-sprite.svg and signature-{blue,white}.svg')
+print('wrote public/assets/brand/signature-sprite.svg and signature-{cherry,cream}.svg')

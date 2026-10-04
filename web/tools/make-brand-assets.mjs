@@ -12,8 +12,8 @@ import fs from 'node:fs';
 import { chromium } from 'playwright';
 
 const { d, width: W, height: H } = JSON.parse(fs.readFileSync('tools/assets/signature-path.json', 'utf8'));
-const BLUE = '#0000f2'; // --hermes-color-blue
-const WHITE = '#fafafe';
+const BLUE = '#9a0002'; // --hermes-color-blue (Cherry Cola)
+const WHITE = '#efe6de'; // Cream Vanilla
 const PAD = 12; // room around the drawing so the stroke is not clipped
 const VB = `${-PAD} ${-PAD} ${W + 2 * PAD} ${(H + 2 * PAD).toFixed(2)}`;
 const ASPECT = (W + 2 * PAD) / (H + 2 * PAD);
@@ -70,7 +70,7 @@ const browser = await chromium.launch({
   executablePath: process.env.CHROMIUM_PATH ?? ['/opt/pw-browsers/chromium-1194/chrome-linux/chrome', '/opt/pw-browsers/chromium'].find((p) => fs.existsSync(p)),
 });
 const stampPage = await browser.newPage({ viewport: { width: side, height: side }, deviceScaleFactor: 2 });
-for (const [theme, fill] of [['light', BLUE], ['dark', '#ffffff']]) {
+for (const [theme, fill] of [['light', BLUE], ['dark', '#efe6de']]) {
   await stampPage.setContent(`<body style="margin:0;background:transparent">${stampSvg(fill)}</body>`);
   await stampPage.screenshot({ path: `public/assets/brand/logo-stamp-${theme}.png`, omitBackground: true });
 }

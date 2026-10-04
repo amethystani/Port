@@ -63,7 +63,7 @@ const FOOTER_EFFECT = /* glsl */ `
   // TOP. This canvas sits above that gradient and applies the same ramp so
   // the moving picture fades into the same ink at the same rows.
   const vec2 FADE = vec2(441.3 / 848.0, 1.0);
-  const vec3 INK = vec3(0.0, 0.0, 242.0 / 255.0);
+  const vec3 INK = vec3(154.0 / 255.0, 0.0, 2.0 / 255.0);
   // The art's own layout, as a fraction of its height from the TOP: the orb
   // is the bright mass above this line, the hand the one below, with dark
   // sky between (measured on the asset). Nothing sheds above it.

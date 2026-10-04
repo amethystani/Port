@@ -5,7 +5,7 @@ as the site's other artwork, with feathered edges so it melts into the paper.
     python3 tools/obscure-poster.py            # original (tools/assets) -> public/assets/portfolio/
 Needs Pillow. Edit PANELS if the poster changes; boxes are (left, top, right, bottom) in source pixels.
 """
-from PIL import Image, ImageDraw, ImageFilter, ImageChops, ImageStat
+from PIL import Image, ImageDraw, ImageFilter, ImageChops, ImageStat, ImageOps
 import os
 
 SRC = os.path.join(os.path.dirname(__file__), 'assets', 'animesh-mishra-poster.original.webp')
@@ -62,6 +62,9 @@ for (l, t, r, b), (sl, st, sr, sb) in CLONE_OUT:
     mask = Image.new('L', patch.size, 0)
     ImageDraw.Draw(mask).rectangle((2, 2, patch.size[0] - 2, patch.size[1] - 2), fill=255)
     im.paste(patch, (l, t), mask.filter(ImageFilter.GaussianBlur(1.5)))
+
+# Warm duotone in the site palette (Cherry Cola / Cream Vanilla family): near-black ink on cream paper.
+im = ImageOps.colorize(ImageOps.autocontrast(im.convert('L'), cutoff=0.5), black='#1c0a0a', white='#f6eee6')
 
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 im.save(OUT, 'WEBP', quality=90, method=6)
