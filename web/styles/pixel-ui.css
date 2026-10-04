@@ -97,13 +97,22 @@ button.px-box:focus-visible {
 .nw-search-icon {
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
+  color: var(--nw-ink);
 }
 .nw-search-icon svg {
-  width: 16px;
-  height: 16px;
+  width: 26px;
+  height: 26px;
   shape-rendering: crispEdges;
+}
+/* phones: the search icon and the menu button are one matched pair (same 44px box, same optical size), and the
+   pair is mirrored by the logo on the left */
+@media (max-width: 767px) {
+  .nw-research-menu-burger {
+    width: 28px;
+    height: 28px;
+  }
 }
 
 /* ---- filter bar (components/catalogue/FilteredList.tsx) ---- */
