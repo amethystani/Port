@@ -10,7 +10,7 @@ import { useEffect, useRef } from 'react';
  * The text starts tipped back (rotateX 30deg) and 487px low, and rises into place as the section scrolls past.
  * Edit the words in content/home.ts (`statement`).
  */
-const START_OFFSET = 487; // px the text starts below its resting place
+const START_OFFSET = 487; // px the text starts below its resting place (capped to the screen height, see below)
 
 export function PerspectiveStatement({ label, text }: { label: string; text: string }) {
   const root = useRef<HTMLElement>(null);
@@ -29,11 +29,14 @@ export function PerspectiveStatement({ label, text }: { label: string; text: str
         target.style.setProperty('--ps-y', '0px');
         return;
       }
-      // Same as framer-motion's useScroll({ target }): 0 when the section's top meets the bottom of the
-      // screen, 1 when its bottom meets the top.
+      // The section is pinned while it scrolls past (its sticky stage). The text starts rising as soon as the
+      // section is half on screen and has settled about 60% of the way through the pinned stretch, so there
+      // is no long empty run before it appears.
       const rect = section.getBoundingClientRect();
-      const p = Math.min(1, Math.max(0, (innerHeight - rect.top) / (rect.height + innerHeight)));
-      target.style.setProperty('--ps-y', `${(START_OFFSET * (1 - p)).toFixed(1)}px`);
+      const pinned = Math.max(1, rect.height - innerHeight);
+      const p = Math.min(1, Math.max(0, (innerHeight * 0.5 - rect.top) / (innerHeight * 0.5 + pinned * 0.6)));
+      const start = Math.min(START_OFFSET, innerHeight * 0.4);
+      target.style.setProperty('--ps-y', `${(start * (1 - p)).toFixed(1)}px`);
     };
     const onScroll = () => {
       if (!frame) frame = requestAnimationFrame(update);
@@ -53,8 +56,8 @@ export function PerspectiveStatement({ label, text }: { label: string; text: str
 
   return (
     <section ref={root} className="ps" data-band="statement" aria-label={label}>
-      <p className="ps-label">{label}</p>
       <div className="ps-stage">
+        <p className="ps-label">{label}</p>
         <div ref={body} className="ps-text">
           {text}
           <span className="ps-fade" aria-hidden="true" />

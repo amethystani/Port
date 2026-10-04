@@ -3,7 +3,9 @@
   position: relative;
   z-index: 0;
   width: 100%;
-  height: 260vh;
+  height: 150vh;
+  /* tuck under the neighbouring sections' own padding so no empty band is left above or below */
+  margin: -8vh 0 -16vh;
   color: var(--nw-ink);
   /* the tilted text must not spill onto the next section (clip, unlike hidden, keeps the stage sticky) */
   overflow: clip;
@@ -13,7 +15,7 @@ html[data-research-theme='dark'] .ps {
 }
 .ps-label {
   position: absolute;
-  top: 8%;
+  top: 12%;
   left: 50%;
   translate: -50% 0;
   max-width: 14ch;
@@ -74,7 +76,7 @@ html[data-research-theme='dark'] .ps {
 }
 .ps-credit {
   position: absolute;
-  bottom: 24px;
+  bottom: 22vh;
   left: 50%;
   translate: -50% 0;
   margin: 0;
@@ -88,9 +90,17 @@ html[data-research-theme='dark'] .ps {
   text-decoration: underline;
 }
 
+@media (max-width: 767px) {
+  .ps {
+    height: 130vh;
+    margin: -6vh 0 -14vh;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ps {
     height: auto;
+    margin: 0;
   }
   .ps-stage {
     position: static;
