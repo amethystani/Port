@@ -12,6 +12,8 @@ type PageMeta = {
   image?: string;
   /** Alt text for the share image; defaults to the site name (or the title, for articles). */
   imageAlt?: string;
+  /** Pixel size of the share image; defaults to the 1200×630 card for website pages. */
+  imageSize?: { width: number; height: number };
   type?: 'website' | 'article';
   publishedTime?: string;
   author?: string;
@@ -25,12 +27,13 @@ export function pageMetadata({
   path,
   image,
   imageAlt,
+  imageSize,
   type = 'website',
   publishedTime,
   author,
 }: PageMeta): Metadata {
   const ogTitle = shareTitle ?? title;
-  const size = type === 'website' ? { width: 1200, height: 630 } : {};
+  const size = imageSize ?? (type === 'website' ? { width: 1200, height: 630 } : {});
   const alt = imageAlt ?? (type === 'website' ? site.name : ogTitle);
   const images = image ? [{ url: image, ...size, alt }] : undefined;
   return {

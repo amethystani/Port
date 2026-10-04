@@ -56,7 +56,8 @@ Almost all copy lives in `content/`. Edit, save, and the page updates.
 | To change | Edit |
 | --- | --- |
 | Site name, URL, description, share image | `lib/site.ts` (set `NEXT_PUBLIC_SITE_URL` in production) |
-| Home page hero, mission, Hermes features | `content/home.ts` |
+| The portfolio hero: name, role, and the main poster photo | `content/portfolio.ts` (image in `public/assets/portfolio/`) |
+| Home page mission and Hermes features (still the Nous content) | `content/home.ts` |
 | The announcements strip on the home page | `content/announcements.ts` |
 | Footer columns and links | `content/footer.ts` |
 | Header dropdowns (Nous / Hermes / Community / Portal) | `content/research-navigation.ts` |
@@ -98,7 +99,7 @@ The rebuild was compared with nousresearch.com three ways. All of these scripts 
 
 | Check | Command | Result when this was written |
 | --- | --- | --- |
-| Server-rendered HTML, element by element, for every sitemap page | `node tools/dom-diff.mjs` | 36 of 36 identical |
+| Server-rendered HTML, element by element, for every sitemap page | `node tools/dom-diff.mjs` | 35 of 36 identical; the home page now differs on purpose (portfolio hero) |
 | Pixels against the live site (`FULL=1` for whole pages, `THEME=dark` for dark mode) | `VIEWPORTS=1440x900,390x844 node tools/compare.mjs / /blog …` | see below |
 | Behaviour: menus, palette, dialogs, rail, dock, scroll, 3D, video | `node tools/behavior-check.mjs` | all checks pass |
 

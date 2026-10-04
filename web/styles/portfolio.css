@@ -1,0 +1,44 @@
+/* Portfolio home page: the name, then the poster running edge to edge. */
+
+.pf-hero {
+  color: var(--nw-ink);
+  display: grid;
+  gap: clamp(20px, 3vw, 40px);
+  padding-top: clamp(8px, 2vw, 24px);
+}
+
+.pf-text {
+  display: grid;
+  gap: clamp(12px, 1.6vw, 20px);
+  justify-items: center;
+}
+
+.pf-eyebrow {
+  color: var(--nw-ink);
+  text-align: center;
+}
+
+/* Full bleed: the figure has no inset, frame or rounding, so the picture meets the page edges (and the
+   blue frame around the page). The poster is square, so it is cropped to a wide band that keeps the
+   portrait and the name label in view; object-position picks which part of the square survives. */
+.pf-poster {
+  margin: 0;
+  width: 100%;
+  height: clamp(360px, 82svh, 900px);
+  overflow: clip;
+  background: color-mix(in srgb, var(--nw-ink) 6%, var(--nw-stage));
+}
+
+.pf-poster img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 60%;
+}
+
+@media (max-width: 767px) {
+  .pf-poster {
+    height: min(118vw, 560px);
+  }
+}
