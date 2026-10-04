@@ -8,3 +8,4 @@ export { MissionTitle } from './MissionTitle';
 export { ShareIcon } from './ShareIcon';
 export { XIcon } from './XIcon';
 export { Logo, LOGO_ASPECT } from './Logo';
+export { Signature, SIGNATURE_ASPECT } from './Signature';

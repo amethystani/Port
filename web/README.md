@@ -147,6 +147,7 @@ Not part of the site; used to build and verify it.
 | `html-to-jsx.mjs` | converts captured HTML into JSX components |
 | `extract-posts.mjs`, `extract-lists.mjs`, `extract-shared.mjs`, `write-content.mjs` | one-off extraction of the content files from the captured pages |
 | `trace-logo.py`, `make-brand-assets.mjs` | trace the logo (`tools/assets/logo-source.jpg`) into a vector and generate every logo asset: the `Logo` component, orb stamps, favicon and share card. To change the logo: replace the source image and run both |
+| `trace-signature.py` | traces the signature photo (`tools/assets/signature-source.webp`) into `public/assets/brand/signature{,-blue,-white}.svg`; `<Signature />` draws it as a CSS mask so it follows the theme colour. Used in the home page signoff |
 | `obscure-poster.py` | blurs and halftones the two background portraits on the home poster (original kept in `tools/assets/`); needs Pillow |
 | `localize-external.mjs` | copies hot-linked third-party images into `public/` |
 
