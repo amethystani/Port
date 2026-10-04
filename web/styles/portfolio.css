@@ -18,12 +18,12 @@
   text-align: center;
 }
 
-/* Full bleed: the figure has no inset, frame or rounding, so the picture meets the page edges (and the
-   blue frame around the page). The poster is square, so it is cropped to a wide band that keeps the
+/* The figure has no frame or rounding and shares the other bands' side inset. The poster is square, so it is cropped to a wide band that keeps the
    portrait and the name label in view; object-position picks which part of the square survives. */
 .pf-poster {
-  margin: 0;
-  width: 100%;
+  /* the same side inset as the image bands below (mission, Selected Work), so every band lines up */
+  margin: 0 var(--nw-band-inset);
+  width: auto;
   height: clamp(360px, 82svh, 900px);
   overflow: clip;
   background: color-mix(in srgb, var(--nw-ink) 6%, var(--nw-stage));
@@ -39,6 +39,8 @@
 
 @media (max-width: 767px) {
   .pf-poster {
+    /* the mission image below runs almost to the edge on phones, so match it */
+    margin-inline: 5px;
     height: min(118vw, 560px);
   }
 }
