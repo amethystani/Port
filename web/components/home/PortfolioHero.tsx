@@ -6,7 +6,7 @@ import { portfolio } from '@/content/portfolio';
  * edge to edge as the main photo. Edit the words and the picture in content/portfolio.ts.
  */
 export function PortfolioHero() {
-  const { name, role, affiliation, poster } = portfolio;
+  const { name, role, poster } = portfolio;
   return (
     <section aria-labelledby="portfolio-name" className="pf-hero">
       <div className="pf-text mx-auto w-full max-w-[calc(var(--hw-teams-col)+2*var(--hw-teams-pad-x))] px-[var(--hw-teams-pad-x)]">
@@ -17,7 +17,7 @@ export function PortfolioHero() {
             letterSpacing: 'max(0.36px, calc(0.36 * var(--nw-u-text)))',
           }}
         >
-          {role} <span aria-hidden="true">·</span> {affiliation}
+          {role}
         </p>
         <h1
           id="portfolio-name"

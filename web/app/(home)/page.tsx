@@ -16,7 +16,7 @@ import '@/styles/home-orb.css';
 
 export const metadata = pageMetadata({
   title: `${portfolio.name} | ${portfolio.role}`,
-  description: `${portfolio.name} is an ${portfolio.role} at ${portfolio.affiliation}.`,
+  description: site.homeDescription,
   path: '/',
   image: portfolio.poster.src,
   imageAlt: portfolio.poster.alt,
@@ -35,7 +35,6 @@ export default function HomePage() {
               '@type': 'Person',
               name: portfolio.name,
               jobTitle: portfolio.role,
-              affiliation: { '@type': 'Organization', name: portfolio.affiliation },
               image: `${site.url}${portfolio.poster.src}`,
               url: `${site.url}/`,
             },

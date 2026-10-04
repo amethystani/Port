@@ -164,7 +164,6 @@ export const navPanels: Record<NavPanelName, NavPanel> = {
 export const promos = [
   {
     kind: 'hermes',
-    art: 'wing',
     label: 'EMNLP 2026',
     text: 'Beyond Epistemic Collapse: disagreement-aware scientific RAG, with EVIRAG-Bench.',
     href: portfolio.links.evirag,
@@ -172,7 +171,6 @@ export const promos = [
   },
   {
     kind: 'portal',
-    art: 'portal',
     label: 'Get in touch',
     text: 'Looking for my next research role before a PhD. Say hello.',
     href: `mailto:${portfolio.email}`,
@@ -180,7 +178,6 @@ export const promos = [
   },
   {
     kind: 'nous',
-    art: 'nous',
     label: 'Experience',
     text: 'Research and industry work, from ClerkTree to Complexity Science Hub Vienna.',
     href: '/careers',
@@ -188,7 +185,6 @@ export const promos = [
   },
 ] as const satisfies readonly {
   kind: PromoKind;
-  art: string;
   label: string;
   text: string;
   href: string;

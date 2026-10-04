@@ -10,15 +10,6 @@ export function HermesBlock() {
         data-el="hermes-title"
         className="grid h-[var(--nw-hermes-title-h)] content-start justify-items-center gap-[var(--nw-seam-block)] pt-[calc(120*var(--nw-u))] max-lg:h-auto max-lg:px-[var(--nw-gutter)] max-lg:py-[var(--nw-seam-band)]"
       >
-        <figure className="flex h-[calc(80*var(--nw-u))] items-center justify-center" data-el="hermes-mark">
-          <img
-            alt=""
-            className="h-[calc(105*var(--nw-u))] w-[calc(52*var(--nw-u))] md:rotate-45 object-contain"
-            decoding="async"
-            loading="lazy"
-            src="/assets/hermes-landing/teams/hermes-wing.svg"
-          />
-        </figure>
         <p
           data-el="hermes-eyebrow"
           className="font-[family-name:var(--font-rules-extended)] font-bold text-inherit uppercase leading-[1.4] text-cap-trim cap-rules"

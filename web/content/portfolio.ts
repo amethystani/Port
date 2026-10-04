@@ -2,7 +2,6 @@
 export const portfolio = {
   name: 'Animesh Mishra',
   role: 'ML/NLP Researcher',
-  affiliation: 'NCA',
   /** Where "contact" links (footer, apply buttons, search results) send mail. */
   email: 'animeshmishra0567@gmail.com',
   /** Profiles and projects the nav, footer and menus link to. */
@@ -21,6 +20,6 @@ export const portfolio = {
     src: '/assets/portfolio/animesh-mishra-poster.webp',
     width: 1254,
     height: 1254,
-    alt: 'Black-and-white portrait of Animesh Mishra, smiling, with dark curly hair and glasses, on a handwritten and annotated paper collage. The label under the photo reads "Animesh Mishra, ML/NLP Researcher, NCA".',
+    alt: 'Black-and-white portrait of Animesh Mishra, smiling, with dark curly hair and glasses, on a handwritten and annotated paper collage. The label under the photo reads "Animesh Mishra, ML/NLP Researcher".',
   },
 } as const;

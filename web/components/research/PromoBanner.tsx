@@ -113,9 +113,6 @@ function PromoContent({
 }) {
   return (
     <>
-      <span className="promo-brand">
-        <img className="promo-symbol" alt="" src={art(promo.art)} />
-      </span>
       <span className="promo-message">
         <span className="promo-more">{promo.label}</span>
         <span>:</span>

@@ -531,9 +531,6 @@ export function Composer() {
         {TITLE}
       </h2>
       <div className="nw-composer-bar">
-        <span className="nw-composer-wing" aria-hidden="true">
-          <img alt="" src="/assets/nous-web/mobile-menu/menuCode_imgWing.svg" />
-        </span>
         <div
           className="field-visual-module__wzPR8a__shell flex w-full items-center bg-[var(--hermes-bg-ghost)] transition-shadow duration-150 hover:duration-0 shadow-hermes-outline-secondary hover:shadow-hermes-outline has-[:disabled]:hover:shadow-hermes-outline-secondary has-[:focus-visible]:shadow-hermes-outline has-[:focus-within]:shadow-hermes-outline has-[:disabled]:cursor-not-allowed h-[var(--hermes-field-h)] gap-1.5 px-3 cursor-text has-[:disabled]:opacity-50 nw-composer-search-field"
           data-surface="white"

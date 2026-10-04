@@ -146,7 +146,7 @@ Not part of the site; used to build and verify it.
 | `dom-diff.mjs`, `compare.mjs`, `behavior-check.mjs` | verification (above) |
 | `html-to-jsx.mjs` | converts captured HTML into JSX components |
 | `extract-posts.mjs`, `extract-lists.mjs`, `extract-shared.mjs`, `write-content.mjs` | one-off extraction of the content files from the captured pages |
-| `trace-signature.py`, `make-brand-assets.mjs` | trace the signature photo (`tools/assets/signature-source.webp`) into a vector and generate every logo asset: `public/assets/brand/signature-sprite.svg` (what `<Logo />` draws, in the theme colour), the `Logo` component, orb stamps, favicon and share card. To change the logo: replace the source photo and run both |
+| `trace-signature.py`, `make-brand-assets.mjs` | trace the signature photo (`tools/assets/signature-source.webp`) into a vector and generate every logo asset: `public/assets/brand/signature-sprite.svg` (what `<Logo />` draws, in the theme colour), the `Logo` component, orb stamps (PNG), favicon (`public/signature-favicon.png`) and share card. To change the logo: replace the source photo and run both |
 | `obscure-poster.py` | blurs and halftones the two background portraits on the home poster (original kept in `tools/assets/`); needs Pillow |
 | `localize-external.mjs` | copies hot-linked third-party images into `public/` |
 

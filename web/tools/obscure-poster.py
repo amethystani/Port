@@ -14,6 +14,8 @@ PANELS = [(2, 362, 232, 908), (1014, 370, 1254, 906)]
 BLUR = 15      # how smeared the faces become
 CELL = 6       # halftone dot pitch, in pixels
 FEATHER = 5    # soft edge between obscured area and paper
+# The printed label under the role line is cloned out with clean paper from just below it.
+CLONE_OUT = [((568, 1038, 668, 1086), (568, 1096, 668, 1144))]  # (area to hide, clean paper to copy over it)
 
 
 def halftone(gray, cell):
@@ -54,6 +56,12 @@ for (l, t, r, b) in PANELS:
     ImageDraw.Draw(mask).rectangle((FEATHER, FEATHER, region.size[0] - FEATHER, region.size[1] - FEATHER), fill=255)
     mask = mask.filter(ImageFilter.GaussianBlur(FEATHER / 1.5))
     im.paste(tint, (l, t), mask)
+
+for (l, t, r, b), (sl, st, sr, sb) in CLONE_OUT:
+    patch = im.crop((sl, st, sr, sb))
+    mask = Image.new('L', patch.size, 0)
+    ImageDraw.Draw(mask).rectangle((2, 2, patch.size[0] - 2, patch.size[1] - 2), fill=255)
+    im.paste(patch, (l, t), mask.filter(ImageFilter.GaussianBlur(1.5)))
 
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 im.save(OUT, 'WEBP', quality=90, method=6)

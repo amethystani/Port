@@ -1,7 +1,7 @@
 // Builds every logo asset from the traced signature (tools/assets/signature-path.json, made by trace-signature.py):
 //   components/icons/Logo.tsx                          the React component (colour from `currentColor`)
-//   public/assets/brand/logo-stamp-{light,dark}.svg    the signature painted on the home page's 3D orb
-//   public/logo-favicon.png                            browser tab icon
+//   public/assets/brand/logo-stamp-{light,dark}.png    the signature painted on the home page's 3D orb
+//   public/signature-favicon.png                       browser tab icon
 //   public/assets/brand/social-card.png                1200x630 share image
 // The signature is hairline-thin, so wherever it is small it gets a stroke (the `weight`) that thickens it a little.
 // Colours are the site's own: brand blue for light mode, white for dark mode, paper behind.
@@ -52,18 +52,15 @@ export const LOGO_ASPECT = ${ASPECT.toFixed(4)};
 `,
 );
 
-// 2. the orb stamps: the signature centred on a square canvas
+// 2. the orb stamps (PNG, drawn in Chromium below): the signature centred on a transparent square canvas.
+//    They are rasters rather than SVG so every browser maps exactly the same pixels onto the 3D medal.
 const side = 983;
 const stampW = 700;
 const k = stampW / W;
 const tx = (side - stampW) / 2;
 const ty = (side - H * k) / 2;
-for (const [theme, fill] of [['light', BLUE], ['dark', '#fff']]) {
-  fs.writeFileSync(
-    `public/assets/brand/logo-stamp-${theme}.svg`,
-    `<svg xmlns="http://www.w3.org/2000/svg" fill="none" width="${side}" height="${side}" viewBox="0 0 ${side} ${side}"><g transform="translate(${tx} ${ty.toFixed(2)}) scale(${k})"><path fill="${fill}" stroke="${fill}" stroke-width="9" stroke-linejoin="round" d="${d}"/></g></svg>`,
-  );
-}
+const stampSvg = (fill) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${side}" height="${side}" viewBox="0 0 ${side} ${side}"><g transform="translate(${tx} ${ty.toFixed(2)}) scale(${k})"><path fill="${fill}" stroke="${fill}" stroke-width="9" stroke-linejoin="round" d="${d}"/></g></svg>`;
 
 // 3 + 4. raster images, drawn in Chromium
 const mark = (color, width, weight) =>
@@ -71,11 +68,16 @@ const mark = (color, width, weight) =>
 const browser = await chromium.launch({
   executablePath: process.env.CHROMIUM_PATH ?? ['/opt/pw-browsers/chromium-1194/chrome-linux/chrome', '/opt/pw-browsers/chromium'].find((p) => fs.existsSync(p)),
 });
+const stampPage = await browser.newPage({ viewport: { width: side, height: side }, deviceScaleFactor: 2 });
+for (const [theme, fill] of [['light', BLUE], ['dark', '#ffffff']]) {
+  await stampPage.setContent(`<body style="margin:0;background:transparent">${stampSvg(fill)}</body>`);
+  await stampPage.screenshot({ path: `public/assets/brand/logo-stamp-${theme}.png`, omitBackground: true });
+}
 const page = await browser.newPage();
 
 await page.setViewportSize({ width: 96, height: 96 });
-await page.setContent(`<body style="margin:0;background:${BLUE};display:grid;place-items:center;width:96px;height:96px">${mark(WHITE, 86, 20)}</body>`);
-await page.screenshot({ path: 'public/logo-favicon.png' });
+await page.setContent(`<body style="margin:0;background:${BLUE};display:grid;place-items:center;width:96px;height:96px">${mark(WHITE, 88, 34)}</body>`);
+await page.screenshot({ path: 'public/signature-favicon.png' });
 
 await page.setViewportSize({ width: 1200, height: 630 });
 await page.setContent(`<body style="margin:0;background:${BLUE};display:grid;place-items:center;width:1200px;height:630px">${mark(WHITE, 860, 6)}</body>`);
