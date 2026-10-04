@@ -74,9 +74,9 @@ export function Hero() {
         }
       >
         <span>
-          <span>Nous Research</span>
+          <span>Animesh Mishra</span>
         </span>
-        <span aria-hidden="true">Nous Research</span>
+        <span aria-hidden="true">Animesh Mishra</span>
       </h1>
       <div
         className="flex w-[var(--nw-hero-body-w)] flex-col gap-[calc(var(--nw-hero-gap)/2)] text-center max-lg:w-full"
@@ -86,7 +86,7 @@ export function Hero() {
           className="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty"
           style={{ fontSize: '15px', lineHeight: '1.4' }}
         >
-          Nous Research is a pioneer in open AI training and research. We created Hermes Agent, the most
+          Animesh Mishra is a pioneer in open AI training and research. We created Hermes Agent, the most
           widely used open source agent harness in the world.
         </p>
         <p

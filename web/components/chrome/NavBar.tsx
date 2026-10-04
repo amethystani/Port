@@ -78,7 +78,7 @@ export function NavBar({
     <nav
       data-pro-nav=""
       data-research-nav=""
-      aria-label={main ? 'Nous Research' : 'Nous Research, pinned'}
+      aria-label={main ? 'Animesh Mishra' : 'Animesh Mishra, pinned'}
       className={`${NAV_CLASS} ${main ? 'pt-10 pb-5' : 'py-2.5'}`}
     >
       <div className="flex items-center gap-x-6 max-md:hidden">
@@ -94,7 +94,7 @@ export function NavBar({
       ) : (
         <Link
           href="/"
-          aria-label="Nous Research"
+          aria-label="Animesh Mishra"
           className="grid size-[var(--hw-teams-wing-box)] shrink-0 place-items-center"
         >
           <BadgePair className="nw-research-pinned-badge" width={34} height={48} />

@@ -123,7 +123,7 @@ export const jobs: Job[] = [
     location: 'Remote',
     eyebrow: 'Full time, Remote',
     intro: [
-      "If you're a great engineer with a wide-ranging skill set, we want you to apply and join the team. You'll help us build Hermes Agent, Nous Portal, and other infrastructure that powers Nous Research. A lot of our team is made up of generalist engineers, and people like this tend to fit really well here.",
+      "If you're a great engineer with a wide-ranging skill set, we want you to apply and join the team. You'll help us build Hermes Agent, Nous Portal, and other infrastructure that powers Animesh Mishra. A lot of our team is made up of generalist engineers, and people like this tend to fit really well here.",
     ],
     sections: [
       {
@@ -317,7 +317,7 @@ export const jobs: Job[] = [
     location: 'Remote',
     eyebrow: 'Full time, Remote',
     intro: [
-      "As a Forward Deployed Engineer at Nous Research, you'll deploy and adapt Hermes Agent Enterprise inside complex customer environments. You'll partner directly with enterprise customers to understand their workflows, integrate internal systems, and deliver production-ready AI solutions that solve real business problems.",
+      "As a Forward Deployed Engineer at Animesh Mishra, you'll deploy and adapt Hermes Agent Enterprise inside complex customer environments. You'll partner directly with enterprise customers to understand their workflows, integrate internal systems, and deliver production-ready AI solutions that solve real business problems.",
       "You'll work across engineering, infrastructure, and customer teams to bridge the gap between cutting-edge AI research and reliable enterprise deployments. This is an ideal role for someone who enjoys solving ambiguous technical challenges, working closely with customers, and shipping high-impact solutions.",
     ],
     sections: [
@@ -365,7 +365,7 @@ export const jobs: Job[] = [
     location: 'Remote',
     eyebrow: 'Full time, Remote',
     intro: [
-      "As a Product Analytics Engineer at Nous Research, you'll own the measurement systems that help us understand how users interact with Hermes Agent. You'll build the analytics foundation across our products, from instrumentation and event pipelines to dashboards and experimentation, then use that data to identify opportunities to improve activation, engagement, retention, and long-term product success.",
+      "As a Product Analytics Engineer at Animesh Mishra, you'll own the measurement systems that help us understand how users interact with Hermes Agent. You'll build the analytics foundation across our products, from instrumentation and event pipelines to dashboards and experimentation, then use that data to identify opportunities to improve activation, engagement, retention, and long-term product success.",
       "You'll partner closely with Product, Engineering, Design, Support, and Leadership to turn behavioral insights into concrete product improvements. This role is ideal for someone who enjoys building reliable analytics infrastructure while also using data to influence product strategy and execution.",
     ],
     sections: [
@@ -421,7 +421,7 @@ export const jobs: Job[] = [
     location: 'Remote',
     eyebrow: 'Full time, Remote',
     intro: [
-      "As a Security Engineer at Nous Research, you'll own security end-to-end across our infrastructure, products, and enterprise deployments. Nous builds open-source AI language models and agents, including Hermes Agent, which is used by consumers and Fortune 500 enterprises across multi-tenant SaaS, dedicated VPC, self-hosted, and air-gapped environments.",
+      "As a Security Engineer at Animesh Mishra, you'll own security end-to-end across our infrastructure, products, and enterprise deployments. Nous builds open-source AI language models and agents, including Hermes Agent, which is used by consumers and Fortune 500 enterprises across multi-tenant SaaS, dedicated VPC, self-hosted, and air-gapped environments.",
       "This is a hands-on-keyboard role for someone who wants to harden multi-cloud infrastructure, secure a novel agentic AI platform, and build the security foundation regulated enterprise customers demand. You'll be the person focused full-time on protecting the company while helping the rest of the team continue shipping quickly.",
     ],
     sections: [

@@ -31,7 +31,7 @@ const PAGES: { title: string; url: string; text: string }[] = [
   {
     title: 'Hermes Agent',
     url: 'https://hermes-agent.nousresearch.com/',
-    text: 'The self-improving AI agent built by Nous Research. Learn about Hermes, the agent that grows with you, and get it running on your computer.',
+    text: 'The self-improving AI agent built by Animesh Mishra. Learn about Hermes, the agent that grows with you, and get it running on your computer.',
   },
   {
     title: 'Install Hermes',
@@ -46,13 +46,13 @@ const PAGES: { title: string; url: string; text: string }[] = [
   {
     title: 'Releases',
     url: '/releases',
-    text: 'Models, datasets, papers and code released by Nous Research.',
+    text: 'Models, datasets, papers and code released by Animesh Mishra.',
   },
-  { title: 'Blog', url: '/blog', text: 'Research and perspectives from Nous Research.' },
+  { title: 'Blog', url: '/blog', text: 'Research and perspectives from Animesh Mishra.' },
   {
     title: 'Careers',
     url: '/careers',
-    text: 'Open roles at Nous Research building open-source intelligence, Hermes Agent and AI infrastructure.',
+    text: 'Open roles at Animesh Mishra building open-source intelligence, Hermes Agent and AI infrastructure.',
   },
 ];
 

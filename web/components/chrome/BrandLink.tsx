@@ -34,7 +34,7 @@ export function BrandLink() {
     );
   }
   return (
-    <Link href="/" className="nw-research-brand-link" aria-label="Nous Research home">
+    <Link href="/" className="nw-research-brand-link" aria-label="Animesh Mishra home">
       <span>
         <Badges />
       </span>

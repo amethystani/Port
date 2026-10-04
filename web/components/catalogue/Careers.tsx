@@ -103,9 +103,9 @@ export function CareersPage({ jobs }: { jobs: Job[] }) {
               doubled down on open-source, humanistic AI.
             </Body>
             <Body>
-              NOUS RESEARCH is a frontier open source AI company. We are well known for creating Hermes Agent,
-              our open-source self-improving AI agent with a built-in learning loop. We created DisTrO, an
-              innovation to collaborate on training generative AI. We aim to harness the world&apos;s
+              ANIMESH MISHRA is a frontier open source AI company. We are well known for creating Hermes
+              Agent, our open-source self-improving AI agent with a built-in learning loop. We created DisTrO,
+              an innovation to collaborate on training generative AI. We aim to harness the world&apos;s
               creativity, ingenuity, and resources to outpace closed tech-giants.
             </Body>
           </div>

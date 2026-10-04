@@ -92,7 +92,7 @@ export function Announcements() {
           </h2>
           <a
             href="https://x.com/NousResearch"
-            aria-label="Nous Research on X"
+            aria-label="Animesh Mishra on X"
             className="inline-flex shrink-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current"
           >
             <span aria-hidden="true">

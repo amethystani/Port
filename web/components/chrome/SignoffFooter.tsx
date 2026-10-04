@@ -18,7 +18,7 @@ export function SignoffFooter({ home = false }: { home?: boolean }) {
         >
           <div className="flex min-w-0 flex-1 flex-col gap-[1em] max-md:order-2 max-md:basis-[calc(50%-12px)]">
             <p>The Internet's Own AI</p>
-            <p>© 2026, Nous Research, Inc.</p>
+            <p>© 2026, Animesh Mishra</p>
           </div>
           <div className="flex items-center gap-5 max-md:order-1 max-md:basis-full max-md:justify-center">
             <span

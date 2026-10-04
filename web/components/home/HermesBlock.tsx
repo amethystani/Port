@@ -58,11 +58,11 @@ export function HermesBlock() {
             style={{ fontSize: 'max(13px, calc(13 * var(--nw-u-text)))', lineHeight: '1.15' }}
           >
             <span className="nw-desktop-only">
-              The self-improving AI agent built by Nous Research. The only agent with a built-in learning loop
-              — creates skills from experience,
+              The self-improving AI agent built by Animesh Mishra. The only agent with a built-in learning
+              loop — creates skills from experience,
             </span>
             <span className="nw-mobile-only">
-              The self-improving AI agent built by Nous Research. The only agent with a built-in learning
+              The self-improving AI agent built by Animesh Mishra. The only agent with a built-in learning
               loop: creates skills from experience,
             </span>
           </p>

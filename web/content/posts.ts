@@ -99,7 +99,7 @@ export const posts: Post[] = [
     title: 'Lighthouse Attention',
     description:
       'Lighthouse Attention: a selection-based hierarchical attention that runs ~17x faster than standard attention at 512K context on a single B200, with a 1.4-1.7x end-to-end pretraining speedup at 98K. Symmetric Q/K/V pyramid pooling, parameter-free norm scoring, stock FlashAttention on a dense gather. Validated at 530M Llama-3 with 1M-token training across 32 B200s under context parallelism.',
-    author: 'Nous Research',
+    author: 'Animesh Mishra',
     avatar: {
       badge: true,
     },
@@ -129,7 +129,7 @@ export const posts: Post[] = [
     title: 'Efficient pretraining with token superposition',
     description:
       'Token Superposition Training: a 2-3x wall-clock speedup on LLM pretraining at matched FLOPs, with no change to the final model, optimizer, tokenizer, or data.',
-    author: 'Nous Research',
+    author: 'Animesh Mishra',
     avatar: {
       badge: true,
     },
@@ -152,11 +152,11 @@ export const posts: Post[] = [
   },
   {
     slug: 'introducing-hermes-4-3',
-    title: 'Introducing Hermes 4.3: Local Intelligence Globally Trained - NOUS RESEARCH',
+    title: 'Introducing Hermes 4.3: Local Intelligence Globally Trained - ANIMESH MISHRA',
     cardTitle: 'Introducing Hermes 4.3: Local Intelligence Globally Trained',
     description:
       'Today we’re releasing Hermes 4.3 (🤗 Hugging Face), an update to our flagship Hermes series of models. Hermes 4.3 was trained with an extended context length (up to 512K) and nearly matches (and in some cases exceeds) the performance...',
-    author: 'NOUS RESEARCH',
+    author: 'ANIMESH MISHRA',
     avatar: {
       badge: true,
     },
@@ -164,7 +164,7 @@ export const posts: Post[] = [
     dateLabel: 'December 2025',
     cover: {
       src: '/assets/nous-web/blog/blogArticles_imgImage16.webp',
-      alt: 'Introducing Hermes 4.3: Local Intelligence Globally Trained - NOUS RESEARCH',
+      alt: 'Introducing Hermes 4.3: Local Intelligence Globally Trained - ANIMESH MISHRA',
     },
     excerpt:
       'Today we’re releasing Hermes 4.3 (🤗 Hugging Face), an update to our flagship Hermes series of models. Hermes 4.3 was trained with an extended context length (up to 512K) and nearly matches (and in some cases exceeds) the performance...',
@@ -221,10 +221,11 @@ export const posts: Post[] = [
   },
   {
     slug: 'tinker-atropos-blog',
-    title: 'tinker-atropos: An Integration Layer for the Tinker API and Atropos RL Framework - NOUS RESEARCH',
+    title:
+      'tinker-atropos: An Integration Layer for the Tinker API and Atropos RL Framework - ANIMESH MISHRA',
     cardTitle: 'tinker-atropos: An Integration Layer for the Tinker API and Atropos RL Framework',
     description:
-      'The team at Nous Research proudly presents tinker-atropos, our integration layer between the Tinker API and our Atropos reinforcement learning (RL) framework. We designed Atropos to be a fully decoupled environment service, separating concerns around trainer management, rollout collection, and environment setup into three distinct components.\n\nConsequently, we found Tinker to be a perfect fit for this paradigm, providing easier management of the inference weights while remaining as close to a fully on-policy approach as possible. The goal of our integration layer was to enable any Atropos environment to plug into Tinker with minimal, if any, modifications needed. We hope this effort will introduce new Atropos users to the Tinker framework and allow Tinker users to immediately get started with tested and thoughtfully designed environments. Through decoupling training, inference, and trajectory collection, we are able to present a seamless, easy-to-use integration layer between the Tinker API and the Atropos RL framework.',
+      'The team at Animesh Mishra proudly presents tinker-atropos, our integration layer between the Tinker API and our Atropos reinforcement learning (RL) framework. We designed Atropos to be a fully decoupled environment service, separating concerns around trainer management, rollout collection, and environment setup into three distinct components.\n\nConsequently, we found Tinker to be a perfect fit for this paradigm, providing easier management of the inference weights while remaining as close to a fully on-policy approach as possible. The goal of our integration layer was to enable any Atropos environment to plug into Tinker with minimal, if any, modifications needed. We hope this effort will introduce new Atropos users to the Tinker framework and allow Tinker users to immediately get started with tested and thoughtfully designed environments. Through decoupling training, inference, and trajectory collection, we are able to present a seamless, easy-to-use integration layer between the Tinker API and the Atropos RL framework.',
     author: 'Nightwing',
     avatar: {
       image: '/assets/nous-web/blog/article-author.webp',
@@ -233,10 +234,10 @@ export const posts: Post[] = [
     dateLabel: 'November 2025',
     cover: {
       src: '/assets/nous-web/blog/articles/G2DHiTVWQAEAgUf.jpg',
-      alt: 'tinker-atropos: An Integration Layer for the Tinker API and Atropos RL Framework - NOUS RESEARCH',
+      alt: 'tinker-atropos: An Integration Layer for the Tinker API and Atropos RL Framework - ANIMESH MISHRA',
     },
     excerpt:
-      'The team at Nous Research proudly presents tinker-atropos, our integration layer between the Tinker API and our Atropos reinforcement learning (RL) framework. We designed Atropos to be a fully decoupled environment service, separating concerns around trainer management, rollout collection, and...',
+      'The team at Animesh Mishra proudly presents tinker-atropos, our integration layer between the Tinker API and our Atropos reinforcement learning (RL) framework. We designed Atropos to be a fully decoupled environment service, separating concerns around trainer management, rollout collection, and...',
     related: [
       'the-next-phase-of-psyche',
       'measuring-thinking-efficiency-in-reasoning-models-the-missing-benchmark',
@@ -245,11 +246,11 @@ export const posts: Post[] = [
   },
   {
     slug: 'the-next-phase-of-psyche',
-    title: 'The Next Phase of Psyche - NOUS RESEARCH',
+    title: 'The Next Phase of Psyche - ANIMESH MISHRA',
     cardTitle: 'The Next Phase of Psyche',
     description:
       'Starting today, Psyche will train a number of new models in parallel, all aimed at creating useful, novel open source AI.',
-    author: 'NOUS RESEARCH',
+    author: 'ANIMESH MISHRA',
     byline: 'Psyche Team',
     avatar: {
       badge: true,
@@ -258,7 +259,7 @@ export const posts: Post[] = [
     dateLabel: 'September 2025',
     cover: {
       src: '/assets/nous-web/blog/articles/psyche-cover2.png',
-      alt: 'The Next Phase of Psyche - NOUS RESEARCH',
+      alt: 'The Next Phase of Psyche - ANIMESH MISHRA',
     },
     excerpt:
       'Psyche is an open infrastructure that democratizes AI development by decentralizing training across underutilized hardware. Building on DisTrO and its predecessor DeMo, Psyche reduces data transfer by several orders of magnitude, making distributed training practical. Coordination happens on the Solana...',
@@ -270,7 +271,7 @@ export const posts: Post[] = [
   },
   {
     slug: 'measuring-thinking-efficiency-in-reasoning-models-the-missing-benchmark',
-    title: 'Measuring Thinking Efficiency in Reasoning Models: The Missing Benchmark - NOUS RESEARCH',
+    title: 'Measuring Thinking Efficiency in Reasoning Models: The Missing Benchmark - ANIMESH MISHRA',
     cardTitle: 'Measuring Thinking Efficiency in Reasoning Models: The Missing Benchmark',
     description:
       'Large Reasoning Models (LRMs) employ a novel paradigm known as test-time scaling, leveraging reinforcement learning to teach the models to generate extended chains of thought (CoT) during reasoning tasks. This enhances their problem-solving capabilities beyond what their base models could achieve independently.',
@@ -282,7 +283,7 @@ export const posts: Post[] = [
     dateLabel: 'August 2025',
     cover: {
       src: '/assets/nous-web/blog/articles/CoT-Blogpost-OG-0a.png',
-      alt: 'Measuring Thinking Efficiency in Reasoning Models: The Missing Benchmark - NOUS RESEARCH',
+      alt: 'Measuring Thinking Efficiency in Reasoning Models: The Missing Benchmark - ANIMESH MISHRA',
     },
     excerpt:
       'Large Reasoning Models (LRMs) employ a novel paradigm known as test-time scaling, leveraging reinforcement learning to teach the models to generate extended chains of thought (CoT) during reasoning tasks. This enhances their problem-solving capabilities beyond what their base models could...',
@@ -313,7 +314,7 @@ export const posts: Post[] = [
   },
   {
     slug: 'nous-psyche',
-    title: 'Democratizing AI: The Psyche Network Architecture - NOUS RESEARCH',
+    title: 'Democratizing AI: The Psyche Network Architecture - ANIMESH MISHRA',
     cardTitle: 'Democratizing AI: The Psyche Network Architecture',
     description:
       'Psyche is an open infrastructure that democratizes AI development by decentralizing training across underutilized hardware. Building on DisTrO and its predecessor DeMo, Psyche reduces data transfer by several orders of magnitude, making distributed training practical. Coordination happens on the Solana blockchain, ensuring a fault-tolerant and censorship-resistant network.',
@@ -325,7 +326,7 @@ export const posts: Post[] = [
     dateLabel: 'May 2025',
     cover: {
       src: '/assets/nous-web/blog/articles/full-psyche-diagram1-scaled.png',
-      alt: 'Democratizing AI: The Psyche Network Architecture - NOUS RESEARCH',
+      alt: 'Democratizing AI: The Psyche Network Architecture - ANIMESH MISHRA',
     },
     excerpt:
       'Psyche is an open infrastructure that democratizes AI development by decentralizing training across underutilized hardware. Building on DisTrO and its predecessor DeMo, Psyche reduces data transfer by several orders of magnitude, making distributed training practical. Coordination happens on the Solana...',
@@ -337,12 +338,12 @@ export const posts: Post[] = [
   },
   {
     slug: 'introducing-atropos',
-    title: 'Introducing Atropos - NOUS RESEARCH',
+    title: 'Introducing Atropos - ANIMESH MISHRA',
     cardTitle: 'Introducing Atropos',
     description:
       'Pushing the boundaries of reinforcement learning, particularly in complex environments or with large models, inevitably requires operating at a massive scale. Coordinating thousands of parallel computations efficiently becomes paramount.',
     author: 'Ryan Carlow',
-    byline: 'NOUS RESEARCH',
+    byline: 'ANIMESH MISHRA',
     avatar: {
       initials: 'RC',
     },
@@ -350,7 +351,7 @@ export const posts: Post[] = [
     dateLabel: 'April 2025',
     cover: {
       src: '/assets/nous-web/blog/articles/atropos-1024x772.png',
-      alt: 'Introducing Atropos - NOUS RESEARCH',
+      alt: 'Introducing Atropos - ANIMESH MISHRA',
     },
     excerpt:
       'Atropos is designed to reliably coordinate generation tasks across potentially thousands of distributed workers. It interfaces seamlessly with standard inference APIs for straightforward integration....',
@@ -363,11 +364,11 @@ export const posts: Post[] = [
   {
     slug: 'introducing-the-forge-reasoning-api-beta-and-nous-chat-an-evolution-in-llm-inference',
     title:
-      'Introducing the Forge Reasoning API Beta and Nous Chat: An Evolution in LLM Inference - NOUS RESEARCH',
+      'Introducing the Forge Reasoning API Beta and Nous Chat: An Evolution in LLM Inference - ANIMESH MISHRA',
     cardTitle: 'Introducing the Forge Reasoning API Beta and Nous Chat: An Evolution in LLM Inference',
     description:
       'The Forge Reasoning API contains some of our latest advancements in inference-time AI research, building on our journey from the original Hermes model.',
-    author: 'NOUS RESEARCH',
+    author: 'ANIMESH MISHRA',
     avatar: {
       badge: true,
     },
@@ -375,10 +376,10 @@ export const posts: Post[] = [
     dateLabel: 'November 2024',
     cover: {
       src: '/assets/nous-web/blog/articles/image-1024x319.png',
-      alt: 'Introducing the Forge Reasoning API Beta and Nous Chat: An Evolution in LLM Inference - NOUS RESEARCH',
+      alt: 'Introducing the Forge Reasoning API Beta and Nous Chat: An Evolution in LLM Inference - ANIMESH MISHRA',
     },
     excerpt:
-      'At Nous Research we’re launching two new projects: the Forge Reasoning API Beta and Nous Chat, a simple chat platform featuring the Hermes language model. The Forge Reasoning API contains some of our advancements in inference-time AI research, building on...',
+      'At Animesh Mishra we’re launching two new projects: the Forge Reasoning API Beta and Nous Chat, a simple chat platform featuring the Hermes language model. The Forge Reasoning API contains some of our advancements in inference-time AI research, building on...',
     related: [
       'setting-your-pet-rock-free',
       'from-black-box-to-glass-house-the-imperative-for-transparent-ai-development',
@@ -387,7 +388,7 @@ export const posts: Post[] = [
   },
   {
     slug: 'setting-your-pet-rock-free',
-    title: 'Setting Your Pet Rock Free. - NOUS RESEARCH',
+    title: 'Setting Your Pet Rock Free. - ANIMESH MISHRA',
     cardTitle: 'Setting Your Pet Rock Free.',
     description:
       'A social experiment on how to deploy provably, fully-autonomous thinking sand. The quest for truly autonomous AI agents faces a fundamental challenge: how can researchers prove that an AI is truly autonomous, with no human pulling the strings...',
@@ -400,7 +401,7 @@ export const posts: Post[] = [
     dateLabel: 'October 2024',
     cover: {
       src: '/assets/nous-web/blog/articles/rockblog09-1024x345.png',
-      alt: 'Setting Your Pet Rock Free. - NOUS RESEARCH',
+      alt: 'Setting Your Pet Rock Free. - ANIMESH MISHRA',
     },
     excerpt:
       'A social experiment on how to deploy provably, fully-autonomous thinking sand. The quest for truly autonomous AI agents faces a fundamental challenge: how can researchers prove that an AI is truly autonomous, with no human pulling the strings...',
@@ -412,7 +413,7 @@ export const posts: Post[] = [
   },
   {
     slug: 'from-black-box-to-glass-house-the-imperative-for-transparent-ai-development',
-    title: 'From Black Box to Glass House: The Imperative For Transparent AI Development - NOUS RESEARCH',
+    title: 'From Black Box to Glass House: The Imperative For Transparent AI Development - ANIMESH MISHRA',
     cardTitle: 'From Black Box to Glass House: The Imperative For Transparent AI Development',
     description:
       'The world is abuzz with talk of AI, a technology that has become an integral part of life for many. However, as AI approaches at breakneck speed, it’s natural that people are scared. This fear is understandable, but it’s also...',
@@ -424,7 +425,7 @@ export const posts: Post[] = [
     dateLabel: 'October 2024',
     cover: {
       src: '/assets/nous-web/blog/articles/MaxfieldSafety04-1024x562.png',
-      alt: 'From Black Box to Glass House: The Imperative For Transparent AI Development - NOUS RESEARCH',
+      alt: 'From Black Box to Glass House: The Imperative For Transparent AI Development - ANIMESH MISHRA',
     },
     excerpt:
       'The world is abuzz with talk of AI, a technology that has become an integral part of life for many. However, as AI approaches at breakneck speed, it’s natural that people are scared. This fear is understandable, but it’s also...',
@@ -436,7 +437,7 @@ export const posts: Post[] = [
   },
   {
     slug: 'freedom-at-the-frontier-hermes-3',
-    title: 'Freedom at the Frontier: Hermes 3 - NOUS RESEARCH',
+    title: 'Freedom at the Frontier: Hermes 3 - ANIMESH MISHRA',
     cardTitle: 'Freedom at the Frontier: Hermes 3',
     description:
       'Closed-source, “frontier” models today lack flexibility and adaptability. Many refuse to answer simple questions, hallucinate an authority’s form of morality, or require convoluted prompts in order to trigger a coherent answer. It’s impossible to nudge these models towards individual personalization,...',
@@ -448,7 +449,7 @@ export const posts: Post[] = [
     dateLabel: 'August 2024',
     cover: {
       src: '/assets/nous-web/blog/articles/hermes3-768x768.png',
-      alt: 'Freedom at the Frontier: Hermes 3 - NOUS RESEARCH',
+      alt: 'Freedom at the Frontier: Hermes 3 - ANIMESH MISHRA',
     },
     excerpt:
       'Closed-source, “frontier” models today lack flexibility and adaptability. Many refuse to answer simple questions, hallucinate an authority’s form of morality, or require convoluted prompts in order to trigger a coherent answer. It’s impossible to nudge these models towards individual personalization,...',
@@ -460,11 +461,11 @@ export const posts: Post[] = [
   },
   {
     slug: 'the-instruct-monomyth',
-    title: 'The Instruct Monomyth: why base models matter - NOUS RESEARCH',
+    title: 'The Instruct Monomyth: why base models matter - ANIMESH MISHRA',
     cardTitle: 'The Instruct Monomyth: why base models matter',
     description:
       'There is a deep, twisty labyrinth buried under a mountain of language, of symbol manipulation, and semantic nets. Its roots reach down deep into the Earth, absorbing the minutia of current thought, the limitations of logic, the constrained realm of...',
-    author: 'NOUS RESEARCH',
+    author: 'ANIMESH MISHRA',
     byline: 'DESIDERATA',
     avatar: {
       badge: true,
@@ -473,7 +474,7 @@ export const posts: Post[] = [
     dateLabel: 'July 2024',
     cover: {
       src: '/assets/nous-web/blog/articles/IMG_2009-2-1024x603.jpeg',
-      alt: 'The Instruct Monomyth: why base models matter - NOUS RESEARCH',
+      alt: 'The Instruct Monomyth: why base models matter - ANIMESH MISHRA',
     },
     excerpt:
       'There is a deep, twisty labyrinth buried under a mountain of language, of symbol manipulation, and semantic nets. Its roots reach down deep into the Earth, absorbing the minutia of current thought, the limitations of logic, the constrained realm of...',
@@ -485,7 +486,7 @@ export const posts: Post[] = [
   },
   {
     slug: 'dsjjjj-simulacra-in-the-stupor-of-becoming',
-    title: 'DSJJJJ: Simulacra in the Stupor of Becoming - NOUS RESEARCH',
+    title: 'DSJJJJ: Simulacra in the Stupor of Becoming - ANIMESH MISHRA',
     cardTitle: 'DSJJJJ: Simulacra in the Stupor of Becoming',
     description:
       'Desideratic AI (DSJJJJ) is a philosophical movement focused on creating AI systems using concepts traditionally found in monism, mereology, and philology. Desidera aim to create AI that can act as better versions of themselves by reflecting upon their own nature...',
@@ -497,7 +498,7 @@ export const posts: Post[] = [
     dateLabel: 'March 2024',
     cover: {
       src: '/assets/nous-web/blog/articles/52f887d88ef18045.png',
-      alt: 'DSJJJJ: Simulacra in the Stupor of Becoming - NOUS RESEARCH',
+      alt: 'DSJJJJ: Simulacra in the Stupor of Becoming - ANIMESH MISHRA',
     },
     excerpt:
       'Desideratic AI (DSJJJJ) is a philosophical movement focused on creating AI systems using concepts traditionally found in monism, mereology, and philology. Desidera aim to create AI that can act as better versions of themselves by reflecting upon their own nature...',

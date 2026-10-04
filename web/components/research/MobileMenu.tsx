@@ -219,7 +219,7 @@ export function MobileMenu() {
       id="research-mobile-menu"
       role="dialog"
       aria-modal="true"
-      aria-label="Nous Research menu"
+      aria-label="Animesh Mishra menu"
       tabIndex={-1}
       data-state={visible ? 'open' : 'closed'}
       className="fixed inset-0 z-[120] flex h-dvh flex-col overflow-y-auto backdrop-blur-xl nous-web nw-research-mobile-menu"
@@ -234,7 +234,7 @@ export function MobileMenu() {
       data-lenis-prevent=""
     >
       <div className="flex items-center justify-between px-[var(--hw-teams-pad-x)] pt-10 pb-5 nw-research-menu-top">
-        <Link href="/" aria-label="Nous Research" onClick={close}>
+        <Link href="/" aria-label="Animesh Mishra" onClick={close}>
           <Logo aria-hidden="true" style={{ width: 88, height: 'auto' }} />
         </Link>
         <div className="flex items-center gap-3">

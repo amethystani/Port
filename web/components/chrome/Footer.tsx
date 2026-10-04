@@ -82,9 +82,9 @@ export function Footer() {
               style={{ '--fit-max': 'var(--hw-teams-ghost-word)', '--fit-min': '1em' } as CSSProperties}
             >
               <span>
-                <span>Nous Research</span>
+                <span>Animesh Mishra</span>
               </span>
-              <span aria-hidden="true">Nous Research</span>
+              <span aria-hidden="true">Animesh Mishra</span>
             </p>
           </div>
         </div>
@@ -149,7 +149,7 @@ export function Footer() {
               <GitHubIcon className="size-5" fill="none" />
             </a>
           </div>
-          <p className="max-md:order-1">© 2026, Nous Research, Inc.</p>
+          <p className="max-md:order-1">© 2026, Animesh Mishra</p>
           <p className="opacity-60">Open Source</p>
           <p className="opacity-60">MIT License</p>
           <p className="max-md:order-1">
