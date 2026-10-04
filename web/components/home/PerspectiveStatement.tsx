@@ -34,7 +34,7 @@ export function PerspectiveStatement({ label, text }: { label: string; text: str
       // is no long empty run before it appears.
       const rect = section.getBoundingClientRect();
       const pinned = Math.max(1, rect.height - innerHeight);
-      const p = Math.min(1, Math.max(0, (innerHeight * 0.5 - rect.top) / (innerHeight * 0.5 + pinned * 0.6)));
+      const p = Math.min(1, Math.max(0, (innerHeight * 0.5 - rect.top) / (innerHeight * 0.5 + pinned * 0.9)));
       const start = Math.min(START_OFFSET, innerHeight * 0.4);
       target.style.setProperty('--ps-y', `${(start * (1 - p)).toFixed(1)}px`);
     };

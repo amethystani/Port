@@ -4,7 +4,7 @@
   --af-ink: var(--nw-ink);
   --af-paper: var(--nw-paper, #efe6de);
   width: 100%;
-  padding: var(--nw-seam-band, 80px) 0;
+  padding: clamp(96px, 12vw, 180px) 0 var(--nw-seam-band, 80px);
   color: var(--af-ink);
 }
 html[data-research-theme='dark'] .af {
@@ -13,7 +13,7 @@ html[data-research-theme='dark'] .af {
 }
 
 .af-block {
-  margin-top: clamp(28px, 4vw, 56px);
+  margin-top: clamp(56px, 7vw, 112px);
 }
 .af-label {
   margin: 0 0 14px;
