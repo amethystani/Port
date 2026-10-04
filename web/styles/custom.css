@@ -120,3 +120,14 @@ html[data-research-theme='dark'] :is(.nous-web, .nous-web-viewport, .nw-composer
 .nous-web .nw-mobile-product-preview > img { filter: grayscale(1) contrast(1.05); }
 .nous-web .nw-mobile-product-preview > .nw-mobile-product-color { filter: none; }
 .nous-web .nw-mobile-product-texture { filter: grayscale(1); }
+
+/* Phone menu: the picture used to stop 520px down with a faint seam (the fade was painted in the ink colour,
+   but the picture is screen-blended so the bottom row never matched the flat background). It now spans the
+   full screen height and fades out with a mask, so there is no edge on any phone size. */
+.nw-research-mobile-menu:before {
+  height: 100dvh;
+  min-height: 100%;
+  background: var(--nw-mobile-menu-art) center top / cover no-repeat;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 45%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 45%, transparent 100%);
+}
