@@ -133,7 +133,6 @@ function QuestionsPanel({
               {current.question}
             </h3>
             <p>{current.answer}</p>
-            <small>Curated response · not live AI</small>
           </article>
         ) : (
           <div className="nw-prompt-list">

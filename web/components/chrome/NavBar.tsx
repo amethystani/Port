@@ -123,7 +123,7 @@ export function NavBar({
         <Link
           href="/"
           aria-label="Animesh Mishra"
-          className="grid size-[var(--hw-teams-wing-box)] shrink-0 place-items-center"
+          className="nw-pinned-brand grid shrink-0 place-items-center"
         >
           <BadgePair className="nw-research-pinned-badge" width={34} height={48} />
         </Link>

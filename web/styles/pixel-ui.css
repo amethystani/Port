@@ -388,3 +388,49 @@ button.px-box:focus-visible {
     animation: none;
   }
 }
+
+/* ---- phone header: big and balanced (the logo mirrors the search + menu pair) ---- */
+@media (max-width: 767px) {
+  nav[data-pro-nav] .nw-research-badge,
+  nav[data-pro-nav] .nw-research-pinned-badge {
+    width: min(230px, 56vw) !important;
+    height: auto !important;
+  }
+  nav[data-pro-nav] .nw-search-icon,
+  nav[data-pro-nav] button[aria-label='Open menu'] {
+    width: 52px !important;
+    height: 52px !important;
+  }
+  nav[data-pro-nav] .nw-search-icon svg {
+    width: 32px !important;
+    height: 32px !important;
+  }
+  nav[data-pro-nav] .nw-research-menu-burger {
+    width: 34px !important;
+    height: 34px !important;
+  }
+  nav[data-pro-nav] > .flex.md\:hidden {
+    gap: 4px;
+    margin-right: -6px;
+  }
+}
+
+/* ---- the pinned (scrolled) header: the logo gets its own box instead of the old fixed wing-sized one ---- */
+.nw-pinned-brand {
+  width: auto;
+  height: auto;
+}
+nav[data-pro-nav] .nw-research-pinned-badge {
+  width: 150px !important;
+  height: auto !important;
+}
+@media (max-width: 767px) {
+  nav[data-pro-nav] .nw-research-pinned-badge {
+    width: min(230px, 56vw) !important;
+  }
+}
+@media (max-width: 767px) {
+  .nw-pinned-brand {
+    width: min(230px, 56vw);
+  }
+}
