@@ -3,8 +3,8 @@
 import { useEffect, useRef } from 'react';
 
 /**
- * Perspective text scroll, ported from Skiper UI's "Skiper 28 PerspectiveTextScroll" (https://skiper-ui.com),
- * free to use with attribution. The original uses framer-motion; this version drives the same transform with
+ * Perspective text scroll, after Skiper UI's "Skiper 28 PerspectiveTextScroll".
+ * The original uses framer-motion; this version drives the same transform with
  * a scroll listener and one CSS variable, so no extra dependency is needed.
  *
  * The text starts tipped back (rotateX 30deg) and 487px low, and rises into place as the section scrolls past.
@@ -63,9 +63,6 @@ export function PerspectiveStatement({ label, text }: { label: string; text: str
           <span className="ps-fade" aria-hidden="true" />
         </div>
       </div>
-      <p className="ps-credit">
-        Scroll effect: <a href="https://skiper-ui.com">Skiper UI</a>
-      </p>
     </section>
   );
 }

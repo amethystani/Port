@@ -67,7 +67,6 @@ button.px-box:focus-visible {
   flex: none;
   height: 34px;
   padding: 0 12px;
-  margin-left: 8px;
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 500;
@@ -76,10 +75,10 @@ button.px-box:focus-visible {
   white-space: nowrap;
 }
 .nw-search-pill svg {
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
+  margin-left: -3px;
   flex: none;
-  shape-rendering: crispEdges;
 }
 .nw-search-pill kbd {
   font: inherit;
@@ -102,9 +101,8 @@ button.px-box:focus-visible {
   color: var(--nw-ink);
 }
 .nw-search-icon svg {
-  width: 26px;
-  height: 26px;
-  shape-rendering: crispEdges;
+  width: 28px;
+  height: 28px;
 }
 /* phones: the search icon and the menu button are one matched pair (same 44px box, same optical size), and the
    pair is mirrored by the logo on the left */
@@ -389,25 +387,25 @@ button.px-box:focus-visible {
   }
 }
 
-/* ---- phone header: big and balanced (the logo mirrors the search + menu pair) ---- */
+/* ---- phone header: a modest signature balanced by the search + menu pair (44px tap targets, 24px icons) ---- */
 @media (max-width: 767px) {
   nav[data-pro-nav] .nw-research-badge,
   nav[data-pro-nav] .nw-research-pinned-badge {
-    width: min(230px, 56vw) !important;
+    width: min(150px, 40vw) !important;
     height: auto !important;
   }
   nav[data-pro-nav] .nw-search-icon,
   nav[data-pro-nav] button[aria-label='Open menu'] {
-    width: 52px !important;
-    height: 52px !important;
+    width: 44px !important;
+    height: 44px !important;
   }
   nav[data-pro-nav] .nw-search-icon svg {
-    width: 32px !important;
-    height: 32px !important;
+    width: 24px !important;
+    height: 24px !important;
   }
   nav[data-pro-nav] .nw-research-menu-burger {
-    width: 34px !important;
-    height: 34px !important;
+    width: 24px !important;
+    height: 24px !important;
   }
   nav[data-pro-nav] > .flex.md\:hidden {
     gap: 4px;
@@ -426,11 +424,220 @@ nav[data-pro-nav] .nw-research-pinned-badge {
 }
 @media (max-width: 767px) {
   nav[data-pro-nav] .nw-research-pinned-badge {
-    width: min(230px, 56vw) !important;
+    width: min(150px, 40vw) !important;
   }
 }
 @media (max-width: 767px) {
   .nw-pinned-brand {
-    width: min(230px, 56vw);
+    width: min(150px, 40vw);
+  }
+}
+
+/* ---- desktop header: About/Work and Elsewhere/Contact are spaced evenly and mirror each other around the
+   signature; the Theme + Search icons close the right side ---- */
+@media (min-width: 768px) {
+  nav[data-pro-nav] > div.max-md\:hidden {
+    justify-content: space-between;
+  }
+  nav[data-pro-nav] > div.max-md\:hidden > span {
+    flex: none;
+  }
+}
+/* Theme + Search: two plain icons at the right end of the nav. An empty box of the same width holds the left end,
+   so the four links still mirror each other around the signature. */
+.nw-header-icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+  width: 84px;
+  justify-content: flex-end;
+}
+.nw-header-icons-balance {
+  visibility: hidden;
+}
+.nw-header-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  color: inherit;
+  opacity: 0.8;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.nw-header-icon:hover,
+.nw-header-icon:focus-visible {
+  opacity: 1;
+}
+.nw-header-icon:focus-visible {
+  outline: 2px dashed currentColor;
+  outline-offset: 2px;
+}
+.nw-header-icon svg {
+  width: 20px;
+  height: 20px;
+}
+.nw-header-theme svg {
+  width: 17px;
+  height: 17px;
+  shape-rendering: crispEdges;
+}
+/* phone menu: the theme button pairs with the close button (same 44px box, 24px icon) */
+/* same cream as the close icon beside it */
+.nw-menu-theme {
+  color: var(--nw-paper, #efe6de);
+}
+.nw-menu-theme svg {
+  width: 18px;
+  height: 18px;
+  shape-rendering: crispEdges;
+}
+
+/* ---- on-device quick answer: the Answer block above Sources in the ⌘K palette (components/research/Composer.tsx) ---- */
+.nw-ai-panel {
+  isolation: isolate;
+  position: relative;
+  padding: 8px 8px 0;
+  color: var(--nw-paper);
+  --label-width: 134px;
+}
+@media (max-width: 767px) {
+  .nw-ai-panel {
+    --label-width: 74px;
+  }
+}
+.nw-ai-body {
+  grid-area: 1 / 2;
+  min-width: 0;
+  padding: 10px 8px 14px;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+}
+.nw-ai-text {
+  margin: 0;
+  font: 15px/1.55 var(--font-rules);
+  overflow-wrap: anywhere;
+}
+.nw-ai-muted {
+  opacity: var(--nw-muted, 0.7);
+  font-size: 13px;
+}
+.nw-ai-cite {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.35em;
+  height: 1.35em;
+  margin: 0 1px;
+  padding: 0 3px;
+  font: 600 10px/1 var(--font-mono);
+  vertical-align: 0.15em;
+  border: 1px solid currentColor;
+  text-decoration: none;
+  opacity: 0.85;
+}
+.nw-ai-cite:hover,
+.nw-ai-cite:focus-visible {
+  opacity: 1;
+  color: var(--nw-ink);
+  background: var(--nw-paper);
+  border-color: var(--nw-paper);
+}
+.nw-ai-meta {
+  margin: 8px 0 0;
+  font: 11px/1.5 var(--hpv2-font-meta, var(--font-mono));
+  letter-spacing: 0.02em;
+  opacity: var(--nw-muted, 0.7);
+}
+
+/* ---- the quick answer, streamed like an AI reply (StreamedAnswer in components/research/Composer.tsx) ----
+   --think: the shimmer before the first word; --step: between words. */
+.nw-ai-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.nw-ai-spark {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  shape-rendering: crispEdges;
+  animation: nw-ai-spark 0.5s steps(2, end) 3;
+}
+@keyframes nw-ai-spark {
+  0% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.7) rotate(45deg);
+    opacity: 0.55;
+  }
+}
+.nw-ai-stream {
+  position: relative;
+}
+.nw-ai-thinking {
+  position: absolute;
+  inset: 4px 0 auto;
+  display: grid;
+  gap: 9px;
+  pointer-events: none;
+  animation: nw-ai-fade-out 0.18s ease-out var(--think) both;
+}
+.nw-ai-thinking span {
+  height: 10px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, currentColor 10%, transparent) 0%,
+    color-mix(in srgb, currentColor 38%, transparent) 50%,
+    color-mix(in srgb, currentColor 10%, transparent) 100%
+  );
+  background-size: 200% 100%;
+  animation: nw-ai-shimmer 0.9s linear infinite;
+}
+.nw-ai-thinking span:nth-child(2) {
+  width: 86%;
+}
+.nw-ai-thinking span:nth-child(3) {
+  width: 58%;
+}
+@keyframes nw-ai-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+@keyframes nw-ai-fade-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+.nw-ai-w {
+  display: inline;
+  animation: nw-ai-word 0.32s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--think) + var(--i) * var(--step));
+}
+@keyframes nw-ai-word {
+  from {
+    opacity: 0;
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nw-ai-spark,
+  .nw-ai-w,
+  .nw-ai-thinking span {
+    animation: none;
+  }
+  .nw-ai-thinking {
+    display: none;
   }
 }

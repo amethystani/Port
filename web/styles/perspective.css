@@ -73,21 +73,6 @@ html[data-research-theme='dark'] .ps {
   background: linear-gradient(to bottom, transparent, var(--nw-stage, #efe6de));
   pointer-events: none;
 }
-.ps-credit {
-  position: absolute;
-  bottom: 40px;
-  left: 50%;
-  translate: -50% 0;
-  margin: 0;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  opacity: 0.45;
-}
-.ps-credit a {
-  text-decoration: underline;
-}
 
 @media (max-width: 767px) {
   .ps {
@@ -119,11 +104,4 @@ html[data-research-theme='dark'] .ps {
     translate: none;
     margin: 0 auto;
     padding-top: 48px;
-  }
-  .ps-credit {
-    position: static;
-    translate: none;
-    text-align: center;
-    padding-bottom: 24px;
-  }
-}
+  }}

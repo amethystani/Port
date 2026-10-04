@@ -62,8 +62,8 @@ function Glyph({ kind }: { kind: GlyphKind }) {
 }
 
 /**
- * Horizontal expand-on-hover strip, ported from Skiper UI's "Skiper 52 HoverExpand_001" (https://skiper-ui.com),
- * free to use with attribution. The original animates widths with framer-motion; here the same effect is CSS
+ * Horizontal expand-on-hover strip, after Skiper UI's "Skiper 52 HoverExpand_001".
+ * The original animates widths with framer-motion; here the same effect is CSS
  * (flex-grow transitions), so no extra dependency. Hover, focus or tap a strip to open it; on phones the strips
  * stack and open downwards.
  */
@@ -135,9 +135,6 @@ export function Affiliations() {
       </div>
       <HoverExpand label="Published and presented" badges={venues} />
       <HoverExpand label="Worked and studied with" badges={affiliations} />
-      <p className="af-credit">
-        Hover effect: <a href="https://skiper-ui.com">Skiper UI</a>
-      </p>
     </section>
   );
 }

@@ -9,6 +9,7 @@ import { Kbd } from '@/components/ui/Kbd';
 import { ANSWER_ART, answers, QUESTION_ORDER, QUESTION_PAGES, QUESTIONS_PER_PAGE } from '@/content/composer';
 import { researchUi, useResearchUi } from '@/lib/research-ui';
 import type { SearchResult } from '@/lib/search';
+import { ai, type AiPassage, type AiResults, useAiStatus } from '@/lib/ai';
 import { ArrowPixelIcon, ChevronPixelIcon } from './PromptIcons';
 
 const TITLE = 'Ask : About Animesh';
@@ -291,13 +292,26 @@ function Searching() {
 function SearchPanel({
   query,
   search,
+  local,
   onNavigate,
 }: {
   query: string;
   search: ReturnType<typeof useSearch>;
+  /** Ranked matches from the on-device index; replace the server results once available. */
+  local?: AiPassage[];
   onNavigate: () => void;
 }) {
-  const results = search.query === query.trim() ? search.results : undefined;
+  // The on-device ranking (lib/ai.ts) is used once it has loaded; the server's keyword search covers the moment before.
+  const exact = search.query === query.trim() ? search.results : undefined;
+  const results: SearchResult[] | undefined = local
+    ? local.map((p) => ({
+        id: p.id,
+        kind: 'page',
+        title: p.title,
+        url: p.url,
+        excerpt: p.text.length > 170 ? `${p.text.slice(0, 170).replace(/\s+\S*$/, '')}…` : p.text,
+      }))
+    : exact;
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
     const panel = e.currentTarget.closest('.nw-search-panel');
@@ -321,9 +335,12 @@ function SearchPanel({
       else if (t.top < s.top) scroller.scrollTop -= s.top - t.top;
     }
   };
-  const showStatus = query.trim().length < 2 || search.pending || search.error || !results?.length;
+  // with on-device results in hand, the server request's loading and error states no longer matter
+  const pending = !local && search.pending;
+  const error = local ? undefined : search.error;
+  const showStatus = query.trim().length < 2 || pending || error || !results?.length;
   return (
-    <section className="nw-search-panel" aria-label="Site search results" aria-busy={search.pending}>
+    <section className="nw-search-panel" aria-label="Site search results" aria-busy={pending}>
       <div className="nw-prompt-layout">
         <div className="nw-search-sidebar">
           <PanelTitle>Sources</PanelTitle>
@@ -333,11 +350,11 @@ function SearchPanel({
             <div className="nw-search-status" role="status">
               {query.trim().length < 2 ? (
                 'Type a little more to search.'
-              ) : search.pending ? (
+              ) : pending ? (
                 <Searching />
-              ) : search.error ? (
+              ) : error ? (
                 <>
-                  {search.error}{' '}
+                  {error}{' '}
                   <button type="button" className="nw-composer-hit" onClick={search.retry}>
                     Retry
                   </button>
@@ -347,8 +364,8 @@ function SearchPanel({
               )}
             </div>
           )}
-          {!search.pending &&
-            !search.error &&
+          {!pending &&
+            !error &&
             results?.map((result) =>
               result.kind === 'career' && result.matches?.length ? (
                 <section key={result.id} className="nw-search-group" aria-label={result.title}>
@@ -402,6 +419,115 @@ function SearchPanel({
   );
 }
 
+// ------------------------------------------------------------------------------------------ quick answer
+type Assist = AiResults & { query: string };
+
+/** On-device search (lib/ai.ts): ranked passages and a quick answer, about a millisecond per keystroke. */
+function useAssistant(query: string, enabled: boolean) {
+  const status = useAiStatus();
+  const trimmed = query.trim();
+  const [local, setLocal] = useState<Assist>();
+
+  useEffect(() => {
+    if (!enabled || trimmed.length < 2 || !status.index) return;
+    let live = true;
+    ai.search(trimmed).then((r) => live && setLocal({ ...r, query: trimmed }));
+    return () => {
+      live = false;
+    };
+  }, [trimmed, enabled, status.index, status.semantic]);
+
+  return { status, local: local?.query === trimmed ? local : undefined };
+}
+
+/** A 12x12 pixel sparkle: the "AI" mark beside the Answer title. */
+function PixelSparkle({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 12 12" fill="currentColor" aria-hidden="true" className={className}>
+      <path d="M5 0h2v3h1v1h1v1h3v2H9v1H8v1H7v3H5V9H4V8H3V7H0V5h3V4h1V3h1z" />
+      <path d="M10 0h1v1h1v1h-1v1h-1V2H9V1h1z" opacity=".7" />
+    </svg>
+  );
+}
+
+const THINK_MS = 260; // the brief "thinking" shimmer before the words start
+const WORD_MS = 16; // between words while the answer writes itself out
+
+/**
+ * The quick answer, presented like a streamed AI reply: a moment of shimmer, then the words fade in one by one
+ * with the source numbers after their sentences. All CSS (styles/pixel-ui.css), keyed by
+ * the answer, so it replays only when the answer changes, not on every keystroke.
+ */
+function StreamedAnswer({ summary, onNavigate }: { summary: AiPassage[]; onNavigate: () => void }) {
+  let n = 0;
+  const parts = summary.map((s, i) => {
+    const words = s.text.split(/\s+/).filter(Boolean);
+    const start = n;
+    n += words.length + 1;
+    return (
+      <span key={s.id + i}>
+        {words.map((w, k) => (
+          <span key={k} className="nw-ai-w" style={{ '--i': start + k } as CSSProperties}>
+            {w}{' '}
+          </span>
+        ))}
+        <span className="nw-ai-w" style={{ '--i': start + words.length } as CSSProperties}>
+          <PromptLink href={s.url} className="nw-ai-cite" onClick={onNavigate} aria-label={`Source: ${s.title}`}>
+            {i + 1}
+          </PromptLink>{' '}
+        </span>
+      </span>
+    );
+  });
+  return (
+    <div className="nw-ai-stream" style={{ '--think': `${THINK_MS}ms`, '--step': `${WORD_MS}ms` } as CSSProperties}>
+      <div className="nw-ai-thinking" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
+      <p className="nw-ai-text">
+        {parts}
+      </p>
+    </div>
+  );
+}
+
+function AnswerPanel({
+  query,
+  assist,
+  onNavigate,
+}: {
+  query: string;
+  assist: ReturnType<typeof useAssistant>;
+  onNavigate: () => void;
+}) {
+  const { local } = assist;
+  if (query.trim().length < 2 || !local) return null;
+  const key = local.summary.map((s) => s.text).join('|') || 'none';
+  return (
+    <section className="nw-ai-panel" aria-label="Quick answer" aria-live="polite">
+      <div className="nw-prompt-layout">
+        <div className="nw-search-sidebar nw-ai-title" key={`t-${key}`}>
+          <PanelTitle>Answer</PanelTitle>
+          <PixelSparkle className="nw-ai-spark" />
+        </div>
+        <div className="nw-ai-body">
+          {local.summary.length ? (
+            <StreamedAnswer key={key} summary={local.summary} onNavigate={onNavigate} />
+          ) : (
+            <p className="nw-ai-text nw-ai-muted">Nothing on the site matches that closely. Try other words.</p>
+          )}
+          <p className="nw-ai-meta">
+            On-device AI search · answered from the site in {local.ms < 1 ? '<1' : Math.round(local.ms)} ms
+            {local.semantic ? '' : ' (keywords only, meaning search still loading)'}
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ------------------------------------------------------------------------------------------ the palette
 /**
  * The ⌘K palette on the home page: a search field with suggested questions (curated answers) beneath it,
@@ -425,10 +551,17 @@ export function Composer() {
   const input = useRef<HTMLInputElement>(null);
   const results = useRef<HTMLDivElement>(null);
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+    ai.warmWhenIdle();
+  }, []);
   const available = mounted; // search works on every page
   const open = composer.open && available;
   const search = useSearch(query, open);
+  const assist = useAssistant(query, open);
+  useEffect(() => {
+    if (open) ai.warmNow();
+  }, [open]);
   const dismiss = useCallback(() => researchUi.closeComposer(), []);
 
   // Sit exactly over the hero button, or float near the top when it has scrolled away.
@@ -564,7 +697,10 @@ export function Composer() {
       </div>
       <div ref={results} className="nw-composer-results" data-lenis-prevent="">
         {query.trim() ? (
-          <SearchPanel query={query} search={search} onNavigate={dismiss} />
+          <>
+            <AnswerPanel query={query} assist={assist} onNavigate={dismiss} />
+            <SearchPanel query={query} search={search} local={assist.local?.results} onNavigate={dismiss} />
+          </>
         ) : (
           <QuestionsPanel
             active={open}

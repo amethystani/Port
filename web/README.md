@@ -139,8 +139,7 @@ Deliberate, and small:
 
 ## Credits
 
-Two interactions are ported from [Skiper UI](https://skiper-ui.com) (free version; attribution required, and
-shown as a small credit under each on the home page): the perspective text scroll, "Skiper 28"
+Two interactions are ported from Skiper UI (free version): the perspective text scroll, "Skiper 28"
 (`components/home/PerspectiveStatement.tsx`, `styles/perspective.css`), and the horizontal hover-expand strips,
 "Skiper 52" (`components/home/Affiliations.tsx`, `styles/affiliations.css`). Both were rewritten with CSS and a
 scroll listener instead of framer-motion, and styled with this site's palette and fonts.

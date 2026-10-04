@@ -5,6 +5,7 @@ export { GitHubIcon } from './GitHubIcon';
 export { LinkedInIcon } from './LinkedInIcon';
 export { ListenIcon } from './ListenIcon';
 export { PixelSearch } from './PixelSearch';
+export { SearchIcon } from './SearchIcon';
 export { PixelTheme } from './PixelTheme';
 export { MissionTitle } from './MissionTitle';
 export { ShareIcon } from './ShareIcon';
