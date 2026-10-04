@@ -57,7 +57,7 @@ export function OrbSigil() {
           key={theme}
           className="nw-orb-fallback"
           data-stamp={theme}
-          src={`/assets/nous-web/nous-stamp-${theme}.svg`}
+          src={`/assets/brand/logo-stamp-${theme}.svg`}
           crossOrigin="anonymous"
           alt={STAMP_ALT}
           loading="lazy"

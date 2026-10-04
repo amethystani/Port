@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { PageMotion } from '@/components/behavior/PageMotion';
 import { Button } from '@/components/ui/Button';
-import { NousBadgeFilled, NousBadgeOutline } from '@/components/icons';
+import { Logo } from '@/components/icons';
 import { ArticleEmbeds } from '@/components/article/ArticleEmbeds';
 import { ArticleReading } from '@/components/article/ArticleReading';
 import { ArticleToolbar } from '@/components/article/ArticleToolbar';
@@ -27,22 +27,7 @@ function Avatar({ avatar }: { avatar: Post['avatar'] }) {
       {'image' in avatar ? (
         <img src={avatar.image} alt="" />
       ) : 'badge' in avatar ? (
-        <>
-          <NousBadgeFilled
-            data-nous-badge="filled"
-            fill="currentColor"
-            aria-hidden="true"
-            className="size-full"
-            data-badge-theme="light"
-          />
-          <NousBadgeOutline
-            data-nous-badge="outline"
-            fill="currentColor"
-            aria-hidden="true"
-            className="size-full"
-            data-badge-theme="dark"
-          />
-        </>
+        <Logo aria-hidden="true" style={{ width: '100%', height: 'auto', padding: '0 15%' }} />
       ) : (
         avatar.initials
       )}

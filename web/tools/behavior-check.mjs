@@ -45,12 +45,14 @@ const attr = (page, sel, name) => page.$eval(sel, (el, n) => el.getAttribute(n),
   check('panel lists Hermes links', (await page.$$eval('#research-navigation .nw-subnav-link', (l) => l.length)) === 9);
   check('trigger aria-expanded is true', (await attr(page, 'header [data-research-target="Hermes"]', 'aria-expanded')) === 'true');
   const box = await page.$eval('#research-navigation', (e) => { const r = e.getBoundingClientRect(); return { left: Math.round(r.left), top: Math.round(r.top), w: Math.round(r.width) }; });
-  check('panel sits under the trigger (left 411, top 108/109, 720 wide)', box.left === 411 && box.w === 720 && (box.top === 108 || box.top === 109), JSON.stringify(box));
+  const trigger = await page.$eval('header [data-research-target="Hermes"]', (e) => { const r = e.getBoundingClientRect(); return { left: Math.round(r.left), bottom: Math.round(r.bottom) }; });
+  check('panel sits under the trigger, left-aligned to it, 720 wide', box.left === trigger.left && box.w === 720 && box.top >= trigger.bottom && box.top - trigger.bottom <= 12, JSON.stringify({ box, trigger }));
   await page.keyboard.press('Escape'); await page.waitForTimeout(500);
   check('Escape closes it', (await attr(page, '#research-navigation', 'data-open')) === 'false');
   await page.click('header [data-research-target="Community"]'); await page.waitForTimeout(400);
   const community = await page.$eval('#research-navigation', (e) => { const r = e.getBoundingClientRect(); return Math.round(r.right); });
-  check('right-hand trigger aligns the panel to its right edge (1019)', community === 1019, String(community));
+  const communityRight = await page.$eval('header [data-research-target="Community"]', (e) => Math.round(e.getBoundingClientRect().right));
+  check('right-hand trigger aligns the panel to its right edge', community === communityRight, `${community} vs ${communityRight}`);
   await page.mouse.click(700, 800); await page.waitForTimeout(400);
   check('clicking outside closes it', (await attr(page, '#research-navigation', 'data-open')) === 'false');
 

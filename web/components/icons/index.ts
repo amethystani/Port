@@ -4,7 +4,6 @@ export { ExternalLinkIcon } from './ExternalLinkIcon';
 export { GitHubIcon } from './GitHubIcon';
 export { ListenIcon } from './ListenIcon';
 export { MissionTitle } from './MissionTitle';
-export { NousBadgeFilled } from './NousBadgeFilled';
-export { NousBadgeOutline } from './NousBadgeOutline';
 export { ShareIcon } from './ShareIcon';
 export { XIcon } from './XIcon';
+export { Logo, LOGO_ASPECT } from './Logo';

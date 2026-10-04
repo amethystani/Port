@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { DiscordIcon, GitHubIcon, NousBadgeFilled, NousBadgeOutline, XIcon } from '@/components/icons';
+import { DiscordIcon, GitHubIcon, Logo, XIcon } from '@/components/icons';
 import { navigation } from '@/content/navigation';
 import { BrandLink } from './BrandLink';
 
@@ -28,29 +28,9 @@ function NavTrigger({ label, variant, align }: { label: string; variant: Variant
   );
 }
 
-function BadgePair({ className, width, height }: { className: string; width: number; height: number }) {
-  return (
-    <>
-      <NousBadgeFilled
-        data-nous-badge="filled"
-        fill="currentColor"
-        aria-hidden="true"
-        className={className}
-        width={width}
-        height={height}
-        data-badge-theme="light"
-      />
-      <NousBadgeOutline
-        data-nous-badge="outline"
-        fill="currentColor"
-        aria-hidden="true"
-        className={className}
-        width={width}
-        height={height}
-        data-badge-theme="dark"
-      />
-    </>
-  );
+/** The brand mark in the header (sized by .nw-research-badge in styles/custom.css). */
+function BadgePair({ className }: { className: string; width?: number; height?: number }) {
+  return <Logo aria-hidden="true" className={className} />;
 }
 
 const SOCIAL_ICONS = { Discord: DiscordIcon, X: XIcon, GitHub: GitHubIcon } as const;

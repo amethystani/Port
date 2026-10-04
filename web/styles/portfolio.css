@@ -42,3 +42,9 @@
     height: min(118vw, 560px);
   }
 }
+
+/* In dark mode the ink variable is a deep blue; use the heading colour so the lines stay readable. */
+html[data-research-theme='dark'] .pf-hero,
+html[data-research-theme='dark'] .pf-eyebrow {
+  color: var(--nw-theme-heading);
+}

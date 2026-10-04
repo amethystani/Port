@@ -27,3 +27,15 @@
  *   --nw-editorial-text, --hw-teams-ink,
  *   --nw-key-ink                            body copy and keyboard hints
  */
+
+/* The brand mark in the header: a wide mark, so it is sized by width rather than height. */
+.nw-research-badge {
+  width: 92px;
+  height: auto;
+}
+
+/* On blog articles the header shows the mark above the word "Blog". */
+.nw-research-blog-mark > svg {
+  display: block;
+  margin: 0 auto 6px;
+}

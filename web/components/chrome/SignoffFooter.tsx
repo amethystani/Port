@@ -1,4 +1,4 @@
-import { NousBadgeFilled, NousBadgeOutline } from '@/components/icons';
+import { Logo } from '@/components/icons';
 
 /** The closing strip: tagline, copyright, the three marks and legal links. `home` adds the home page's extra styling. */
 export function SignoffFooter({ home = false }: { home?: boolean }) {
@@ -32,22 +32,7 @@ export function SignoffFooter({ home = false }: { home?: boolean }) {
                 maskSize: 'contain',
               }}
             />
-            <NousBadgeFilled
-              data-nous-badge="filled"
-              fill="currentColor"
-              role="img"
-              aria-label="Nous Research"
-              className="h-[57px] w-10"
-              data-badge-theme="light"
-            />
-            <NousBadgeOutline
-              data-nous-badge="outline"
-              fill="currentColor"
-              role="img"
-              aria-label="Nous Research"
-              className="h-[57px] w-10"
-              data-badge-theme="dark"
-            />
+            <Logo role="img" aria-label="Logo" style={{ height: 40, width: 'auto', flexShrink: 0 }} />
             <span
               role="img"
               aria-label="Hermes"

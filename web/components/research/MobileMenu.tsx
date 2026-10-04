@@ -3,7 +3,7 @@
 import { type ReactNode, useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
-import { NousBadgeOutline } from '@/components/icons';
+import { Logo } from '@/components/icons';
 import { mobileMenu, menuSocials, type MenuLink } from '@/content/mobile-menu';
 import { researchUi, useResearchUi } from '@/lib/research-ui';
 
@@ -235,13 +235,7 @@ export function MobileMenu() {
     >
       <div className="flex items-center justify-between px-[var(--hw-teams-pad-x)] pt-10 pb-5 nw-research-menu-top">
         <Link href="/" aria-label="Nous Research" onClick={close}>
-          <NousBadgeOutline
-            data-nous-badge="outline"
-            fill="currentColor"
-            aria-hidden="true"
-            width={34}
-            height={48}
-          />
+          <Logo aria-hidden="true" style={{ width: 88, height: 'auto' }} />
         </Link>
         <div className="flex items-center gap-3">
           <div />

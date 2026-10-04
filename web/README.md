@@ -79,7 +79,7 @@ external index to maintain.
 ## Adapt it to your own site
 
 1. `lib/site.ts`: name, URL, description, social links.
-2. Replace the images in `public/assets/` and the Nous marks in `components/icons/` and the footer.
+2. Replace the images in `public/assets/`. The logo is already yours (see `trace-logo.py` / `make-brand-assets.mjs` below); the Nous wordmark text ("Nous Research" in the footer and headings) is still in `content/`.
 3. Replace the fonts (`public/font/`, declared with `@font-face` in `styles/06-app.css`); see the licensing note below.
 4. Re-theme in `styles/custom.css`, which loads last. The site is two blues, a bright one (frame, buttons,
    headings, links) and a darker one for body copy; `custom.css` explains each variable and has them ready to copy:
@@ -99,7 +99,7 @@ The rebuild was compared with nousresearch.com three ways. All of these scripts 
 
 | Check | Command | Result when this was written |
 | --- | --- | --- |
-| Server-rendered HTML, element by element, for every sitemap page | `node tools/dom-diff.mjs` | 35 of 36 identical; the home page now differs on purpose (portfolio hero) |
+| Server-rendered HTML, element by element, for every sitemap page | `node tools/dom-diff.mjs` | the logo and the home page now differ on purpose, so most pages no longer match the original element for element |
 | Pixels against the live site (`FULL=1` for whole pages, `THEME=dark` for dark mode) | `VIEWPORTS=1440x900,390x844 node tools/compare.mjs / /blog …` | see below |
 | Behaviour: menus, palette, dialogs, rail, dock, scroll, 3D, video | `node tools/behavior-check.mjs` | all checks pass |
 
@@ -151,6 +151,7 @@ Not part of the site; used to build and verify it.
 | `dom-diff.mjs`, `compare.mjs`, `behavior-check.mjs` | verification (above) |
 | `html-to-jsx.mjs` | converts captured HTML into JSX components |
 | `extract-posts.mjs`, `extract-lists.mjs`, `extract-shared.mjs`, `write-content.mjs` | one-off extraction of the content files from the captured pages |
+| `trace-logo.py`, `make-brand-assets.mjs` | trace the logo (`tools/assets/logo-source.jpg`) into a vector and generate every logo asset: the `Logo` component, orb stamps, favicon and share card. To change the logo: replace the source image and run both |
 | `obscure-poster.py` | blurs and halftones the two background portraits on the home poster (original kept in `tools/assets/`); needs Pillow |
 | `localize-external.mjs` | copies hot-linked third-party images into `public/` |
 

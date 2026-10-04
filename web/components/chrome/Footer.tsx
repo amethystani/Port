@@ -1,7 +1,7 @@
 import { ArtShader } from './ArtShader';
 import type { CSSProperties } from 'react';
 import Link from 'next/link';
-import { DiscordIcon, GitHubIcon, NousBadgeOutline, XIcon } from '@/components/icons';
+import { DiscordIcon, GitHubIcon, Logo, XIcon } from '@/components/icons';
 import { footerColumns, type FooterLink } from '@/content/footer';
 
 const CONTAINER =
@@ -93,14 +93,7 @@ export function Footer() {
           className={`${CONTAINER} hw-teams-footer-grid font-[family-name:var(--font-mono)] uppercase relative grid grid-cols-2 gap-x-6 gap-y-10 pb-10 text-[length:var(--hw-teams-label-sm)] leading-none tracking-normal md:grid-cols-[minmax(0,320px)_repeat(4,minmax(0,1fr))] md:gap-5`}
         >
           <div className="flex flex-col gap-5 max-md:col-span-2">
-            <NousBadgeOutline
-              data-nous-badge="outline"
-              fill="currentColor"
-              aria-hidden="true"
-              className="h-[86px] w-[60px]"
-              height={86}
-              width={60}
-            />
+            <Logo aria-hidden="true" style={{ width: 132, height: 'auto' }} />
             <p>The Internet&apos;s Own AI.</p>
             <a
               className="underline decoration-from-font opacity-60 hover:opacity-100"

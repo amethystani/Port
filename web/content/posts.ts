@@ -301,7 +301,7 @@ export const posts: Post[] = [
     avatar: {
       image: '/assets/nous-web/blog/article-author.webp',
     },
-    ogImage: '/assets/nous-web/social-card.png',
+    ogImage: '/assets/brand/social-card.png',
     excerpt:
       'In this blog post, we present our findings from an exciting direction in controlling text generation with large language models. We can programmatically define constraints on the output of a model, ensuring it adheres to specific formats or styles, and...',
     related: [
