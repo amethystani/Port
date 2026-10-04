@@ -130,6 +130,14 @@ Deliberate, and small:
 - **No site-verification tag.** The original carries Nous's Google site-verification token; it is theirs, so it is left out.
 - **Unused components.** The article reader's interactive pieces (the neuron scene, embeds) and `components/home/Hero.tsx` are kept but no page uses them now.
 
+## Credits
+
+Two interactions are ported from [Skiper UI](https://skiper-ui.com) (free version; attribution required, and
+shown as a small credit under each on the home page): the perspective text scroll, "Skiper 28"
+(`components/home/PerspectiveStatement.tsx`, `styles/perspective.css`), and the horizontal hover-expand strips,
+"Skiper 52" (`components/home/Affiliations.tsx`, `styles/affiliations.css`). Both were rewritten with CSS and a
+scroll listener instead of framer-motion, and styled with this site's palette and fonts.
+
 ## Branding and licensing
 
 The portfolio's words, links and poster are Animesh Mishra's. The page design, artwork (hero tiles, mission images, announcement and card art, footer picture, orb), the Hermes demo video and the Rules and Aeonik Fono (trial) fonts come from nousresearch.com and belong to Nous Research and their licensors. This project is for local development and study. Before putting anything

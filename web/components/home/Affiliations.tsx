@@ -1,8 +1,10 @@
-import type { ReactNode } from 'react';
+'use client';
+
+import { useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { affiliations, venues, type Badge, type GlyphKind } from '@/content/affiliations';
 
-/** Small line drawings, one per tile, in the tile's text colour. */
+/** Small line drawings, one per panel, in the panel's text colour. */
 function Glyph({ kind }: { kind: GlyphKind }) {
   const shapes: Record<GlyphKind, ReactNode> = {
     rings: (
@@ -59,54 +61,62 @@ function Glyph({ kind }: { kind: GlyphKind }) {
   );
 }
 
-function Tile({ badge, hidden }: { badge: Badge; hidden?: boolean }) {
-  return (
-    <Link
-      href={badge.href}
-      className="af-tile"
-      tabIndex={hidden ? -1 : undefined}
-      aria-label={`${badge.name}: ${badge.note}`}
-    >
-      <span className="af-top">
-        <span className="af-kind">{badge.kind}</span>
-        <Glyph kind={badge.glyph} />
-      </span>
-      <span className="af-name">{badge.name}</span>
-      <span className="af-note">{badge.note}</span>
-      <span className="af-foot">
-        <span>{badge.when}</span>
-        <span className="af-status">{badge.status}</span>
-      </span>
-    </Link>
-  );
-}
-
-/** One endlessly scrolling row. The copy is hidden from assistive tech and from the tab order. */
-function Row({ label, badges, reverse }: { label: string; badges: Badge[]; reverse?: boolean }) {
+/**
+ * Horizontal expand-on-hover strip, ported from Skiper UI's "Skiper 52 HoverExpand_001" (https://skiper-ui.com),
+ * free to use with attribution. The original animates widths with framer-motion; here the same effect is CSS
+ * (flex-grow transitions), so no extra dependency. Hover, focus or tap a strip to open it; on phones the strips
+ * stack and open downwards.
+ */
+function HoverExpand({ label, badges, first = 0 }: { label: string; badges: Badge[]; first?: number }) {
+  const [active, setActive] = useState(first);
   return (
     <div className="af-block">
       <div className="mx-auto w-full max-w-[calc(var(--hw-teams-col)+2*var(--hw-teams-pad-x))] px-[var(--hw-teams-pad-x)]">
         <p className="af-label">{label}</p>
-      </div>
-      <div className="af-viewport">
-        <div className={`af-track${reverse ? ' af-reverse' : ''}`}>
-          <div className="af-set">
-            {badges.map((b) => (
-              <Tile key={b.name} badge={b} />
-            ))}
-          </div>
-          <div className="af-set af-dup" aria-hidden="true">
-            {badges.map((b) => (
-              <Tile key={b.name} badge={b} hidden />
-            ))}
-          </div>
+        <div className="ex-row" role="list">
+          {badges.map((b, i) => {
+            const open = active === i;
+            return (
+              <div
+                key={b.name}
+                role="listitem"
+                className="ex-item"
+                data-active={open}
+                tabIndex={0}
+                aria-label={`${b.name}: ${b.note}`}
+                onMouseEnter={() => setActive(i)}
+                onFocus={() => setActive(i)}
+                onClick={() => setActive(i)}
+              >
+                <span className="ex-rail" aria-hidden={open}>
+                  <span className="ex-rail-name">{b.name}</span>
+                  <Glyph kind={b.glyph} />
+                </span>
+                <span className="ex-body" aria-hidden={!open}>
+                  <span className="ex-top">
+                    <span className="ex-kind">{b.kind}</span>
+                    <Glyph kind={b.glyph} />
+                  </span>
+                  <span className="ex-name">{b.name}</span>
+                  <span className="ex-note">{b.note}</span>
+                  <span className="ex-foot">
+                    <span>{b.when}</span>
+                    <span className="ex-status">{b.status}</span>
+                    <Link href={b.href} className="ex-open" tabIndex={open ? 0 : -1}>
+                      Open →
+                    </Link>
+                  </span>
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
   );
 }
 
-/** Badge wall: venues the work appeared at, and the places it was done. Edit content/affiliations.ts. */
+/** Venues the work appeared at, and the places it was done. Edit content/affiliations.ts. */
 export function Affiliations() {
   return (
     <section className="af" data-band="affiliations" aria-labelledby="af-heading">
@@ -123,8 +133,11 @@ export function Affiliations() {
           Venues &amp; Places
         </h2>
       </div>
-      <Row label="Published and presented" badges={venues} />
-      <Row label="Worked and studied with" badges={affiliations} reverse />
+      <HoverExpand label="Published and presented" badges={venues} />
+      <HoverExpand label="Worked and studied with" badges={affiliations} />
+      <p className="af-credit">
+        Hover effect: <a href="https://skiper-ui.com">Skiper UI</a>
+      </p>
     </section>
   );
 }

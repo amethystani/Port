@@ -1,12 +1,11 @@
-/* The badge wall on the home page (components/home/Affiliations.tsx). Colours come from the theme, so it
-   is blue on paper in light mode and light on dark in dark mode. */
+/* Venues & Places (components/home/Affiliations.tsx): horizontal expand-on-hover strips, after Skiper UI's
+   Skiper 52. Colours come from the theme: cherry on cream in light mode, cream on dark cherry in dark mode. */
 .af {
   --af-ink: var(--nw-ink);
-  --af-paper: var(--nw-paper, #f5f5f5);
+  --af-paper: var(--nw-paper, #efe6de);
   width: 100%;
   padding: var(--nw-seam-band, 80px) 0;
   color: var(--af-ink);
-  overflow: clip;
 }
 html[data-research-theme='dark'] .af {
   --af-ink: var(--nw-theme-heading);
@@ -24,146 +23,184 @@ html[data-research-theme='dark'] .af {
   text-transform: uppercase;
   opacity: 0.7;
 }
-
-.af-viewport {
-  overflow: hidden;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+.af-credit {
+  margin: clamp(24px, 3vw, 40px) 0 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.45;
 }
-.af-track {
-  display: flex;
-  width: max-content;
-  animation: af-scroll 70s linear infinite;
-}
-.af-track.af-reverse {
-  animation-direction: reverse;
-  animation-duration: 85s;
-}
-.af-track:hover,
-.af-track:focus-within {
-  animation-play-state: paused;
-}
-.af-set {
-  display: flex;
-  gap: 16px;
-  padding-right: 16px;
-}
-@keyframes af-scroll {
-  to {
-    transform: translateX(-50%);
-  }
+.af-credit a {
+  text-decoration: underline;
 }
 
-.af-tile {
+/* The strip: every item shares the row, the open one takes most of it. */
+.ex-row {
+  display: flex;
+  gap: 4px;
+  width: 100%;
+  height: 24rem;
+}
+.ex-item {
   position: relative;
   display: flex;
-  flex: none;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 10px;
-  width: 300px;
-  height: 182px;
-  padding: 16px 18px;
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
   border: 1px solid color-mix(in srgb, currentColor 40%, transparent);
-  border-radius: 8px;
-  color: var(--af-ink);
-  text-decoration: none;
+  border-radius: 24px;
+  background-color: transparent;
   /* a faint dot screen, like the halftone artwork elsewhere on the site */
   background-image: radial-gradient(color-mix(in srgb, currentColor 13%, transparent) 1px, transparent 1.4px);
   background-size: 7px 7px;
-  transition: background-color 0.25s, color 0.25s, border-color 0.25s, transform 0.25s;
+  color: var(--af-ink);
+  cursor: pointer;
+  outline-offset: 3px;
+  transition:
+    flex-grow 0.35s ease-in-out,
+    background-color 0.3s,
+    color 0.3s,
+    border-color 0.3s;
 }
-/* registration marks in two corners */
-.af-tile::before,
-.af-tile::after {
-  content: '';
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  border: 0 solid currentColor;
-  opacity: 0.6;
-}
-.af-tile::before {
-  left: 6px;
-  bottom: 6px;
-  border-left-width: 1px;
-  border-bottom-width: 1px;
-}
-.af-tile::after {
-  right: 6px;
-  bottom: 6px;
-  border-right-width: 1px;
-  border-bottom-width: 1px;
-}
-.af-tile:hover,
-.af-tile:focus-visible {
+.ex-item[data-active='true'] {
+  flex-grow: 4.5;
   background-color: var(--af-ink);
-  background-image: radial-gradient(color-mix(in srgb, var(--af-paper) 25%, transparent) 1px, transparent 1.4px);
+  background-image: radial-gradient(color-mix(in srgb, var(--af-paper) 22%, transparent) 1px, transparent 1.4px);
   border-color: var(--af-ink);
   color: var(--af-paper);
-  transform: translateY(-4px);
+  cursor: default;
 }
 
-.af-top {
+/* Closed: the name runs up the strip with a glyph at the bottom. */
+.ex-rail {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 0;
+  opacity: 1;
+  transition: opacity 0.2s 0.1s;
+}
+.ex-rail-name {
+  writing-mode: vertical-rl;
+  rotate: 180deg;
+  font-family: var(--font-rules-gothic-cmp);
+  font-size: 26px;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.ex-rail svg {
+  width: 26px;
+  height: 26px;
+  flex: none;
+}
+.ex-item[data-active='true'] .ex-rail {
+  opacity: 0;
+  pointer-events: none;
+  transition-delay: 0s;
+}
+
+/* Open: the full badge fades in (the "content reveal" of the original). */
+.ex-body {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 22px 24px 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.ex-item[data-active='true'] .ex-body {
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 0.3s 0.15s;
+}
+.ex-top {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
 }
-.af-kind,
-.af-foot {
+.ex-kind,
+.ex-foot {
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-.af-name {
+.ex-name {
   font-family: var(--font-rules-gothic-cmp);
-  font-size: 40px;
+  font-size: clamp(36px, 4.6vw, 64px);
   line-height: 0.95;
   text-transform: uppercase;
 }
-.af-note {
+.ex-note {
   font-family: var(--font-rules);
-  font-size: 12px;
-  line-height: 1.3;
-  opacity: 0.8;
+  font-size: 14px;
+  line-height: 1.35;
+  opacity: 0.85;
 }
-.af-foot {
+.ex-foot {
   display: flex;
-  justify-content: space-between;
-  padding: 0 10px 2px;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
-.af-status {
+.ex-status {
   border: 1px solid currentColor;
   border-radius: 99px;
-  padding: 2px 8px;
+  padding: 2px 9px;
+}
+.ex-open {
+  margin-left: auto;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
+/* Phones: the strips stack and open downwards. */
 @media (max-width: 767px) {
-  .af-tile {
-    width: 248px;
-    height: 170px;
+  .ex-row {
+    flex-direction: column;
+    height: auto;
   }
-  .af-name {
-    font-size: 32px;
+  .ex-item {
+    flex: none;
+    height: 58px;
+    border-radius: 18px;
+    transition:
+      height 0.35s ease-in-out,
+      background-color 0.3s,
+      color 0.3s,
+      border-color 0.3s;
+  }
+  .ex-item[data-active='true'] {
+    height: 250px;
+  }
+  .ex-rail {
+    flex-direction: row;
+    padding: 0 20px;
+  }
+  .ex-rail-name {
+    writing-mode: horizontal-tb;
+    rotate: none;
+    font-size: 24px;
+  }
+  .ex-name {
+    font-size: 44px;
   }
 }
 
-/* Without motion the rows stop and wrap into a grid (the duplicate set is dropped). */
 @media (prefers-reduced-motion: reduce) {
-  .af-viewport {
-    -webkit-mask-image: none;
-    mask-image: none;
-  }
-  .af-track {
-    animation: none;
-    width: auto;
-  }
-  .af-set {
-    flex-wrap: wrap;
-    padding: 0 var(--hw-teams-pad-x, 24px);
-  }
-  .af-dup {
-    display: none;
+  .ex-item,
+  .ex-rail,
+  .ex-body {
+    transition: none !important;
   }
 }

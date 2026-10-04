@@ -5,12 +5,15 @@ import { Announcements } from '@/components/home/Announcements';
 import { PortfolioHero } from '@/components/home/PortfolioHero';
 import { HermesBlock } from '@/components/home/HermesBlock';
 import { Mission } from '@/components/home/Mission';
+import { PerspectiveStatement } from '@/components/home/PerspectiveStatement';
 import { Signoff } from '@/components/home/Signoff';
 import { pageMetadata } from '@/lib/seo';
+import { statement } from '@/content/home';
 import { portfolio } from '@/content/portfolio';
 import { site } from '@/lib/site';
 
 import '@/styles/affiliations.css';
+import '@/styles/perspective.css';
 import '@/styles/home-announcements.css';
 import '@/styles/portfolio.css';
 import '@/styles/poster-edges.css';
@@ -47,6 +50,7 @@ export default function HomePage() {
       <main className="nw-page-body">
         <PortfolioHero />
         <Mission />
+        <PerspectiveStatement label={statement.label} text={statement.text} />
         <Affiliations />
         <HermesBlock />
         <Announcements />

@@ -89,3 +89,9 @@ export const work = {
   secondary: { label: 'GitHub', href: 'https://github.com/amethystani' },
   band: { poster: '/assets/nous-web/hermes-demo-poster.webp', video: '/media/hermes-desktop.mp4' },
 };
+
+/** The perspective-scroll statement on the home page, in the words of the CV's research statement. */
+export const statement = {
+  label: 'Research statement',
+  text: 'My research asks when language models, and the measurements used to judge them, can be trusted when the underlying knowledge is heterogeneous, conflicting, or uncertain. In scientific retrieval-augmented generation I studied how standard RAG collapses real disagreement between sources into one answer, and proposed a disagreement-aware alternative. In chemistry language models I showed that the same molecule written in different notations gets inconsistent predictions. In LLM fairness auditing I used partial identification to make evaluation uncertainty explicit instead of hiding it.',
+};
