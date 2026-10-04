@@ -31,7 +31,14 @@ export const metadata: Metadata = {
   title: site.name,
   description: site.description,
   robots: { index: true, follow: true },
-  icons: { icon: site.favicon },
+  icons: {
+    icon: [
+      { url: site.faviconIco, sizes: 'any' },
+      { url: site.favicon, type: 'image/png' },
+    ],
+    shortcut: site.faviconIco,
+    apple: site.appleIcon,
+  },
 };
 
 export const viewport: Viewport = { width: 'device-width', initialScale: 1 };

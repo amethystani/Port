@@ -1,6 +1,7 @@
 // Builds every logo asset from the traced signature (tools/assets/signature-path.json, made by trace-signature.py):
 //   components/icons/Logo.tsx                          the React component (colour from `currentColor`)
 //   public/assets/brand/logo-stamp-{light,dark}.png    the signature painted on the home page's 3D orb
+//   public/signature-apple-icon.png                    home-screen icon (180x180)
 //   public/signature-favicon.png                       browser tab icon
 //   public/assets/brand/social-card.png                1200x630 share image
 // The signature is hairline-thin, so wherever it is small it gets a stroke (the `weight`) that thickens it a little.
@@ -79,8 +80,14 @@ await page.setViewportSize({ width: 96, height: 96 });
 await page.setContent(`<body style="margin:0;background:${BLUE};display:grid;place-items:center;width:96px;height:96px">${mark(WHITE, 88, 34)}</body>`);
 await page.screenshot({ path: 'public/signature-favicon.png' });
 
+await page.setViewportSize({ width: 180, height: 180 });
+await page.setContent(`<body style="margin:0;background:${BLUE};display:grid;place-items:center;width:180px;height:180px">${mark(WHITE, 160, 22)}</body>`);
+await page.screenshot({ path: 'public/signature-apple-icon.png' });
+
 await page.setViewportSize({ width: 1200, height: 630 });
 await page.setContent(`<body style="margin:0;background:${BLUE};display:grid;place-items:center;width:1200px;height:630px">${mark(WHITE, 860, 6)}</body>`);
 await page.screenshot({ path: 'public/assets/brand/social-card.png' });
 await browser.close();
-console.log('wrote Logo.tsx, orb stamps, favicon and social card');
+const { execFileSync } = await import('node:child_process');
+execFileSync('python3', ['-c', "from PIL import Image; Image.open('public/signature-favicon.png').save('public/favicon.ico', sizes=[(16,16),(32,32),(48,48),(64,64)])"]);
+console.log('wrote Logo.tsx, orb stamps, favicon (.ico and .png), apple icon and social card');

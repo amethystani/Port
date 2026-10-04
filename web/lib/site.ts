@@ -12,6 +12,8 @@ export const site = {
     'Animesh Mishra is an ML/NLP researcher working on evaluation, retrieval and scientific AI, with papers at EMNLP 2026 Main, WMT 2026 and Digital Discovery. Looking for the next research role before a PhD.',
   ogImage: '/assets/brand/social-card.png',
   favicon: '/signature-favicon.png',
+  faviconIco: '/favicon.ico',
+  appleIcon: '/signature-apple-icon.png',
   sameAs: [
     'https://github.com/amethystani',
     'https://www.linkedin.com/in/animesh-mishra-in/',
