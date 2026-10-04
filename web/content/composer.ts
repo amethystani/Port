@@ -1,10 +1,12 @@
-const DOCS = 'https://hermes-agent.nousresearch.com/docs/';
+import { portfolio } from './portfolio';
 
 export type CuratedAnswer = {
   question: string;
   answer: string;
-  /** Link on the "Nous documentation" source line and the "Learn more" button. */
+  /** Link on the source line and the "Learn more" button. */
   learn: string;
+  /** Wording of the source line (defaults to "Source"). */
+  learnSource?: string;
   learnLabel?: string;
   /** Primary button. */
   cta: string;
@@ -18,53 +20,62 @@ export type CuratedAnswer = {
  */
 export const answers: CuratedAnswer[] = [
   {
-    question: 'See what you can build with Hermes?',
+    question: 'What does Animesh work on?',
     answer:
-      'Turn repeat work into an agent workflow: research a topic, prepare a briefing, schedule reports, or connect tools you already use. Hermes supports reusable skills, memory, and scheduled tasks. Start with one useful job and expand from there.',
-    learn: DOCS,
-    cta: 'Explore releases',
+      'NLP and ML evaluation, with a focus on scientific AI. His research asks when language models, and the measurements used to judge them, can be trusted when the underlying knowledge is heterogeneous, conflicting or uncertain: scientific retrieval, chemistry language models, translation metrics and LLM fairness auditing.',
+    learn: '/releases',
+    learnSource: 'Publications',
+    cta: 'See publications',
     url: '/releases',
   },
   {
-    question: 'How do I get Hermes?',
+    question: 'Where has he published?',
     answer:
-      'Install Hermes, connect a model provider, and give it a first task. The desktop installer is the simplest starting point on macOS or Windows; the installation guide covers command-line setup and Linux. You choose which tools and services to connect.',
-    learn: `${DOCS}getting-started/installation`,
-    cta: 'Download Hermes',
-    url: 'https://hermes-agent.nousresearch.com/',
-  },
-  {
-    question: 'What makes Nous different?',
-    answer:
-      'Nous builds open language models and the infrastructure for distributed training. Its stated mission connects open access to AI with human rights and freedoms, with research spanning model architecture, data synthesis, fine-tuning, and reasoning.',
-    learn: '/',
-    cta: 'Explore releases',
+      'EMNLP 2026 Main (Beyond Epistemic Collapse: Disagreement-Aware Scientific Retrieval-Augmented Generation), WMT 2026 (Translation Metrics Cannot Judge What Their Tokeniser Deletes) and Digital Discovery, Royal Society of Chemistry (Notation matters: cross-representation inconsistency in chemistry language models and its mechanistic origins).',
+    learn: portfolio.links.orcid,
+    learnSource: 'ORCID',
+    cta: 'See publications',
     url: '/releases',
   },
   {
-    question: 'Which model should I use?',
+    question: 'What is EVIRAG?',
     answer:
-      'Start with your task, available hardware, and whether you want local or hosted inference. Hermes Agent supports multiple providers and models; it is not tied to a single Hermes model. Compare capability, speed, and cost before committing to a setup.',
-    learn: `${DOCS}user-guide/configuration`,
-    cta: 'Compare models',
+      'A disagreement-aware retrieval-augmented generation framework that stops language models collapsing conflicting scientific evidence into a single answer. EVIRAG-BENCH is a 1,250-query benchmark across five scientific domains, and it improves contradiction recall and viewpoint coverage over standard RAG.',
+    learn: portfolio.links.evirag,
+    learnSource: 'GitHub',
+    learnLabel: 'View the code',
+    cta: 'See publications',
     url: '/releases',
   },
   {
-    question: 'Can I run this privately?',
+    question: 'Where has he worked?',
     answer:
-      'You can run Hermes on your own machine, but local execution is not a guarantee that data stays there. Cloud model requests and connected tools can send data to external services. Review your provider, permissions, and tool configuration before using sensitive information.',
-    learn: `${DOCS}user-guide/security`,
-    cta: 'Review config',
-    url: `${DOCS}user-guide/configuration`,
-  },
-  {
-    question: 'How can I contribute?',
-    answer:
-      'Help improve Hermes through code, documentation, bug reports, or testing. Read the contribution guide to find the right workflow, or join the community to discuss an idea. If you want to work with Nous full-time, explore the open roles.',
+      'He contributed to open-source work at Nous Research, researched at DRDO and Complexity Science Hub Vienna, and co-founded ClerkTree. He prefers fast, high-output environments over slow academic ones.',
     learn: '/careers',
-    learnLabel: 'Open roles',
-    cta: 'Join the community',
-    url: 'https://discord.gg/nousresearch',
+    learnSource: 'Experience',
+    learnLabel: 'See experience',
+    cta: 'See experience',
+    url: '/careers',
+  },
+  {
+    question: 'What is he looking for next?',
+    answer:
+      'His next research role before a PhD. If you work in NLP, ML evaluation or AI research broadly, he is happy to connect and talk shop.',
+    learn: portfolio.links.linkedin,
+    learnSource: 'LinkedIn',
+    learnLabel: 'Open LinkedIn',
+    cta: 'Email Animesh',
+    url: `mailto:${portfolio.email}`,
+  },
+  {
+    question: 'How can I get in touch?',
+    answer:
+      'Email works best. He is also on LinkedIn and GitHub, and the code for his papers is public.',
+    learn: portfolio.links.github,
+    learnSource: 'GitHub',
+    learnLabel: 'Open GitHub',
+    cta: 'Email Animesh',
+    url: `mailto:${portfolio.email}`,
   },
 ];
 

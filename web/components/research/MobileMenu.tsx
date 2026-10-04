@@ -89,10 +89,10 @@ function Collapse({
 }
 
 function Accordion({ onNavigate }: { onNavigate: () => void }) {
-  const [openTitle, setOpenTitle] = useState<string | null>('Nous');
+  const [openTitle, setOpenTitle] = useState<string | null>('About');
   const prefix = useId();
   return (
-    <nav className="nw-research-accordion-nav" aria-label="Research navigation">
+    <nav className="nw-research-accordion-nav" aria-label="Site navigation">
       {mobileMenu.map((section) => {
         const open = openTitle === section.title;
         const panel = `${prefix}-${section.title}`;
@@ -108,7 +108,7 @@ function Accordion({ onNavigate }: { onNavigate: () => void }) {
               <span>{section.title}</span>
               <img alt="" src={ASSET('pixel-down')} />
             </button>
-            <Collapse open={open} id={panel} initiallyOpen={section.title === 'Nous'}>
+            <Collapse open={open} id={panel} initiallyOpen={section.title === 'About'}>
               <div className="nw-research-submenu">
                 {section.links.map((link) => (
                   <MenuAnchor key={link.label} link={link} onNavigate={onNavigate} />

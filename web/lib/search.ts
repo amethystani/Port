@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { jobs } from '@/content/jobs';
 import { posts } from '@/content/posts';
+import { portfolio } from '@/content/portfolio';
 import { releases } from '@/content/releases';
 
 export type SearchMatch = { id: string; title: string; text: string };
@@ -29,30 +30,35 @@ const clip = (text: string, n = 170) =>
 /** Pages worth finding that are not blog posts or releases. */
 const PAGES: { title: string; url: string; text: string }[] = [
   {
-    title: 'Hermes Agent',
-    url: 'https://hermes-agent.nousresearch.com/',
-    text: 'The self-improving AI agent built by Animesh Mishra. Learn about Hermes, the agent that grows with you, and get it running on your computer.',
+    title: 'About Animesh Mishra',
+    url: '/',
+    text: 'ML/NLP researcher. EMNLP 2026 Main and WMT 2026 papers, scientific AI, evaluation and open-source work.',
   },
   {
-    title: 'Install Hermes',
-    url: 'https://hermes-agent.nousresearch.com/#install',
-    text: 'Install Hermes via terminal or download the desktop app for Mac OS, Windows or Linux. Choose your platform to get started.',
+    title: 'Selected work',
+    url: '/#hermes',
+    text: 'EVIRAG-Bench, Notation Matters and Palimpsest: open benchmarks, metrics and research code on GitHub.',
   },
   {
-    title: 'Nous Portal',
-    url: 'https://portal.nousresearch.com/',
-    text: 'One account, hundreds of models. Everything to power Hermes Agent: plans, top ups and referrals.',
+    title: 'GitHub',
+    url: portfolio.links.github,
+    text: 'Code and research repositories by Animesh Mishra.',
   },
   {
-    title: 'Releases',
+    title: 'LinkedIn',
+    url: portfolio.links.linkedin,
+    text: 'Updates, posts and background.',
+  },
+  {
+    title: 'Publications',
     url: '/releases',
-    text: 'Models, datasets, papers and code released by Animesh Mishra.',
+    text: 'Papers, benchmarks and releases by Animesh Mishra.',
   },
-  { title: 'Blog', url: '/blog', text: 'Research and perspectives from Animesh Mishra.' },
+  { title: 'Writing', url: '/blog', text: 'Posts and notes from Animesh Mishra.' },
   {
-    title: 'Careers',
+    title: 'Experience',
     url: '/careers',
-    text: 'Open roles at Animesh Mishra building open-source intelligence, Hermes Agent and AI infrastructure.',
+    text: 'Research and industry roles: Nous Research, ClerkTree, Complexity Science Hub Vienna, DRDO.',
   },
 ];
 

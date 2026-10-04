@@ -19,7 +19,7 @@ export type ResearchUiState = {
 };
 
 const initial: ResearchUiState = {
-  nav: { open: false, panel: 'Nous', trigger: null, focus: false },
+  nav: { open: false, panel: 'About', trigger: null, focus: false },
   composer: { open: false, trigger: null },
   menu: { open: false },
 };

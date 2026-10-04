@@ -12,125 +12,42 @@ export type FooterColumn = { group: string; title: string; links: FooterLink[] }
 /** The four link columns in the footer. */
 export const footerColumns: FooterColumn[] = [
   {
+    group: 'Pages',
+    title: 'About',
+    links: [
+      { label: 'Home', href: '/' },
+      { label: 'Publications', href: '/releases' },
+      { label: 'Experience', href: '/careers' },
+      { label: 'Writing', href: '/blog' },
+      { label: 'Contact', href: `mailto:${portfolio.email}` },
+    ],
+  },
+  {
     group: 'Research',
-    title: 'Nous',
+    title: 'Work',
     links: [
-      {
-        label: 'Research',
-        href: '/',
-      },
-      {
-        label: 'Releases',
-        href: '/releases',
-      },
-      {
-        label: 'Careers',
-        href: '/careers',
-      },
-      {
-        label: 'Blog',
-        href: '/blog',
-      },
-      {
-        label: 'Shop',
-        href: 'https://shop.nousresearch.com',
-        newTab: true,
-      },
-      {
-        label: 'Contact',
-        href: `mailto:${portfolio.email}`,
-      },
+      { label: 'EVIRAG-Bench', href: portfolio.links.evirag, newTab: true },
+      { label: 'Notation Matters', href: portfolio.links.notation, newTab: true },
+      { label: 'Palimpsest', href: portfolio.links.palimpsest, newTab: true },
+      { label: 'DeferSeg', href: portfolio.links.deferseg, newTab: true },
     ],
   },
   {
-    group: 'Products',
-    title: 'Hermes',
+    group: 'Profiles',
+    title: 'Elsewhere',
     links: [
-      {
-        label: 'Agent',
-        href: 'https://hermes-agent.nousresearch.com',
-        newTab: true,
-      },
-      {
-        label: 'Business',
-        href: 'https://portal.nousresearch.com/business',
-      },
-      {
-        label: 'Enterprise',
-        href: 'https://portal.nousresearch.com/business#hermes-pro',
-      },
-      {
-        label: 'Via Terminal',
-        href: 'https://hermes-agent.nousresearch.com/#install',
-        newTab: true,
-      },
-      {
-        label: 'For Mac OS',
-        href: 'https://hermes-agent.nousresearch.com/#install',
-        newTab: true,
-      },
-      {
-        label: 'For Windows',
-        href: 'https://hermes-agent.nousresearch.com/#install',
-        newTab: true,
-      },
-      {
-        label: 'For Linux',
-        href: 'https://hermes-agent.nousresearch.com/#install',
-        newTab: true,
-      },
-      {
-        label: 'In the Cloud',
-        href: 'https://portal.nousresearch.com/cloud',
-      },
+      { label: 'GitHub', prefix: 'Go to ', href: portfolio.links.github, newTab: true },
+      { label: 'LinkedIn', prefix: 'Go to ', href: portfolio.links.linkedin, newTab: true },
+      { label: 'ORCID', prefix: 'Go to ', href: portfolio.links.orcid, newTab: true },
     ],
   },
   {
-    group: 'Resources',
-    title: 'Community',
+    group: 'Reach out',
+    title: 'Contact',
     links: [
-      {
-        label: 'Discord',
-        prefix: 'Go to ',
-        href: 'https://discord.gg/nousresearch',
-        newTab: true,
-      },
-      {
-        label: 'Github',
-        prefix: 'Go to ',
-        href: 'https://github.com/NousResearch',
-        newTab: true,
-      },
-      {
-        label: 'x.com',
-        prefix: 'Go to ',
-        href: 'https://x.com/NousResearch',
-        newTab: true,
-      },
-      {
-        label: 'Youtube',
-        prefix: 'Go to ',
-        href: 'https://youtube.com/@NousResearch',
-        newTab: true,
-      },
-    ],
-  },
-  {
-    group: 'Platform',
-    title: 'Portal',
-    links: [
-      {
-        label: 'Create account',
-        href: 'https://portal.nousresearch.com/login',
-      },
-      {
-        label: 'Sign in',
-        href: 'https://portal.nousresearch.com/login',
-      },
-      {
-        label: 'Plans',
-        href: 'https://portal.nousresearch.com/manage-subscription',
-      },
+      { label: 'Email', href: `mailto:${portfolio.email}` },
+      { label: 'Message on LinkedIn', href: portfolio.links.linkedin, newTab: true },
+      { label: 'animeshmishra.us', href: portfolio.links.site, newTab: true },
     ],
   },
 ];

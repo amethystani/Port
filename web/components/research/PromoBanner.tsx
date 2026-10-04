@@ -27,7 +27,7 @@ const useMediaQuery = (query: string) => {
  */
 export function PromoBanner({ active, preset }: { active: boolean; preset: string }) {
   const root = useRef<HTMLDivElement>(null);
-  const [index, setIndex] = useState(preset === 'Portal' ? 1 : 0);
+  const [index, setIndex] = useState(preset === 'Contact' ? 1 : 0);
   const [typed, setTyped] = useState(0);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -35,9 +35,9 @@ export function PromoBanner({ active, preset }: { active: boolean; preset: strin
   const reduced = useMediaQuery('(prefers-reduced-motion: reduce)');
   const promo = promos[index];
 
-  // Opening a different panel brings its own promo first (Portal leads with Nous Portal).
+  // Opening a different panel brings its own promo first (Contact leads with the get-in-touch promo).
   useEffect(() => {
-    setIndex(preset === 'Portal' ? 1 : 0);
+    setIndex(preset === 'Contact' ? 1 : 0);
     setTyped(0);
   }, [preset]);
 
@@ -75,7 +75,7 @@ export function PromoBanner({ active, preset }: { active: boolean; preset: strin
       data-slide={index}
       data-typed-count={typed}
       data-reduced={String(reduced)}
-      aria-label="Featured from Nous"
+      aria-label="Featured"
       onPointerEnter={() => setHovered(true)}
       onPointerLeave={() => setHovered(false)}
       onFocus={() => setFocused(true)}

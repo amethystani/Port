@@ -1,60 +1,50 @@
+import { portfolio } from './portfolio';
+
 /** What the phone menu lists. Each section is an accordion; only one is open at a time. */
 export type MenuLink = { label: string; href: string; newTab?: boolean };
 export type MenuSection = { title: string; links: MenuLink[] };
 
-const HERMES = 'https://hermes-agent.nousresearch.com';
-const PORTAL = 'https://portal.nousresearch.com';
+const { links } = portfolio;
 
 export const mobileMenu: MenuSection[] = [
   {
-    title: 'Nous',
+    title: 'About',
     links: [
-      { label: 'Releases', href: '/releases' },
-      { label: 'Careers', href: '/careers' },
-      { label: 'Blog', href: '/blog' },
-      { label: 'Shop', href: 'https://shop.nousresearch.com', newTab: true },
+      { label: 'Publications', href: '/releases' },
+      { label: 'Experience', href: '/careers' },
+      { label: 'Writing', href: '/blog' },
+      { label: 'GitHub', href: links.github, newTab: true },
     ],
   },
   {
-    title: 'Hermes',
+    title: 'Work',
     links: [
-      { label: 'Agent', href: HERMES },
-      { label: 'For Business', href: `${PORTAL}/business` },
-      { label: 'For Enterprise', href: `${PORTAL}/business#hermes-pro` },
-      { label: 'In the Cloud', href: `${PORTAL}/cloud` },
-      { label: 'Documents', href: `${HERMES}/docs` },
-      { label: 'Via Terminal', href: `${HERMES}/#install` },
-      { label: 'For Mac OS', href: `${HERMES}/#install` },
-      { label: 'For Windows', href: `${HERMES}/#install` },
-      { label: 'For Linux', href: `${HERMES}/#install` },
+      { label: 'EVIRAG-Bench', href: links.evirag },
+      { label: 'Notation Matters', href: links.notation },
+      { label: 'Palimpsest', href: links.palimpsest },
+      { label: 'DeferSeg', href: links.deferseg },
     ].map((link) => ({ ...link, newTab: true })),
   },
   {
-    title: 'Community',
+    title: 'Elsewhere',
     links: [
-      { label: 'Go to Discord', href: 'https://discord.gg/nousresearch' },
-      { label: 'Go to GitHub', href: 'https://github.com/NousResearch' },
-      { label: 'Go to x.com', href: 'https://x.com/NousResearch' },
+      { label: 'Go to GitHub', href: links.github },
+      { label: 'Go to LinkedIn', href: links.linkedin },
+      { label: 'Go to ORCID', href: links.orcid },
     ].map((link) => ({ ...link, newTab: true })),
   },
   {
-    title: 'Portal',
+    title: 'Contact',
     links: [
-      { label: 'Overview', href: `${PORTAL}/` },
-      { label: 'Plans', href: `${PORTAL}/manage-subscription` },
-      { label: 'Referrals', href: `${PORTAL}/` },
-      { label: 'Sign in', href: `${PORTAL}/login` },
-      { label: 'Create an account', href: `${PORTAL}/signup` },
-    ].map((link) => ({ ...link, newTab: true })),
+      { label: 'Email', href: `mailto:${portfolio.email}` },
+      { label: 'LinkedIn', href: links.linkedin, newTab: true },
+      { label: 'animeshmishra.us', href: links.site, newTab: true },
+    ],
   },
 ];
 
 /**
- * The three social icons come from one sprite image; each one shows a slice of it
- * (`width` is the slice, `left` how far the sprite is shifted).
+ * The social icons come from one sprite image; each one shows a slice of it
+ * (`width` is the slice, `left` how far the sprite is shifted). The sprite has no LinkedIn mark, so only GitHub is here.
  */
-export const menuSocials = [
-  { label: 'Discord', href: 'https://discord.gg/nousresearch', width: 20.4141, left: 0 },
-  { label: 'GitHub', href: 'https://github.com/NousResearch', width: 17.82, left: 34.9274 },
-  { label: 'X', href: 'https://x.com/NousResearch', width: 14.4, left: 67.7471 },
-];
+export const menuSocials = [{ label: 'GitHub', href: links.github, width: 17.82, left: 34.9274 }];

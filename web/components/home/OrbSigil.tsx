@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 
 const ORBITS = ['Workspaces', 'Source', 'Source1', 'Source2', 'Source3'];
-const STAMP_ALT = 'Nous girl seal: Rebellion to tyrants is obedience to God.';
+const STAMP_ALT = 'Decorative seal artwork.';
 
 /**
  * The seal at the end of the home page. The server renders a flat picture of it (the "fallback" stamps);
@@ -68,7 +68,7 @@ export function OrbSigil() {
         className="nw-orb-stage"
         role="img"
         tabIndex={-1}
-        aria-label="Nous girl medal. Drag to rotate, use arrow keys to turn, or Home to reset."
+        aria-label="Decorative medal. Drag to rotate, use arrow keys to turn, or Home to reset."
         title="Drag to rotate; arrow keys turn; Home resets"
       />
     </div>

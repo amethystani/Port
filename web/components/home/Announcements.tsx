@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { XIcon } from '@/components/icons';
+import { LinkedInIcon } from '@/components/icons';
 import { DragScroll } from '@/components/behavior/DragScroll';
 import { announcements, type Announcement } from '@/content/announcements';
 
@@ -88,15 +88,15 @@ export function Announcements() {
               } as CSSProperties
             }
           >
-            Announcements
+            Updates
           </h2>
           <a
-            href="https://x.com/NousResearch"
-            aria-label="Animesh Mishra on X"
+            href="https://www.linkedin.com/in/animesh-mishra-in/"
+            aria-label="Animesh Mishra on LinkedIn"
             className="inline-flex shrink-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current"
           >
             <span aria-hidden="true">
-              <XIcon className="size-6" fill="none" />
+              <LinkedInIcon className="size-6" fill="none" />
             </span>
           </a>
         </div>
@@ -104,7 +104,7 @@ export function Announcements() {
       <div
         className="nw-announcement-scroll"
         role="region"
-        aria-label="Announcement posts"
+        aria-label="Recent updates"
         aria-busy="false"
         tabIndex={0}
         data-lenis-prevent-horizontal=""
@@ -115,7 +115,7 @@ export function Announcements() {
       </div>
       <DragScroll selector=".nw-announcement-scroll" />
       <span className="sr-only" role="status">
-        {announcements.length} announcements loaded
+        {announcements.length} updates loaded
       </span>
     </div>
   );

@@ -40,19 +40,19 @@ const attr = (page, sel, name) => page.$eval(sel, (el, n) => el.getAttribute(n),
 
   // dropdown
   check('dropdown not in DOM until used or closed', (await page.$eval('#research-navigation', (e) => e.getAttribute('data-open'))) === 'false');
-  await page.click('header [data-research-target="Hermes"]'); await page.waitForTimeout(500);
-  check('clicking Hermes opens its panel', (await attr(page, '#research-navigation', 'data-open')) === 'true' && (await attr(page, '#research-navigation', 'data-preset')) === 'Hermes');
-  check('panel lists Hermes links', (await page.$$eval('#research-navigation .nw-subnav-link', (l) => l.length)) === 9);
-  check('trigger aria-expanded is true', (await attr(page, 'header [data-research-target="Hermes"]', 'aria-expanded')) === 'true');
+  await page.click('header [data-research-target="Work"]'); await page.waitForTimeout(500);
+  check('clicking Work opens its panel', (await attr(page, '#research-navigation', 'data-open')) === 'true' && (await attr(page, '#research-navigation', 'data-preset')) === 'Work');
+  check('panel lists Work links', (await page.$$eval('#research-navigation .nw-subnav-link', (l) => l.length)) === 7);
+  check('trigger aria-expanded is true', (await attr(page, 'header [data-research-target="Work"]', 'aria-expanded')) === 'true');
   const box = await page.$eval('#research-navigation', (e) => { const r = e.getBoundingClientRect(); return { left: Math.round(r.left), top: Math.round(r.top), w: Math.round(r.width) }; });
-  const trigger = await page.$eval('header [data-research-target="Hermes"]', (e) => { const r = e.getBoundingClientRect(); return { left: Math.round(r.left), bottom: Math.round(r.bottom) }; });
+  const trigger = await page.$eval('header [data-research-target="Work"]', (e) => { const r = e.getBoundingClientRect(); return { left: Math.round(r.left), bottom: Math.round(r.bottom) }; });
   check('panel sits under the trigger, left-aligned to it, 720 wide', box.left === trigger.left && box.w === 720 && box.top >= trigger.bottom && box.top - trigger.bottom <= 12, JSON.stringify({ box, trigger }));
   await page.keyboard.press('Escape'); await page.waitForTimeout(500);
   check('Escape closes it', (await attr(page, '#research-navigation', 'data-open')) === 'false');
-  await page.click('header [data-research-target="Community"]'); await page.waitForTimeout(400);
+  await page.click('header [data-research-target="Elsewhere"]'); await page.waitForTimeout(400);
   const community = await page.$eval('#research-navigation', (e) => { const r = e.getBoundingClientRect(); return Math.round(r.right); });
-  const communityRight = await page.$eval('header [data-research-target="Community"]', (e) => Math.round(e.getBoundingClientRect().right));
-  check('right-hand trigger aligns the panel to its right edge', community === communityRight, `${community} vs ${communityRight}`);
+  const elsewhereRight = await page.$eval('header [data-research-target="Elsewhere"]', (e) => Math.round(e.getBoundingClientRect().right));
+  check('right-hand trigger aligns the panel to its right edge', community === elsewhereRight, `${community} vs ${elsewhereRight}`);
   await page.mouse.click(700, 800); await page.waitForTimeout(400);
   check('clicking outside closes it', (await attr(page, '#research-navigation', 'data-open')) === 'false');
 
@@ -79,8 +79,8 @@ const attr = (page, sel, name) => page.$eval(sel, (el, n) => el.getAttribute(n),
   await page.click('[aria-label="Back to questions"]');
   await page.click('[aria-label="Next questions"]'); await page.waitForTimeout(150);
   check('the arrows page through the other questions', (await page.$eval('.nw-prompt-study', (e) => e.getAttribute('data-question-page'))) === '1');
-  await page.fill('.nw-composer-search-input', 'hermes'); await page.waitForTimeout(1500);
-  check('typing searches the site', (await page.$$('[data-search-result]')).length > 3);
+  await page.fill('.nw-composer-search-input', 'evirag'); await page.waitForTimeout(1500);
+  check('typing searches the site', (await page.$$('[data-search-result]')).length >= 1);
   await page.keyboard.press('Escape'); await page.waitForTimeout(250);
   check('Escape closes it', (await state()) === 'false');
   await page.keyboard.press('Control+k'); await page.waitForTimeout(300);
@@ -97,18 +97,18 @@ const attr = (page, sel, name) => page.$eval(sel, (el, n) => el.getAttribute(n),
   const sections = () => page.$$eval('.nw-research-accordion-nav section', (s) => s.map((x) => x.querySelector('button').getAttribute('aria-expanded') + ':' + x.querySelectorAll('a').length));
   check('menu starts closed', !(await menu()));
   await page.click('button[aria-label="Open menu"]'); await page.waitForTimeout(700);
-  check('burger opens the menu, "Nous" expanded with 4 links', !!(await menu()) && (await sections())[0] === 'true:4');
+  check('burger opens the menu, "About" expanded with 4 links', !!(await menu()) && (await sections())[0] === 'true:4');
   check('page scroll is locked while open', (await page.evaluate(() => document.documentElement.style.overflow)) === 'hidden');
-  await page.click('.nw-research-accordion-toggle:has-text("Hermes")'); await page.waitForTimeout(600);
-  check('opening Hermes closes Nous and lists 9 links', (await sections()).join() === 'false:0,true:9,false:0,false:0');
-  await page.click('.nw-research-accordion-toggle:has-text("Hermes")'); await page.waitForTimeout(600);
+  await page.click('.nw-research-accordion-toggle:has-text("Work")'); await page.waitForTimeout(600);
+  check('opening Work closes About and lists 4 links', (await sections()).join() === 'false:0,true:4,false:0,false:0');
+  await page.click('.nw-research-accordion-toggle:has-text("Work")'); await page.waitForTimeout(600);
   check('a section can be collapsed again', (await sections()).every((x) => x.startsWith('false')));
   for (let i = 0; i < 12; i++) await page.keyboard.press('Tab');
   check('Tab stays inside the open menu', await page.evaluate(() => !!document.activeElement?.closest('#research-mobile-menu')));
   await page.keyboard.press('Escape'); await page.waitForTimeout(600);
   check('Escape closes it, unlocks scroll and returns focus to the burger', !(await menu()) && (await page.evaluate(() => document.documentElement.style.overflow)) === '' && (await page.evaluate(() => document.activeElement?.getAttribute('aria-label'))) === 'Open menu');
   await page.click('button[aria-label="Open menu"]'); await page.waitForTimeout(600);
-  await page.click('.nw-research-accordion-nav a:has-text("Blog")'); await page.waitForURL('**/blog'); await page.waitForTimeout(600);
+  await page.click('.nw-research-accordion-nav a:has-text("Writing")'); await page.waitForURL('**/blog'); await page.waitForTimeout(600);
   check('choosing a page navigates and closes the menu', !(await menu()));
   check('no console errors from the menu', errors.length === 0, errors.slice(0, 2).join(' | '));
   await ctx.close();
@@ -186,7 +186,7 @@ const attr = (page, sel, name) => page.$eval(sel, (el, n) => el.getAttribute(n),
   const plays = () => page.evaluate(() => window.__plays);
   const before = await plays();
   await page.evaluate(() => document.querySelector('[data-el="hermes-demo"]').scrollIntoView({ block: 'center' })); await page.waitForTimeout(800);
-  check('the Hermes demo plays when it scrolls into view', (await plays()) > before);
+  check('the demo video plays when it scrolls into view', (await plays()) > before);
   const pausesBefore = await page.evaluate(() => window.__pauses);
   await page.evaluate(() => scrollTo(0, 0)); await page.waitForTimeout(800);
   check('and pauses when it leaves', (await page.evaluate(() => window.__pauses)) > pausesBefore);

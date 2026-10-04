@@ -2,7 +2,7 @@ import { portfolio } from '@/content/portfolio';
 import { ArtShader } from './ArtShader';
 import type { CSSProperties } from 'react';
 import Link from 'next/link';
-import { DiscordIcon, GitHubIcon, Logo, XIcon } from '@/components/icons';
+import { GitHubIcon, LinkedInIcon, Logo } from '@/components/icons';
 import { footerColumns, type FooterLink } from '@/content/footer';
 
 const CONTAINER =
@@ -95,7 +95,7 @@ export function Footer() {
         >
           <div className="flex flex-col gap-5 max-md:col-span-2">
             <Logo aria-hidden="true" style={{ width: 132, height: 'auto' }} />
-            <p>The Internet&apos;s Own AI.</p>
+            <p>Research and building cool stuff.</p>
             <a
               className="underline decoration-from-font opacity-60 hover:opacity-100"
               href={`mailto:${portfolio.email}`}
@@ -123,27 +123,18 @@ export function Footer() {
         >
           <div className="flex items-center max-md:col-span-2">
             <a
-              aria-label="Discord"
+              aria-label="LinkedIn"
               className="py-2 pr-2 hover:opacity-60"
-              href="https://discord.gg/nousresearch"
+              href={portfolio.links.linkedin}
               rel="noopener noreferrer"
               target="_blank"
             >
-              <DiscordIcon className="size-6" fill="none" />
-            </a>
-            <a
-              aria-label="X"
-              className="p-2 hover:opacity-60"
-              href="https://x.com/NousResearch"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              <XIcon className="size-5" fill="none" />
+              <LinkedInIcon className="size-5" fill="none" />
             </a>
             <a
               aria-label="GitHub"
               className="p-2 hover:opacity-60"
-              href="https://github.com/NousResearch"
+              href={portfolio.links.github}
               rel="noopener noreferrer"
               target="_blank"
             >
@@ -151,18 +142,18 @@ export function Footer() {
             </a>
           </div>
           <p className="max-md:order-1">© 2026, Animesh Mishra</p>
-          <p className="opacity-60">Open Source</p>
-          <p className="opacity-60">MIT License</p>
+          <p className="opacity-60">New Delhi, India</p>
+          <p className="opacity-60">{portfolio.role}</p>
           <p className="max-md:order-1">
             <span>
-              <a className="underline decoration-from-font" href="https://portal.nousresearch.com/terms">
-                Terms
+              <a className="underline decoration-from-font" href="/releases">
+                Publications
               </a>
             </span>
             <span>
               <span className="mx-2">|</span>
-              <a className="underline decoration-from-font" href="https://portal.nousresearch.com/privacy">
-                Privacy
+              <a className="underline decoration-from-font" href="/blog">
+                Writing
               </a>
             </span>
           </p>

@@ -1,27 +1,27 @@
 export type MissionRow = { eyebrow: string; heading: string; body: string; image: string; reverse?: boolean };
 
 export const mission = {
-  /** Screen-reader title; the visible one is the MissionTitle lettering. */
-  title: "The Internet's Own AI",
+  /** The big title over the mission artwork. */
+  title: 'Research and building cool stuff',
   heroImage: '/assets/nous-web/mission-reference/mission-header.webp',
   rows: [
     {
-      eyebrow: 'Open Source',
-      heading: 'Leading the American Open Source Movement',
-      body: 'We train models, build agents, and develop infrastructure to accelerate adoption of open intelligence globally.',
+      eyebrow: 'About',
+      heading: 'NLP Researcher, New Delhi',
+      body: 'Paper at EMNLP 2026 Main (A* venue) on retrieval-augmented generation for science, plus a WMT 2026 paper on blind spots in machine translation evaluation. Presenting both in Budapest.',
       image: '/assets/nous-web/mission-reference/mission-duo-1.webp',
     },
     {
-      eyebrow: 'Mission',
-      heading: 'Advancing Human Rights and Freedoms',
-      body: "We believe that powerful AI should be in the hands of the many rather than the privileged few. Our aim is to create and democratize access to the world's best intelligence.",
+      eyebrow: 'Research',
+      heading: 'Evaluation, Retrieval and Scientific AI',
+      body: 'How models behave on real scientific tasks, and what they are actually responding to: 88% of 1,072 molecules got inconsistent predictions depending on notation, retrieval that keeps conflicting evidence apart, and translation metrics that cannot see what a tokeniser deletes.',
       image: '/assets/nous-web/mission-reference/mission-duo-2.webp',
       reverse: true,
     },
     {
-      eyebrow: 'Research',
-      heading: 'Understanding the Intelligence Frontier',
-      body: 'Our primary research focus areas include agents, model architecture, data synthesis, fine-tuning, and reasoning, all aimed at advancing our understanding of models and how they can benefit humanity.',
+      eyebrow: 'Building',
+      heading: 'Open Source and Fast Teams',
+      body: 'Contributed to open-source work at Nous Research, researched at DRDO and Complexity Science Hub Vienna, and co-founded ClerkTree. I like fast, high-output environments over slow academic ones. Looking for my next research role before a PhD.',
       image: '/assets/nous-web/mission-reference/mission-duo-3.webp',
     },
   ] satisfies MissionRow[],
@@ -35,42 +35,57 @@ export type HermesFeature = {
   eyebrow: { desktop: string; mobile: string };
   title: string;
   image: string;
-  /** Desktop and mobile show different call-to-action wording and targets. */
+  /** Desktop and mobile can show different call-to-action wording and targets. */
   cta: { desktop: Cta; mobile: Cta };
 };
 
-export const hermesFeatures: HermesFeature[] = [
+/** The three project tiles under the "Selected Work" banner. */
+export const hermesFeatures: (HermesFeature & { id: string })[] = [
   {
+    id: 'evirag-bench',
     kind: 'terminal',
-    eyebrow: { desktop: 'TUI', mobile: 'TUI' },
-    title: 'Terminal Velocity',
+    eyebrow: { desktop: 'Benchmark · EMNLP 2026', mobile: 'Benchmark' },
+    title: 'EVIRAG-Bench',
     image: '/assets/nous-web/mobile-home/product-terminal.png',
     cta: {
-      desktop: {
-        label: 'Install via terminal',
-        href: 'https://hermes-agent.nousresearch.com/docs/getting-started/installation#without-hermes-desktop',
-      },
-      mobile: { label: 'Install via terminal', href: 'https://hermes-agent.nousresearch.com/' },
+      desktop: { label: 'View on GitHub', href: 'https://github.com/amethystani/evirag-bench' },
+      mobile: { label: 'View on GitHub', href: 'https://github.com/amethystani/evirag-bench' },
     },
   },
   {
+    id: 'notation-matters',
     kind: 'desktop',
-    eyebrow: { desktop: 'Desktop', mobile: 'GUI' },
-    title: 'Hermes Application',
+    eyebrow: { desktop: 'Paper · Digital Discovery', mobile: 'Paper' },
+    title: 'Notation Matters',
     image: '/assets/nous-web/mobile-home/product-desktop.webp',
     cta: {
-      desktop: { label: 'Get Hermes Desktop', href: 'https://hermes-agent.nousresearch.com/#downloads' },
-      mobile: { label: 'Download for Mac / Windows / Linux', href: 'https://hermes-agent.nousresearch.com/' },
+      desktop: { label: 'View on GitHub', href: 'https://github.com/amethystani/notation-matters' },
+      mobile: { label: 'View on GitHub', href: 'https://github.com/amethystani/notation-matters' },
     },
   },
   {
+    id: 'palimpsest',
     kind: 'portal',
-    eyebrow: { desktop: 'Portal', mobile: 'Portal' },
-    title: 'Nous Portal',
+    eyebrow: { desktop: 'Metric · WMT 2026', mobile: 'Metric' },
+    title: 'Palimpsest',
     image: '/assets/nous-web/mobile-home/product-portal.webp',
     cta: {
-      desktop: { label: 'Power your Hermes', href: 'https://portal.nousresearch.com/login' },
-      mobile: { label: 'Power your Hermes', href: 'https://portal.nousresearch.com/' },
+      desktop: { label: 'View on GitHub', href: 'https://github.com/amethystani/palimpsest' },
+      mobile: { label: 'View on GitHub', href: 'https://github.com/amethystani/palimpsest' },
     },
   },
 ];
+
+/** The banner above the project tiles (the big "Selected Work" headline). */
+export const work = {
+  eyebrow: 'Research you can run',
+  title: 'Selected Work',
+  /** One sentence split over two columns on desktop. */
+  intro: [
+    'Open benchmarks, metrics and research code. Disagreement-aware retrieval for science, translation metrics that',
+    'notice what tokenisers delete, and chemistry language models probed from the inside, all public on GitHub.',
+  ],
+  primary: { label: 'Publications', href: '/releases' },
+  secondary: { label: 'GitHub', href: 'https://github.com/amethystani' },
+  band: { poster: '/assets/nous-web/hermes-demo-poster.webp', video: '/media/hermes-desktop.mp4' },
+};

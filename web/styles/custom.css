@@ -39,3 +39,19 @@
   display: block;
   margin: 0 auto 6px;
 }
+
+/* ---- Portfolio: home page content ---- */
+
+/* The mission title is plain lettering (the original drew it as an SVG) on every screen size. */
+.nous-web .nw-mission-title > svg { display: none; }
+.nous-web .nw-mission-title .nw-mission-mobile-title {
+  display: block;
+  max-width: 14ch;
+  text-box-trim: none;
+}
+@media (min-width: 768px) {
+  .nous-web .nw-mission-title .nw-mission-mobile-title {
+    max-width: 24ch;
+    font-size: clamp(64px, 8.2vw, 132px) !important;
+  }
+}

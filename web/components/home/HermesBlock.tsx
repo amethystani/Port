@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { hermesFeatures } from '@/content/home';
+import { hermesFeatures, work } from '@/content/home';
 import { Button } from '@/components/ui/Button';
 import { DemoVideo } from './DemoVideo';
 
@@ -27,7 +27,7 @@ export function HermesBlock() {
             letterSpacing: 'max(0.44px, calc(0.44 * var(--nw-u-text)))',
           }}
         >
-          Elevate your soul.md
+          {work.eyebrow}
         </p>
         <div className="w-[calc(1067.23*var(--nw-u))] max-lg:w-full" data-el="hermes-headline">
           <h2
@@ -44,66 +44,36 @@ export function HermesBlock() {
             }
           >
             <span>
-              <span>Hermes Agent</span>
+              <span>{work.title}</span>
             </span>
-            <span aria-hidden="true">Hermes Agent</span>
+            <span aria-hidden="true">{work.title}</span>
           </h2>
         </div>
         <div
           className="flex w-[calc(960*var(--nw-u))] justify-center gap-[calc(80*var(--nw-u))] leading-[calc(30*var(--nw-u))] max-lg:w-full max-lg:flex-col max-lg:gap-[var(--nw-seam-micro)]"
           data-el="hermes-duo"
         >
-          <p
-            className="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty w-[calc(410*var(--nw-u))] max-lg:w-full"
-            style={{ fontSize: 'max(13px, calc(13 * var(--nw-u-text)))', lineHeight: '1.15' }}
-          >
-            <span className="nw-desktop-only">
-              The self-improving AI agent built by Animesh Mishra. The only agent with a built-in learning
-              loop — creates skills from experience,
-            </span>
-            <span className="nw-mobile-only">
-              The self-improving AI agent built by Animesh Mishra. The only agent with a built-in learning
-              loop: creates skills from experience,
-            </span>
-          </p>
-          <p
-            className="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty w-[calc(410*var(--nw-u))] max-lg:w-full"
-            style={{ fontSize: 'max(13px, calc(13 * var(--nw-u-text)))', lineHeight: '1.15' }}
-          >
-            <span className="nw-desktop-only">
-              improves them during use, nudges itself to persist knowledge, and builds a deepening model of
-              who you are across sessions.
-            </span>
-            <span className="nw-mobile-only">
-              improves them during use, nudges itself to persist knowledge, and builds a deepening model of
-              who you are across sessions.
-            </span>
-          </p>
+          {work.intro.map((line) => (
+            <p
+              key={line}
+              className="font-[family-name:var(--font-rules)] proportional-nums font-normal text-inherit normal-case text-pretty w-[calc(410*var(--nw-u))] max-lg:w-full"
+              style={{ fontSize: 'max(13px, calc(13 * var(--nw-u-text)))', lineHeight: '1.15' }}
+            >
+              {line}
+            </p>
+          ))}
         </div>
         <div className="flex items-start gap-[var(--nw-cta-gap)]" data-el="hermes-ctas">
-          <Button variant="secondary" density="cta" href="https://hermes-agent.nousresearch.com/docs">
-            Learn more
+          <Button variant="secondary" density="cta" href={work.secondary.href}>
+            {work.secondary.label}
           </Button>
-          <Button
-            variant="primary"
-            density="cta"
-            className="nw-desktop-only"
-            href="https://portal.nousresearch.com/cloud"
-          >
-            About hermes
-          </Button>
-          <Button
-            variant="primary"
-            density="cta"
-            className="nw-mobile-only"
-            href="https://hermes-agent.nousresearch.com/"
-          >
-            Install Hermes
+          <Button variant="primary" density="cta" href={work.primary.href}>
+            {work.primary.label}
           </Button>
         </div>
       </div>
       <div className="relative overflow-clip h-[var(--nw-demo-h)] w-full" data-el="hermes-demo">
-        <DemoVideo poster="/assets/nous-web/hermes-demo-poster.webp" src="/media/hermes-desktop.mp4" />
+<DemoVideo poster={work.band.poster} src={work.band.video} />
       </div>
       <div
         data-el="hermes-products"
@@ -112,7 +82,7 @@ export function HermesBlock() {
         <div className="grid w-full grid-cols-3 max-lg:grid-cols-2 max-lg:gap-[var(--nw-seam-section)] max-sm:grid-cols-1">
           {hermesFeatures.map((feature, i) => (
             <div
-              key={feature.kind}
+              key={feature.id}
               className="flex h-[var(--nw-feature-h)] flex-col items-center justify-center gap-[var(--nw-seam-item)] px-[var(--nw-seam-item)] max-lg:h-auto max-lg:px-0"
               data-el={`feature-${i}`}
             >

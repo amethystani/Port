@@ -91,7 +91,7 @@ function Section({ section }: { section: NavSection }) {
 }
 
 /**
- * The dropdown under the header's Nous / Hermes / Community / Portal triggers. It is portalled into
+ * The dropdown under the header's About / Work / Elsewhere / Contact triggers. It is portalled into
  * <body> after hydration; CSS handles the open/close fade through the data-open attribute.
  */
 export function ResearchNavigation() {

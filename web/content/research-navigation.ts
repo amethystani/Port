@@ -1,4 +1,6 @@
-/** Content of the dropdown panels opened by the header's Nous / Hermes / Community / Portal triggers. */
+import { portfolio } from './portfolio';
+
+/** Content of the dropdown panels opened by the header's About / Work / Elsewhere / Contact triggers. */
 export type NavLink = {
   label: string;
   /** Dimmed lead-in before the label, e.g. "For" in "For Business". */
@@ -18,44 +20,26 @@ export type NavSection = {
 };
 
 export type PromoKind = 'hermes' | 'portal' | 'nous';
-export type NavPanelName = 'Nous' | 'Hermes' | 'Community' | 'Portal';
+export type NavPanelName = 'About' | 'Work' | 'Elsewhere' | 'Contact';
 export type NavPanel = { promo: PromoKind; sections: NavSection[] };
 
 export const navPanels: Record<NavPanelName, NavPanel> = {
-  Nous: {
+  About: {
     promo: 'hermes',
     sections: [
       {
-        category: 'Resources',
-        heading: 'Nous',
+        category: 'Pages',
+        heading: 'About',
         links: [
-          {
-            label: 'Releases',
-            description: 'Applied AI research',
-            href: '/releases',
-          },
-          {
-            label: 'Careers',
-            description: 'Open roles at NousResearch',
-            href: '/careers',
-          },
-          {
-            label: 'Blog',
-            description: 'Latest articles from the team',
-            href: '/blog',
-          },
+          { label: 'Publications', description: 'Papers, benchmarks and releases', href: '/releases' },
+          { label: 'Experience', description: 'Research and industry roles', href: '/careers' },
+          { label: 'Writing', description: 'Posts and notes', href: '/blog' },
         ],
       },
       {
-        category: 'Merch',
-        heading: 'Shop',
-        links: [
-          {
-            label: 'Visit Store',
-            href: 'https://shop.nousresearch.com',
-            newTab: true,
-          },
-        ],
+        category: 'Code',
+        heading: 'GitHub',
+        links: [{ label: 'Visit GitHub', href: portfolio.links.github, newTab: true }],
         merch: [
           '/assets/nous-web/composer/menuCode_imgBlueteefront1.webp',
           '/assets/nous-web/composer/menuCode_imgSweaterfront1.webp',
@@ -63,157 +47,110 @@ export const navPanels: Record<NavPanelName, NavPanel> = {
       },
     ],
   },
-  Hermes: {
+  Work: {
     promo: 'hermes',
     sections: [
       {
-        category: 'Product',
-        heading: 'Hermes',
+        category: 'Research',
+        heading: 'Work',
         links: [
           {
-            label: 'Agent',
-            description: 'The agent that grows with you',
-            href: 'https://hermes-agent.nousresearch.com',
+            label: 'EVIRAG-Bench',
+            description: 'Disagreement-aware scientific RAG',
+            href: portfolio.links.evirag,
             newTab: true,
           },
           {
-            label: 'Business',
-            muted: 'For',
-            description: 'Hermes Teams, for startups to SMEs',
-            href: 'https://portal.nousresearch.com/business',
+            label: 'Notation Matters',
+            description: 'Chemistry language models',
+            href: portfolio.links.notation,
             newTab: true,
           },
           {
-            label: 'Enterprise',
-            muted: 'For',
-            description: 'Your collective wisdom frontier model',
-            href: 'https://portal.nousresearch.com/business#hermes-pro',
+            label: 'Palimpsest',
+            description: 'Blind spots in translation metrics',
+            href: portfolio.links.palimpsest,
             newTab: true,
           },
           {
-            label: 'Cloud',
-            muted: 'In the',
-            description: 'Run Hermes Remote and 24/7',
-            href: 'https://portal.nousresearch.com/cloud',
-            newTab: true,
-          },
-          {
-            label: 'Documents',
-            description: 'FAQs, how to’s and guides to your Hermes',
-            href: 'https://hermes-agent.nousresearch.com/docs',
+            label: 'DeferSeg',
+            description: 'Tile-scheduled neural passes for real-time compositing',
+            href: portfolio.links.deferseg,
             newTab: true,
           },
         ],
       },
       {
-        category: 'Agent',
-        heading: 'Install',
+        category: 'Venues',
+        heading: 'Papers',
         links: [
-          {
-            label: 'Terminal',
-            muted: 'Via',
-            description: 'Install Hermes via terminal',
-            href: 'https://hermes-agent.nousresearch.com/#install',
-            newTab: true,
-          },
-          {
-            label: 'Mac OS',
-            muted: 'For',
-            description: 'Download desktop app for mac os',
-            href: 'https://hermes-agent.nousresearch.com/#install',
-            newTab: true,
-          },
-          {
-            label: 'Windows',
-            muted: 'For',
-            description: 'Download desktop app for windows',
-            href: 'https://hermes-agent.nousresearch.com/#install',
-            newTab: true,
-          },
-          {
-            label: 'Linux',
-            muted: 'For',
-            description: 'Download desktop app for linux',
-            href: 'https://hermes-agent.nousresearch.com/#install',
-            newTab: true,
-          },
+          { label: 'EMNLP 2026', muted: 'At', description: 'Main conference, Budapest', href: '/releases' },
+          { label: 'WMT 2026', muted: 'At', description: 'Proceedings, Budapest', href: '/releases' },
+          { label: 'Digital Discovery', muted: 'In', description: 'Royal Society of Chemistry', href: '/releases' },
         ],
       },
     ],
   },
-  Community: {
+  Elsewhere: {
     promo: 'hermes',
     sections: [
       {
-        category: 'Resources',
-        heading: 'Community',
+        category: 'Profiles',
+        heading: 'Elsewhere',
         links: [
-          {
-            label: 'Discord',
-            muted: 'Go to',
-            description: 'Community support',
-            href: 'https://discord.gg/nousresearch',
-            newTab: true,
-          },
           {
             label: 'GitHub',
             muted: 'Go to',
-            description: 'Get the docs and code',
-            href: 'https://github.com/NousResearch',
+            description: 'Code and research repositories',
+            href: portfolio.links.github,
             newTab: true,
           },
           {
-            label: 'x.com',
+            label: 'LinkedIn',
             muted: 'Go to',
-            description: 'Releases and announcements',
-            href: 'https://x.com/NousResearch',
+            description: 'Updates and posts',
+            href: portfolio.links.linkedin,
+            newTab: true,
+          },
+          {
+            label: 'ORCID',
+            muted: 'Go to',
+            description: 'Publication record',
+            href: portfolio.links.orcid,
             newTab: true,
           },
         ],
       },
     ],
   },
-  Portal: {
+  Contact: {
     promo: 'portal',
     sections: [
       {
-        category: 'Platform',
-        heading: 'Portal',
+        category: 'Say hello',
+        heading: 'Contact',
         links: [
           {
-            label: 'Overview',
-            description: 'Power your Hermes agent',
-            href: 'https://portal.nousresearch.com/',
-            newTab: true,
+            label: 'Email',
+            description: portfolio.email,
+            href: `mailto:${portfolio.email}`,
           },
           {
-            label: 'Plans',
-            description: 'Subscription, plans, and top ups',
-            href: 'https://portal.nousresearch.com/manage-subscription',
-            newTab: true,
-          },
-          {
-            label: 'Referrals',
-            description: 'Our Nous Portal referral programme',
-            href: 'https://portal.nousresearch.com/',
+            label: 'LinkedIn',
+            description: 'Message me on LinkedIn',
+            href: portfolio.links.linkedin,
             newTab: true,
           },
         ],
       },
       {
-        category: 'Account',
-        heading: 'Access',
+        category: 'Site',
+        heading: 'Web',
         links: [
           {
-            label: 'Sign in',
-            description: 'Continue securely on Nous Portal',
-            href: 'https://portal.nousresearch.com/login',
-            newTab: true,
-          },
-          {
-            label: 'New Account',
-            description: 'Create a new account via portal to power Hermes',
-            href: 'https://portal.nousresearch.com/signup',
+            label: 'animeshmishra.us',
+            description: 'Portfolio site',
+            href: portfolio.links.site,
             newTab: true,
           },
         ],
@@ -227,24 +164,24 @@ export const promos = [
   {
     kind: 'hermes',
     art: 'wing',
-    label: 'Install Hermes',
-    text: 'The agent that grows with you. Download for Mac/Windows/Linux',
-    href: 'https://hermes-agent.nousresearch.com/',
+    label: 'EMNLP 2026',
+    text: 'Beyond Epistemic Collapse: disagreement-aware scientific RAG, with EVIRAG-Bench.',
+    href: portfolio.links.evirag,
     external: true,
   },
   {
     kind: 'portal',
     art: 'portal',
-    label: 'Nous Portal',
-    text: 'One Account. Hundreds of Models. Everything to Power Hermes Agent.',
-    href: 'https://portal.nousresearch.com/',
+    label: 'Get in touch',
+    text: 'Looking for my next research role before a PhD. Say hello.',
+    href: `mailto:${portfolio.email}`,
     external: true,
   },
   {
     kind: 'nous',
     art: 'nous',
-    label: 'Nous Careers',
-    text: 'Join us at the frontier of open source AI.',
+    label: 'Experience',
+    text: 'Research and industry work, from ClerkTree to Complexity Science Hub Vienna.',
     href: '/careers',
     external: false,
   },

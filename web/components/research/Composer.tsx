@@ -12,7 +12,7 @@ import { researchUi, useResearchUi } from '@/lib/research-ui';
 import type { SearchResult } from '@/lib/search';
 import { ArrowPixelIcon, ChevronPixelIcon } from './PromptIcons';
 
-const TITLE = 'Hermes : About Nous';
+const TITLE = 'Ask : About Animesh';
 const art = (name: string) => `/assets/nous-web/composer/composer-${name}.webp`;
 const MARGIN = 16;
 
@@ -128,7 +128,7 @@ function QuestionsPanel({
         {current ? (
           <article className="nw-composer-answer">
             <PromptLink className="nw-composer-hit nw-answer-source" href={current.learn}>
-              Nous documentation
+              {current.learnSource ?? 'Source'}
             </PromptLink>
             <h3 ref={answerTitle} tabIndex={-1}>
               {current.question}
@@ -274,7 +274,7 @@ function useSearch(query: string, enabled: boolean) {
   };
 }
 
-const LOADING = ['Looking through Nous…', 'Finding relevant pages…', 'Looking for a match…'];
+const LOADING = ['Looking through the site…', 'Finding relevant pages…', 'Looking for a match…'];
 function Searching() {
   const [i, setI] = useState(0);
   useEffect(() => {
@@ -407,7 +407,7 @@ function SearchPanel({
 // ------------------------------------------------------------------------------------------ the palette
 /**
  * The ⌘K palette on the home page: a search field with suggested questions (curated answers) beneath it,
- * or live search results once you type. It opens over the "Hermes : About Nous" button, or near the top of
+ * or live search results once you type. It opens over the "Ask : About Animesh" button, or near the top of
  * the window when that button is off screen.
  */
 export function Composer() {
@@ -542,8 +542,8 @@ export function Composer() {
             ref={input}
             type="search"
             className="min-w-0 flex-1 self-center bg-transparent text-text-primary outline-none placeholder:text-current placeholder:opacity-40 disabled:cursor-not-allowed font-[family-name:var(--font-rules)] font-normal normal-case tracking-normal text-[length:var(--hpv2-type-14)]/[1.4] field-visual-module__wzPR8a__control nw-composer-search-input"
-            aria-label="Search Nous"
-            placeholder="Search Nous…"
+            aria-label="Search the site"
+            placeholder="Search the site…"
             value={query}
             maxLength={512}
             autoComplete="off"

@@ -2,6 +2,7 @@ export { ChevronIcon } from './ChevronIcon';
 export { DiscordIcon } from './DiscordIcon';
 export { ExternalLinkIcon } from './ExternalLinkIcon';
 export { GitHubIcon } from './GitHubIcon';
+export { LinkedInIcon } from './LinkedInIcon';
 export { ListenIcon } from './ListenIcon';
 export { MissionTitle } from './MissionTitle';
 export { ShareIcon } from './ShareIcon';

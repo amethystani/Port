@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { DiscordIcon, GitHubIcon, Logo, XIcon } from '@/components/icons';
+import { GitHubIcon, LinkedInIcon, Logo } from '@/components/icons';
 import { navigation } from '@/content/navigation';
 import { BrandLink } from './BrandLink';
 
@@ -33,7 +33,7 @@ function BadgePair({ className }: { className: string; width?: number; height?: 
   return <Logo aria-hidden="true" className={className} />;
 }
 
-const SOCIAL_ICONS = { Discord: DiscordIcon, X: XIcon, GitHub: GitHubIcon } as const;
+const SOCIAL_ICONS = { GitHub: GitHubIcon, LinkedIn: LinkedInIcon } as const;
 
 function SocialLinks({ items }: { items: { label: keyof typeof SOCIAL_ICONS; href: string }[] }) {
   return (
