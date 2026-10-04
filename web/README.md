@@ -151,6 +151,7 @@ Not part of the site; used to build and verify it.
 | `dom-diff.mjs`, `compare.mjs`, `behavior-check.mjs` | verification (above) |
 | `html-to-jsx.mjs` | converts captured HTML into JSX components |
 | `extract-posts.mjs`, `extract-lists.mjs`, `extract-shared.mjs`, `write-content.mjs` | one-off extraction of the content files from the captured pages |
+| `obscure-poster.py` | blurs and halftones the two background portraits on the home poster (original kept in `tools/assets/`); needs Pillow |
 | `localize-external.mjs` | copies hot-linked third-party images into `public/` |
 
 `extract-posts.mjs` keeps math blocks' exact whitespace (they render with `white-space: pre`); run it with
