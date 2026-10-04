@@ -40,10 +40,6 @@ export const navPanels: Record<NavPanelName, NavPanel> = {
         category: 'Code',
         heading: 'GitHub',
         links: [{ label: 'Visit GitHub', href: portfolio.links.github, newTab: true }],
-        merch: [
-          '/assets/nous-web/composer/menuCode_imgBlueteefront1.webp',
-          '/assets/nous-web/composer/menuCode_imgSweaterfront1.webp',
-        ],
       },
     ],
   },
@@ -86,7 +82,12 @@ export const navPanels: Record<NavPanelName, NavPanel> = {
         links: [
           { label: 'EMNLP 2026', muted: 'At', description: 'Main conference, Budapest', href: '/releases' },
           { label: 'WMT 2026', muted: 'At', description: 'Proceedings, Budapest', href: '/releases' },
-          { label: 'Digital Discovery', muted: 'In', description: 'Royal Society of Chemistry', href: '/releases' },
+          {
+            label: 'Digital Discovery',
+            muted: 'In',
+            description: 'Royal Society of Chemistry',
+            href: '/releases',
+          },
         ],
       },
     ],
