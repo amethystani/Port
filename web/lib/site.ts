@@ -6,15 +6,15 @@ export const site = {
   name: 'Animesh Mishra',
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
   description:
-    'Animesh Mishra is a pioneer in open AI training and research. We created Hermes Agent, the most widely used open source agent harness in the world.',
+    'Animesh Mishra is an ML/NLP researcher working on evaluation, retrieval and scientific AI. Papers at EMNLP 2026 Main, WMT 2026 and Digital Discovery.',
   /** The longer line used for the home page's description and share cards. */
   homeDescription:
-    'Animesh Mishra is a pioneer in open AI training and research. We created Hermes Agent, the most widely used open source agent harness in the world. We are on a mission to create and proliferate open access to intelligence.',
+    'Animesh Mishra is an ML/NLP researcher working on evaluation, retrieval and scientific AI, with papers at EMNLP 2026 Main, WMT 2026 and Digital Discovery. Looking for the next research role before a PhD.',
   ogImage: '/assets/brand/social-card.png',
   favicon: '/logo-favicon.png',
   sameAs: [
-    'https://x.com/NousResearch',
-    'https://github.com/NousResearch',
-    'https://huggingface.co/NousResearch',
+    'https://github.com/amethystani',
+    'https://www.linkedin.com/in/animesh-mishra-in/',
+    'https://orcid.org/0009-0009-1770-6329',
   ],
 } as const;

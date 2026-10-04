@@ -1,3 +1,4 @@
+import { portfolio } from '@/content/portfolio';
 import Link from 'next/link';
 import { PageMotion } from '@/components/behavior/PageMotion';
 import { Button } from '@/components/ui/Button';
@@ -167,9 +168,7 @@ export function ArticlePage({ post, body }: { post: Post; body: string }) {
                 </span>
                 <h2>{post.author}</h2>
                 <p>Author of {post.title}.</p>
-                <a href={`https://nousresearch-com-backup.vercel.app/${post.slug}/`}>
-                  Read the original article
-                </a>
+                <a href={portfolio.links.linkedin}>Follow on LinkedIn</a>
               </div>
             </aside>
           </div>

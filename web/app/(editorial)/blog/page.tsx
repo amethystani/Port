@@ -4,8 +4,8 @@ import { pageMetadata } from '@/lib/seo';
 import { site } from '@/lib/site';
 
 export const metadata = pageMetadata({
-  title: `Nous Blog | ${site.name}`,
-  description: `Research and perspectives from ${site.name}.`,
+  title: `Writing | ${site.name}`,
+  description: `Posts and notes from ${site.name}: research, projects and conference write-ups.`,
   path: '/blog',
   image: site.ogImage,
 });

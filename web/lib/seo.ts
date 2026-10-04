@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { site } from './site';
 
 type PageMeta = {
-  /** Full <title>. Not suffixed automatically: pass e.g. "Nous Blog | Animesh Mishra". */
+  /** Full <title>. Not suffixed automatically: pass e.g. "Writing | Animesh Mishra". */
   title: string;
   /** Shown in og:title / twitter:title; defaults to `title`. */
   shareTitle?: string;

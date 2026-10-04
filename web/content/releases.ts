@@ -1,7 +1,9 @@
+import { portfolio } from './portfolio';
+
 export type Release = {
-  /** MM/DD/YY, shown as written. */
+  /** MM/DD/YY, shown as written (a bare year is fine when the day is unknown). */
   date: string;
-  /** Category tag: MODEL, PAPER, DATASET, ... */
+  /** Category tag: PAPER, DATASET, CODE, ... */
   type: string;
   /** Optional size column (omit to show an em dash). */
   size?: string;
@@ -13,307 +15,93 @@ export type Release = {
 /** Newest first. The page shows the first 9 and reveals the rest with "Show more". */
 export const releases: Release[] = [
   {
-    date: '02/25/26',
+    date: '10/02/26',
+    type: 'CODE',
+    title: 'DeferSeg',
+    href: portfolio.links.deferseg,
+    description: 'Tile-scheduled neural passes for real-time compositing.',
+  },
+  {
+    date: '09/23/26',
+    type: 'PAPER',
+    title:
+      'Notation matters: cross-representation inconsistency in chemistry language models and its mechanistic origins',
+    href: 'https://lnkd.in/dBrV7SGx',
+    description:
+      'Digital Discovery, Royal Society of Chemistry (Gold Open Access). The same molecule written as SMILES, IUPAC, InChI or SELFIES gave inconsistent predictions for 88% of 1,072 molecules, and ChemBERTa-2 representations of identical molecules diverge layer by layer.',
+  },
+  {
+    date: '09/20/26',
+    type: 'CODE',
+    title: 'Fruit-fly connectome trader',
+    href: 'https://lnkd.in/d898bxDe',
+    description:
+      'A weekend project with Krishang Sharma: the fruit-fly mushroom-body circuit wired into a trading system on Binance Spot Testnet, with dopamine-gated plasticity driven by realised P&L. Open-sourced on GitHub.',
+  },
+  {
+    date: '09/04/26',
+    type: 'PAPER',
+    title: 'Translation Metrics Cannot Judge What Their Tokeniser Deletes',
+    href: portfolio.links.palimpsest,
+    description:
+      'WMT26 (poster), co-located with EMNLP 2026, Budapest. LIGATUR and AEGIS submissions to the shared task on automated translation quality evaluation, with Krishang Sharma and Sonia Khetarpaul.',
+  },
+  {
+    date: '09/04/26',
+    type: 'DATASET',
+    size: '171 items',
+    title: 'LIGATUR',
+    href: portfolio.links.palimpsest,
+    description:
+      'A contrastive challenge set (English-German, English-Hindi) separating Unicode-level corruption from semantic error, released with the Palimpsest code and the AEGIS metric.',
+  },
+  {
+    date: '08/22/26',
+    type: 'PAPER',
+    title: 'Beyond Epistemic Collapse: Disagreement-Aware Scientific Retrieval-Augmented Generation',
+    href: portfolio.links.evirag,
+    description:
+      'EMNLP 2026, Main Conference (CORE A*). EVIRAG keeps conflicting scientific evidence apart instead of collapsing it into one answer, and improves contradiction recall and viewpoint coverage over standard RAG. With Krishang Sharma and Sonia Khetarpaul.',
+  },
+  {
+    date: '08/22/26',
+    type: 'DATASET',
+    size: '1,250 queries',
+    title: 'EVIRAG-BENCH',
+    href: portfolio.links.evirag,
+    description:
+      'A benchmark spanning five scientific domains, with a Rust pipeline, evaluation metrics and corpus tools.',
+  },
+  {
+    date: '07/26/26',
+    type: 'CODE',
+    title: 'Machina (ClerkTree)',
+    href: 'https://lnkd.in/d-fipCH7',
+    description:
+      "ClerkTree's first public research release: open machine intelligence for industrial machines, covering bearing-fault classification, remaining useful life, visual quality inspection and evidence-grounded industrial reasoning.",
+  },
+  {
+    date: '05/24/26',
     type: 'AGENT',
-    title: 'Hermes Agent',
-    href: 'https://hermes-agent.nousresearch.com/',
+    title: 'Juris on IBM VAKRA',
+    href: portfolio.links.linkedin,
     description:
-      'An autonomous agent that lives on your server, remembers what it learns, and gets more capable the longer it runs.',
+      'Ranked #2 globally for tool selection. A 36B model with a capability-specific routing stack over roughly 8,000 APIs in 62 domains: shortlist the tools, force one choice, normalise arguments, return answers directly from tool output.',
   },
   {
-    date: '01/06/26',
-    type: 'MODEL',
-    title: 'NousCoder-14B',
-    href: 'https://huggingface.co/NousResearch/NousCoder-14B',
-    description: 'Competitive olympiad programming post-trained on Qwen-3-14B',
-  },
-  {
-    date: '12/09/25',
-    type: 'MODEL',
-    title: 'Nomos 1',
-    href: 'https://huggingface.co/NousResearch/nomos-1',
-    description: 'Small but mighty 30B SOTA mathematician in partnership with Hillclimb',
-  },
-  {
-    date: '12/03/25',
-    type: 'MODEL',
-    title: 'Hermes-4.3-Seed-36B',
-    href: 'https://huggingface.co/NousResearch/Hermes-4.3-36B',
-    description:
-      'Roughly equivalent performance to Hermes-4-70B at half the model size; post-trained entirely on the Psyche network',
-  },
-  {
-    date: '08/26/25',
+    date: '2026',
     type: 'PAPER',
-    title: 'Hermes 4 Technical Report',
-    href: '/wp-content/uploads/2025/08/Hermes_4_Technical_Report.pdf',
-    description: 'Technical Report',
+    title:
+      'A comprehensive reliability framework for nonbonded and reusable configurations based EMI measurements in construction steel rebar: a proof of concept',
+    href: portfolio.links.orcid,
+    description: 'Measurement, Vol. 274, Art. 121021, Elsevier. With Lukesh Parida and Sumedha Moharana.',
   },
   {
-    date: '08/26/25',
-    type: 'MODEL',
-    title: 'Hermes‑4‑Llama‑3.1‑405B',
-    href: 'https://huggingface.co/collections/NousResearch/hermes-4-collection-68a731bfd452e20816725728',
-    description: 'Frontier hybrid‑mode reasoning model based on Llama‑3.1‑405B',
-  },
-  {
-    date: '08/26/25',
-    type: 'MODEL',
-    title: 'Hermes‑4‑Llama‑3.1‑70B',
-    href: 'https://huggingface.co/collections/NousResearch/hermes-4-collection-68a731bfd452e20816725728',
-    description:
-      'Smaller hybrid‑mode reasoning model with 70B parameters. Shares the same improvements as the 405B variant',
-  },
-  {
-    date: '08/26/25',
-    type: 'MODEL',
-    title: 'Hermes‑4‑14B',
-    href: 'https://huggingface.co/collections/NousResearch/hermes-4-collection-68a731bfd452e20816725728',
-    description: 'Small and dense Hermes variant for local inference.',
-  },
-  {
-    date: '08/14/25',
-    type: 'RESEARCH',
-    title: 'Measuring Thinking Efficiency in Reasoning Models',
-    href: '/measuring-thinking-efficiency-in-reasoning-models-the-missing-benchmark/',
-    description: 'Measuring Thinking Efficiency in Reasoning Models: The Missing Benchmark',
-  },
-  {
-    date: '07/11/25',
-    type: 'DATASET',
-    title: 'Hermes 3 Dataset',
-    href: 'https://huggingface.co/datasets/NousResearch/Hermes-3-Dataset',
-    description: 'Complete dataset used in pretraining of Hermes 3 models',
-  },
-  {
-    date: '05/29/25',
-    type: 'RESEARCH',
-    title: 'Steering the Shoggoth',
-    href: '/steering-the-shoggoth-taming-llms-with-sequential-monte-carlo/',
-    description: 'Taming LLMs with Sequential Monte Carlo',
-  },
-  {
-    date: '05/14/25',
-    type: 'TRAINING',
-    title: 'Psyche Network',
-    href: 'https://psyche.network/',
-    description: 'Open infrastructure democratizing AI development',
-  },
-  {
-    date: '04/29/25',
-    type: 'FRAMEWORK',
-    title: 'Atropos',
-    href: 'https://github.com/NousResearch/atropos',
-    description: 'Language Model RL Environments',
-  },
-  {
-    date: '02/14/25',
-    type: 'MODEL',
-    title: 'DeepHermes-3-Llama-3-8B-Preview',
-    href: 'https://huggingface.co/NousResearch/DeepHermes-3-Llama-3-8B-Preview',
-    description: 'Model with deep reasoning and chat modes',
-  },
-  {
-    date: '12/11/24',
-    type: 'MODEL',
-    title: 'Hermes-3-Llama-3.2-3B',
-    href: 'https://huggingface.co/NousResearch/Hermes-3-Llama-3.2-3B',
-    description: 'Model that can run on most modern hardware',
-  },
-  {
-    date: '11/29/24',
-    type: 'SIMULATOR',
-    title: 'GOD',
-    href: 'https://x.com/god',
-    description: 'Social agent',
-  },
-  {
-    date: '11/29/24',
-    type: 'SIMULATOR',
-    title: 'S8N',
-    href: 'https://x.com/s8n',
-    description: 'Social agent',
-  },
-  {
-    date: '11/29/24',
+    date: '2026',
     type: 'PAPER',
-    title: 'DeMo: Decoupled Momentum Optimization',
-    href: 'https://arxiv.org/pdf/2411.19870',
-    description: 'Technical report',
-  },
-  {
-    date: '11/08/24',
-    type: 'SIMULATOR',
-    title: 'Hermes Chat',
-    href: 'https://hermes.nousresearch.com/',
-    description: 'Chat Interface',
-  },
-  {
-    date: '10/29/24',
-    type: 'SIMULATOR',
-    title: 'TEE',
-    href: 'https://x.com/tee_hee_he',
-    description: 'Autonomous agent',
-  },
-  {
-    date: '08/26/24',
-    type: 'PAPER',
-    title: 'A Preliminary Report On DisTrO',
-    href: 'https://github.com/NousResearch/DisTrO/blob/main/A_Preliminary_Report_on_DisTrO.pdf',
-    description: 'Technical report',
-  },
-  {
-    date: '08/24/24',
-    type: 'MODEL',
-    title: 'Hermes 3 405B',
-    href: 'https://huggingface.co/NousResearch/Hermes-3-Llama-3.1-405B',
-    description: 'Model',
-  },
-  {
-    date: '08/14/24',
-    type: 'PAPER',
-    title: 'Hermes 3 Technical Report',
-    href: '/wp-content/uploads/2024/08/Hermes-3-Technical-Report.pdf',
-    description: 'Technical report',
-  },
-  {
-    date: '06/27/24',
-    type: 'MODEL',
-    title: 'Hermes 2 Pro 70B',
-    href: 'https://huggingface.co/NousResearch/Hermes-2-Pro-Llama-3-70B',
-    description: 'Function-calling model',
-  },
-  {
-    date: '06/20/24',
-    type: 'MODEL',
-    title: 'Hermes 2 Theta',
-    href: 'https://huggingface.co/NousResearch/Hermes-2-Theta-Llama-3-70B-GGUF',
-    description: 'Model',
-  },
-  {
-    date: '06/11/24',
-    type: 'DATASET',
-    title: 'Character Codex',
-    href: 'https://huggingface.co/datasets/NousResearch/CharacterCodex',
-    description: 'Roleplaying dataset',
-  },
-  {
-    date: '03/23/24',
-    type: 'CODE',
-    title: 'Nous WorldSim',
-    href: 'https://worldsim.nousresearch.com/',
-    description: 'CLI simulator',
-  },
-  {
-    date: '03/15/24',
-    type: 'PROMPT',
-    title: 'Original Nous WorldSim Prompt',
-    href: 'https://x.com/karan4d/status/1768836844207378463',
-    description: 'Prompt engineering',
-  },
-  {
-    date: '03/11/24',
-    type: 'MODEL',
-    title: 'Hermes-2-Pro-Mistral-7B',
-    href: 'https://huggingface.co/NousResearch/Hermes-2-Pro-Mistral-7B',
-    description: 'Master function-calling model',
-  },
-  {
-    date: '03/07/24',
-    type: 'MODEL',
-    title: 'NousResearch/Genstruct-7B',
-    href: 'https://huggingface.co/NousResearch/Genstruct-7B',
-    description: 'Data synthesis model',
-  },
-  {
-    date: '03/05/24',
-    type: 'PAPER',
-    title: 'Animesh Mishra Official Branding Booklet',
-    href: 'https://nousresearch.com/wp-content/uploads/2024/03/NOUS-BRAND-BOOKLET-firstedition_1.pdf',
-    description: 'Design & story of Nous',
-  },
-  {
-    date: '02/20/24',
-    type: 'MODEL',
-    title: 'NousResearch/Nous-Hermes-2-Mistral-7B-DPO',
-    href: 'https://huggingface.co/NousResearch/Nous-Hermes-2-Mistral-7B-DPO',
-    description: '7B model',
-  },
-  {
-    date: '01/29/24',
-    type: 'SUBNET',
-    title: 'NousResearch/finetuning-subnet',
-    href: 'https://github.com/NousResearch/finetuning-subnet',
-    description: 'Evals on-chain',
-  },
-  {
-    date: '01/15/24',
-    type: 'MODEL',
-    title: 'NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO',
-    href: 'https://huggingface.co/NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO',
-    description: 'MoE model + DPO',
-  },
-  {
-    date: '01/15/24',
-    type: 'MODEL',
-    title: 'NousResearch/Nous-Hermes-2-Mixtral-8x7B-SFT',
-    href: 'https://huggingface.co/NousResearch/Nous-Hermes-2-Mixtral-8x7B-SFT',
-    description: 'MoE model - DPO',
-  },
-  {
-    date: '01/15/24',
-    type: 'MODEL',
-    title: 'NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO-GGUF',
-    href: 'https://huggingface.co/NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO-GGUF',
-    description: 'Quantized MoE model',
-  },
-  {
-    date: '12/25/23',
-    type: 'MODEL',
-    title: 'NousResearch/Nous-Hermes-2-Yi-34B',
-    href: 'https://huggingface.co/NousResearch/Nous-Hermes-2-Yi-34B',
-    description: 'Hermes on Yi',
-  },
-  {
-    date: '11/14/23',
-    type: 'MODEL',
-    title: 'NousResearch/Nous-Capybara-34B',
-    href: 'https://huggingface.co/NousResearch/Nous-Capybara-34B',
-    description: 'Capybara-series model',
-  },
-  {
-    date: '11/02/23',
-    type: 'MODEL',
-    title: 'NousResearch/Yarn-Mistral-7b-128k',
-    href: 'https://huggingface.co/NousResearch/Yarn-Mistral-7b-128k',
-    description: 'Long-context model',
-  },
-  {
-    date: '10/30/23',
-    type: 'MODEL',
-    title: 'NousResearch/Obsidian-3B-V0.5',
-    href: 'https://huggingface.co/NousResearch/Obsidian-3B-V0.5',
-    description: 'Multimodal vision LLM',
-  },
-  {
-    date: '10/30/23',
-    type: 'CODE',
-    title: 'NousResearch/Obsidian',
-    href: 'https://github.com/NousResearch/Obsidian',
-    description: 'Code for obsidian model',
-  },
-  {
-    date: '08/31/23',
-    type: 'PAPER',
-    title: 'YaRN: Efficient Context Window Extension of Large Language Models',
-    href: 'https://arxiv.org/abs/2309.00071',
-    description: 'Architecture behind YaRN models',
-  },
-  {
-    date: '07/21/23',
-    type: 'MODEL',
-    title: 'NousResearch/Nous-Hermes-Llama2-13b',
-    href: 'https://huggingface.co/NousResearch/Nous-Hermes-Llama2-13b',
-    description: 'Hermes on Llama2',
+    title:
+      'Where Does Politeness Live in Hindi? A Mechanistic Case Study of Honorific Encoding in Gemma Scope SAEs',
+    href: portfolio.links.orcid,
+    description: 'AACL-IJCNLP 2026, Student Research Workshop (accepted). With Krishang Sharma.',
   },
 ];

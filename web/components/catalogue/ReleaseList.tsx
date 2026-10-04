@@ -31,20 +31,20 @@ export function ReleasesPage({ releases }: { releases: Release[] }) {
       <main className="nw-catalogue" id="top">
         <CatalogueHero
           className="nw-catalogue-listing-hero"
-          eyebrow={`Last release · ${longDate(releases[0].date)}`}
-          title="Releases"
+          eyebrow={`Latest · ${longDate(releases[0].date)}`}
+          title="Publications"
         />
         <section aria-labelledby="releases-heading" className={`${WRAP} nw-catalogue-section`}>
           <SectionHead
             id="releases-heading"
             title="Most Recent"
             icon="/assets/nous-web/catalogue/heading-filter.svg"
-            link={{ href: '#release-list', label: 'Jump to releases' }}
+            link={{ href: '#release-list', label: 'Jump to publications' }}
           />
           <ListDisclosure
             id="release-list"
             pageSize={9}
-            itemLabel="releases"
+            itemLabel="publications"
             controlsProps={{ id: 'release-list-more', className: 'nw-release-more', tabIndex: -1 }}
           >
             {releases.map((release) => (

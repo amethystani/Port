@@ -77,7 +77,7 @@ export function BlogIndex({ featured, archive }: { featured: Post[]; archive: Po
     <>
       <PageMotion kind="blog" />
       <main className="nw-blog-index nw-catalogue" id="main">
-        <CatalogueHero eyebrow="Research & perspectives" title="Nous Blog" />
+        <CatalogueHero eyebrow="Research & notes" title="Writing" />
         <div>
           <section aria-label="Featured articles" className={`${WRAP} nw-catalogue-section nw-blog-featured`}>
             {featured.map((post) => (

@@ -4,8 +4,8 @@ import { pageMetadata } from '@/lib/seo';
 import { site } from '@/lib/site';
 
 export const metadata = pageMetadata({
-  title: `Releases | ${site.name}`,
-  description: `Explore open-source models, research papers, datasets, and tools from ${site.name}.`,
+  title: `Publications | ${site.name}`,
+  description: `Papers, benchmarks, datasets and code by ${site.name}.`,
   path: '/releases',
   image: site.ogImage,
 });

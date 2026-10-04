@@ -69,8 +69,7 @@ export const answers: CuratedAnswer[] = [
   },
   {
     question: 'How can I get in touch?',
-    answer:
-      'Email works best. He is also on LinkedIn and GitHub, and the code for his papers is public.',
+    answer: 'Email works best. He is also on LinkedIn and GitHub, and the code for his papers is public.',
     learn: portfolio.links.github,
     learnSource: 'GitHub',
     learnLabel: 'Open GitHub',

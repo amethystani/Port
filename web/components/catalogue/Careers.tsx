@@ -47,9 +47,9 @@ function RoleRow({ job }: { job: Job }) {
       <a
         href={mailto(job.title)}
         className="nw-catalogue-link nw-role-apply"
-        aria-label={`Apply for ${job.title}`}
+        aria-label={`Get in touch about ${job.title}`}
       >
-        <Mono>Apply now</Mono>
+        <Mono>Get in touch</Mono>
       </a>
     </article>
   );
@@ -65,9 +65,9 @@ function ApplySection({ subject }: { subject?: string }) {
     >
       <SectionHead
         id="apply-heading"
-        title="How to apply"
+        title="Get in touch"
         icon="/assets/nous-web/catalogue/careersContext_imgMail.svg"
-        link={{ href: mailto(subject), label: 'Email recruiting' }}
+        link={{ href: mailto(subject), label: 'Email Animesh' }}
       />
       <Button variant="ghost" className="nw-catalogue-message" href={mailto(subject)}>
         Send a message
@@ -78,7 +78,7 @@ function ApplySection({ subject }: { subject?: string }) {
           <a className="nw-catalogue-link" href={mailto(subject)}>
             {recruitingEmail}
           </a>
-          {' with the following information:'}
+          {' if you work in any of these areas and want to talk shop:'}
         </Body>
         <Body as="ul">
           {applicationChecklist.map((item) => (
@@ -95,18 +95,15 @@ export function CareersPage({ jobs }: { jobs: Job[] }) {
     <>
       <PageMotion kind="catalogue" />
       <main className="nw-catalogue" id="top">
-        <CatalogueHero eyebrow={`${jobs.length} open positions`} title="Nous Careers">
+        <CatalogueHero eyebrow={`${jobs.length} roles and projects`} title="Experience">
           <div className="nw-career-intro">
             <Body>
-              OUR MISSION is to create and democratize access to the world&apos;s best intelligence. Powerful
-              AI should be in the hands of the many rather than the privileged few. To get there, we&apos;ve
-              doubled down on open-source, humanistic AI.
+              RESEARCH: NLP and ML evaluation, scientific AI, and the measurements used to judge language
+              models. Papers at EMNLP 2026 Main, WMT 2026 and Digital Discovery.
             </Body>
             <Body>
-              ANIMESH MISHRA is a frontier open source AI company. We are well known for creating Hermes
-              Agent, our open-source self-improving AI agent with a built-in learning loop. We created DisTrO,
-              an innovation to collaborate on training generative AI. We aim to harness the world&apos;s
-              creativity, ingenuity, and resources to outpace closed tech-giants.
+              WORK: open-source contributions at Nous Research, research at Complexity Science Hub Vienna
+              and DRDO, and co-founding ClerkTree. Looking for my next research role before a PhD.
             </Body>
           </div>
         </CatalogueHero>
@@ -119,19 +116,16 @@ export function CareersPage({ jobs }: { jobs: Job[] }) {
             decoding="async"
           />
           <div className="nw-career-art-copy">
-            <Statement>Our team is high-agency and mission focused.</Statement>
-            <Statement>
-              Expect good wages, long months of complete focus, constant danger, with honor and glory in the
-              event of success.
-            </Statement>
+            <Statement>Fast, high-output environments over slow academic ones.</Statement>
+            <Statement>Looking for my next research role before a PhD.</Statement>
           </div>
         </div>
         <section aria-labelledby="roles-heading" className={`${WRAP} nw-catalogue-section`}>
           <SectionHead
             id="roles-heading"
-            title="Open Roles"
+            title="Roles"
             icon="/assets/nous-web/catalogue/careersContext_imgContact.svg"
-            link={{ href: '#role-list', label: 'Jump to open roles' }}
+            link={{ href: '#role-list', label: 'Jump to roles' }}
           />
           <ListDisclosure
             id="role-list"
@@ -179,9 +173,9 @@ export function JobPage({ job }: { job: Job }) {
           );
         })}
         <ApplySection subject={job.subject} />
-        <nav aria-label="All roles" className={`${WRAP} nw-catalogue-section nw-role-back`}>
+        <nav aria-label="All experience" className={`${WRAP} nw-catalogue-section nw-role-back`}>
           <Link className="nw-catalogue-link" href="/careers#role-list">
-            <Mono>All open roles</Mono>
+            <Mono>All experience</Mono>
           </Link>
         </nav>
       </main>

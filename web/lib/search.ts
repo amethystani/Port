@@ -142,7 +142,7 @@ export function searchSite(query: string, limit = 5): SearchResult[] {
       excerpt: doc.excerpt,
     }));
 
-  // Matching roles are grouped under one "Careers" entry.
+  // Matching roles are grouped under one "Experience" entry.
   const roles = jobs.filter((j) =>
     words.every((w) => `${j.title} ${j.summary} ${j.location}`.toLowerCase().includes(w)),
   );
@@ -150,7 +150,7 @@ export function searchSite(query: string, limit = 5): SearchResult[] {
     const group: SearchResult = {
       id: 'career:roles',
       kind: 'career',
-      title: 'Careers',
+      title: 'Experience',
       url: '/careers',
       matches: roles.slice(0, 3).map((j) => ({ id: j.slug, title: j.title, text: j.summary })),
     };

@@ -1,8 +1,6 @@
-# nous-web
+# Animesh Mishra, portfolio
 
-An editable Next.js rebuild of [nousresearch.com](https://nousresearch.com): the same 36 pages, written as
-readable React + TypeScript instead of compiled bundles, with the text in data files you can change and the
-behaviours (menus, search palette, article tools, 3D scenes) as small components.
+An editable Next.js portfolio built on a rebuild of [nousresearch.com](https://nousresearch.com)'s layout and design system: written as readable React + TypeScript instead of compiled bundles, with the text in data files you can change and the behaviours (menus, search palette, article tools, 3D scenes) as small components. The structure and artwork are the original's; the words, links and the main poster are Animesh's.
 
 It is meant as a starting point you can adapt to your own site. The look comes from the original's compiled
 CSS, fonts and images, which are included so the result matches the live site; see
@@ -57,29 +55,30 @@ Almost all copy lives in `content/`. Edit, save, and the page updates.
 | --- | --- |
 | Site name, URL, description, share image | `lib/site.ts` (set `NEXT_PUBLIC_SITE_URL` in production) |
 | The portfolio hero: name, role, and the main poster photo | `content/portfolio.ts` (image in `public/assets/portfolio/`) |
-| Home page mission and Hermes features (still the Nous content) | `content/home.ts` |
-| The announcements strip on the home page | `content/announcements.ts` |
+| Home page About / Research / Building rows, "Selected Work" banner and tiles | `content/home.ts` |
+| Name, role, email, poster and the profile / project links used everywhere | `content/portfolio.ts` |
+| The "Updates" strip on the home page (LinkedIn posts) | `content/announcements.ts` |
 | Footer columns and links | `content/footer.ts` |
-| Header dropdowns (Nous / Hermes / Community / Portal) | `content/research-navigation.ts` |
+| Header dropdowns (About / Work / Elsewhere / Contact) and their promo banner | `content/research-navigation.ts`, `content/navigation.ts` |
 | Phone menu | `content/mobile-menu.ts` |
 | ⌘K palette's suggested questions and answers | `content/composer.ts` |
-| Blog posts: title, author, date, image, related | `content/posts.ts` |
-| Blog post bodies | `content/posts/<slug>.html` |
-| Releases list | `content/releases.ts` |
-| Open roles | `content/jobs.ts` |
+| Writing (blog posts): title, author, date, related | `content/posts.ts` |
+| Post bodies | `content/posts/<slug>.html` |
+| Publications list (the `/releases` route) | `content/releases.ts` |
+| Experience (the `/careers` routes: roles, projects, research) | `content/jobs.ts` |
 
 **Add a blog post:** add an entry to `content/posts.ts` (copy an existing one), put the article body in
 `content/posts/<your-slug>.html`, and put its images under `public/`. Headings with an `id` become the
 article's "Contents" list and reading rail. The post appears on `/blog`, in search, in the sitemap and
 under any post that lists it in `related`.
 
-**Search** (`lib/search.ts`) is built from your own content: pages, posts, releases and roles. There is no
+**Search** (`lib/search.ts`) is built from your own content: pages, posts, publications and experience. There is no
 external index to maintain.
 
 ## Adapt it to your own site
 
 1. `lib/site.ts`: name, URL, description, social links.
-2. Replace the images in `public/assets/`. The logo is already yours (see `trace-logo.py` / `make-brand-assets.mjs` below); the Nous wordmark text ("Nous Research" in the footer and headings) is still in `content/`.
+2. Replace the images in `public/assets/`. The logo is already yours (see `trace-logo.py` / `make-brand-assets.mjs` below); the tile pictures on the home page, the announcement card art and the demo video are still the original's product shots and artwork.
 3. Replace the fonts (`public/font/`, declared with `@font-face` in `styles/06-app.css`); see the licensing note below.
 4. Re-theme in `styles/custom.css`, which loads last. The site is two blues, a bright one (frame, buttons,
    headings, links) and a darker one for body copy; `custom.css` explains each variable and has them ready to copy:
@@ -122,23 +121,19 @@ Deliberate, and small:
   that is here.
 - **Search runs on your content** (`lib/search.ts`) rather than Nous's own index, so results come from this
   site's pages.
-- **Announcements are static data** (`content/announcements.ts`, captured from the live page). The live site
-  loads them with a server action.
+- **Updates are static data** (`content/announcements.ts`), summaries of LinkedIn posts. The original loaded its announcements from X with a server action.
 - **Canonical and share URLs use `site.url`**, not `nousresearch.com`.
 - **The article logo** is chosen on the server for article pages; the live site swaps it after load.
 - **One reading-rail preview** (the second "Logic puzzles" section of the thinking-efficiency article) can
   show a different excerpt. The original's rule counts the whitespace in its source HTML as text; this
   one measures real text.
-- **Linked documents.** The two technical-report PDFs and one article figure that the original serves from its own site are copied into `public/`. The 42 MB brand booklet is not; its link points at nousresearch.com.
+- **Orphaned original assets.** The original's articles, PDFs, hot-linked images and article demos are still under `public/` but nothing links to them any more; delete them when you no longer want them.
 - **No site-verification tag.** The original carries Nous's Google site-verification token; it is theirs, so it is left out.
-- **Third-party images** that the original hot-links are copied into `public/assets/external/`.
-- **Links to other Nous sites** (portal, hermes-agent docs, shop, Discord, GitHub, X) still point at the
-  real ones.
+- **Unused components.** The article reader's interactive pieces (the neuron scene, embeds) and `components/home/Hero.tsx` are kept but no page uses them now.
 
 ## Branding and licensing
 
-The Nous Research name, marks, artwork, copy and the Rules and Aeonik Fono (trial) fonts belong to Nous
-Research and their licensors. This project is for local development and study. Before putting anything
+The portfolio's words, links and poster are Animesh Mishra's. The page design, artwork (hero tiles, mission images, announcement and card art, footer picture, orb), the Hermes demo video and the Rules and Aeonik Fono (trial) fonts come from nousresearch.com and belong to Nous Research and their licensors. This project is for local development and study. Before putting anything
 derived from it on a public domain, replace the branding, artwork, text and fonts with your own and make
 sure you hold licences for any font you keep.
 

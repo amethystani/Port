@@ -116,7 +116,7 @@ const attr = (page, sel, name) => page.$eval(sel, (el, n) => el.getAttribute(n),
 
 // ---------------------------------------------------------------- an article: dialogs, rail, dock
 {
-  const slug = '/measuring-thinking-efficiency-in-reasoning-models-the-missing-benchmark';
+  const slug = '/notation-matters-in-digital-discovery';
   const { page, errors, ctx } = await open(slug);
   await ctx.grantPermissions(['clipboard-read', 'clipboard-write']);
   const dialog = () => page.$('[role="dialog"]');
@@ -124,7 +124,7 @@ const attr = (page, sel, name) => page.$eval(sel, (el, n) => el.getAttribute(n),
   check('Share opens a side panel with focus on its close button', !!(await dialog()) && (await page.evaluate(() => document.activeElement?.getAttribute('aria-label'))) === 'Close');
   check('the page behind the panel is inert', await page.evaluate(() => document.querySelector('main')?.closest('[inert]') !== null));
   await page.click('[role="dialog"] button:has-text("Copy link")'); await page.waitForTimeout(300);
-  check('Copy link puts the article URL on the clipboard', /\/measuring-thinking/.test(await page.evaluate(() => navigator.clipboard.readText())));
+  check('Copy link puts the article URL on the clipboard', /\/notation-matters/.test(await page.evaluate(() => navigator.clipboard.readText())));
   await page.keyboard.press('Escape'); await page.waitForTimeout(500);
   check('Escape closes it and returns focus to the Share button', !(await dialog()) && (await page.evaluate(() => document.activeElement?.getAttribute('aria-label'))) === 'Share article');
   await page.click('button[aria-label="Listen to article"]'); await page.waitForTimeout(600);
@@ -134,45 +134,28 @@ const attr = (page, sel, name) => page.$eval(sel, (el, n) => el.getAttribute(n),
   const height = await page.evaluate(() => document.documentElement.scrollHeight);
   await page.evaluate((y) => scrollTo(0, y), Math.round(height * 0.3)); await page.waitForTimeout(800);
   const rail = await page.$eval('.nw-article-reading-rail', (r) => ({ hidden: r.hidden, n: r.children.length }));
-  check('the reading rail appears beside the text with one tick per section', !rail.hidden && rail.n === 19, JSON.stringify(rail));
+  check('the reading rail appears beside the text with one tick per section', !rail.hidden && rail.n === 3, JSON.stringify(rail));
   await page.hover('.nw-article-reading-rail a:nth-child(3)'); await page.waitForTimeout(300);
   check('hovering a tick previews that section', (await page.$$('.nw-article-reading-rail a[data-preview]')).length === 1);
-  check('headings and figures fade in as they scroll into view', (await page.$$('.nw-blog-reveal')).length > 50);
+  check('headings and figures fade in as they scroll into view', (await page.$$('.nw-blog-reveal')).length > 5);
   check('no console errors on an article', errors.length === 0, errors.slice(0, 2).join(' | '));
   await ctx.close();
 }
 {
-  const { page, ctx } = await open('/measuring-thinking-efficiency-in-reasoning-models-the-missing-benchmark', { width: 390, height: 844 });
+  const { page, ctx } = await open('/notation-matters-in-digital-discovery', { width: 390, height: 844 });
   const dock = () => page.$eval('.nw-article-dock', (d) => ({ hidden: d.hidden, open: d.querySelector('button').getAttribute('aria-expanded') }));
   check('the contents dock is hidden at the top', (await dock()).hidden);
   await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight * 0.3)); await page.waitForTimeout(800);
   check('the dock shows once the contents list scrolls away', !(await dock()).hidden);
   await page.click('.nw-article-dock button'); await page.waitForTimeout(300);
-  check('tapping it lists the sections', (await dock()).open === 'true' && (await page.$$('.nw-article-dock-list a')).length === 19);
+  check('tapping it lists the sections', (await dock()).open === 'true' && (await page.$$('.nw-article-dock-list a')).length === 3);
   await page.keyboard.press('Escape'); await page.waitForTimeout(200);
   check('Escape closes the list', (await dock()).open === 'false');
   await ctx.close();
 }
 
-// ---------------------------------------------------------------- neuron constellation
-{
-  const { page, errors, ctx } = await open('/neuron-steering');
-  await page.evaluate(() => document.querySelector('.nw-constellation').scrollIntoView({ block: 'center' })); await page.waitForTimeout(2500);
-  const count = () => page.$eval('.nw-neuron-count', (e) => e.textContent);
-  check('the 3D scene loads when scrolled to: canvas drawn, "101 shown"', (await count()) === '101 shown' && (await page.$eval('.nw-neuron-scene canvas', (c) => c.width > 300)));
-  await page.selectOption('select[aria-label="Neuron subset"]', 'all'); await page.waitForTimeout(300);
-  check('"All neurons" shows all 200', (await count()) === '200 shown');
-  await page.selectOption('select[aria-label="Neuron subset"]', 'negative'); await page.waitForTimeout(300);
-  check('"Negative delta" shows 99', (await count()) === '99 shown');
-  await page.selectOption('select[aria-label="Inspect neuron"]', { index: 5 });
-  check('the inspector describes the chosen neuron', /^Layer \d+ · Neuron \d+ · Rank \d+ · Delta -/.test(await page.$eval('.nw-neuron-details output', (e) => e.textContent)));
-  const before = await page.screenshot({ clip: await page.$eval('.nw-neuron-viewport', (e) => { const r = e.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; }) });
-  await page.click('button[aria-label="Zoom in"]'); await page.waitForTimeout(300);
-  const after = await page.screenshot({ clip: await page.$eval('.nw-neuron-viewport', (e) => { const r = e.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; }) });
-  check('zoom changes the picture', !before.equals(after));
-  check('no console errors with the constellation', errors.length === 0, errors.slice(0, 2).join(' | '));
-  await ctx.close();
-}
+// The neuron-constellation article scene (components/article, lib/scenes) is no longer used by any post,
+// so it is not exercised here.
 // ---------------------------------------------------------------- canvases and video
 {
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
@@ -200,15 +183,15 @@ const attr = (page, sel, name) => page.$eval(sel, (el, n) => el.getAttribute(n),
 // ---------------------------------------------------------------- an editorial page
 {
   const { page, errors, ctx } = await open('/releases');
-  check('releases: 9 shown + "Show more (34)"', (await page.$$eval('#release-list > div:not([hidden])', (d) => d.length)) === 9 && /Show more \(34\)/.test(await page.$eval('#release-list-more', (e) => e.textContent)));
+  check('releases: 9 shown + "Show more (2)"', (await page.$$eval('#release-list > div:not([hidden])', (d) => d.length)) === 9 && /Show more \(2\)/.test(await page.$eval('#release-list-more', (e) => e.textContent)));
   await page.click('#release-list-more button'); await page.waitForTimeout(300);
-  check('Show more reveals the next 9', (await page.$$eval('#release-list > div:not([hidden])', (d) => d.length)) === 18);
+  check('Show more reveals the remaining 2', (await page.$$eval('#release-list > div:not([hidden])', (d) => d.length)) === 11);
   check('no console errors on /releases', errors.length === 0, errors.slice(0, 2).join(' | '));
   await ctx.close();
 }
 {
   const { page, ctx } = await open('/blog');
-  check('blog archive shows all 14 on desktop (pagination is mobile-only)', /Showing 14 of 14/.test(await page.$eval('#blog-archive-list + button + span, #blog-archive-list ~ span.sr-only', (e) => e.textContent).catch(() => '')));
+  check('blog archive shows all 5 on desktop (pagination is mobile-only)', /Showing 5 of 5/.test(await page.$eval('#blog-archive-list + button + span, #blog-archive-list ~ span.sr-only', (e) => e.textContent).catch(() => '')));
   await ctx.close();
 }
 
