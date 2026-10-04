@@ -1,0 +1,169 @@
+/* The badge wall on the home page (components/home/Affiliations.tsx). Colours come from the theme, so it
+   is blue on paper in light mode and light on dark in dark mode. */
+.af {
+  --af-ink: var(--nw-ink);
+  --af-paper: var(--nw-paper, #f5f5f5);
+  width: 100%;
+  padding: var(--nw-seam-band, 80px) 0;
+  color: var(--af-ink);
+  overflow: clip;
+}
+html[data-research-theme='dark'] .af {
+  --af-ink: var(--nw-theme-heading);
+  --af-paper: #0d0e22;
+}
+
+.af-block {
+  margin-top: clamp(28px, 4vw, 56px);
+}
+.af-label {
+  margin: 0 0 14px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.af-viewport {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.af-track {
+  display: flex;
+  width: max-content;
+  animation: af-scroll 70s linear infinite;
+}
+.af-track.af-reverse {
+  animation-direction: reverse;
+  animation-duration: 85s;
+}
+.af-track:hover,
+.af-track:focus-within {
+  animation-play-state: paused;
+}
+.af-set {
+  display: flex;
+  gap: 16px;
+  padding-right: 16px;
+}
+@keyframes af-scroll {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.af-tile {
+  position: relative;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  width: 300px;
+  height: 182px;
+  padding: 16px 18px;
+  border: 1px solid color-mix(in srgb, currentColor 40%, transparent);
+  border-radius: 8px;
+  color: var(--af-ink);
+  text-decoration: none;
+  /* a faint dot screen, like the halftone artwork elsewhere on the site */
+  background-image: radial-gradient(color-mix(in srgb, currentColor 13%, transparent) 1px, transparent 1.4px);
+  background-size: 7px 7px;
+  transition: background-color 0.25s, color 0.25s, border-color 0.25s, transform 0.25s;
+}
+/* registration marks in two corners */
+.af-tile::before,
+.af-tile::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border: 0 solid currentColor;
+  opacity: 0.6;
+}
+.af-tile::before {
+  left: 6px;
+  bottom: 6px;
+  border-left-width: 1px;
+  border-bottom-width: 1px;
+}
+.af-tile::after {
+  right: 6px;
+  bottom: 6px;
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+}
+.af-tile:hover,
+.af-tile:focus-visible {
+  background-color: var(--af-ink);
+  background-image: radial-gradient(color-mix(in srgb, var(--af-paper) 25%, transparent) 1px, transparent 1.4px);
+  border-color: var(--af-ink);
+  color: var(--af-paper);
+  transform: translateY(-4px);
+}
+
+.af-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.af-kind,
+.af-foot {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.af-name {
+  font-family: var(--font-rules-gothic-cmp);
+  font-size: 40px;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+.af-note {
+  font-family: var(--font-rules);
+  font-size: 12px;
+  line-height: 1.3;
+  opacity: 0.8;
+}
+.af-foot {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 10px 2px;
+}
+.af-status {
+  border: 1px solid currentColor;
+  border-radius: 99px;
+  padding: 2px 8px;
+}
+
+@media (max-width: 767px) {
+  .af-tile {
+    width: 248px;
+    height: 170px;
+  }
+  .af-name {
+    font-size: 32px;
+  }
+}
+
+/* Without motion the rows stop and wrap into a grid (the duplicate set is dropped). */
+@media (prefers-reduced-motion: reduce) {
+  .af-viewport {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .af-track {
+    animation: none;
+    width: auto;
+  }
+  .af-set {
+    flex-wrap: wrap;
+    padding: 0 var(--hw-teams-pad-x, 24px);
+  }
+  .af-dup {
+    display: none;
+  }
+}

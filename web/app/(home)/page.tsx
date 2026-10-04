@@ -1,5 +1,6 @@
 import { PageMotion } from '@/components/behavior/PageMotion';
 import { JsonLd } from '@/components/JsonLd';
+import { Affiliations } from '@/components/home/Affiliations';
 import { Announcements } from '@/components/home/Announcements';
 import { PortfolioHero } from '@/components/home/PortfolioHero';
 import { HermesBlock } from '@/components/home/HermesBlock';
@@ -9,6 +10,7 @@ import { pageMetadata } from '@/lib/seo';
 import { portfolio } from '@/content/portfolio';
 import { site } from '@/lib/site';
 
+import '@/styles/affiliations.css';
 import '@/styles/home-announcements.css';
 import '@/styles/portfolio.css';
 import '@/styles/poster-edges.css';
@@ -45,6 +47,7 @@ export default function HomePage() {
       <main className="nw-page-body">
         <PortfolioHero />
         <Mission />
+        <Affiliations />
         <HermesBlock />
         <Announcements />
         <Signoff />
