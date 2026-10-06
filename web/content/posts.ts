@@ -59,12 +59,13 @@ export const posts: Post[] = [
       'The same molecule written as SMILES, IUPAC, InChI or SELFIES gave inconsistent predictions for 88% of 1,072 molecules. What happens inside the model?',
     featured: true,
     cover: { src: '/assets/portfolio/animesh-mishra-poster.webp', alt: 'Animesh Mishra' },
-    cardImage: '/assets/portfolio/animesh-mishra-poster.webp',
+    cardImage: '/assets/portfolio/updates/halftone-circle.webp',
     eagerCard: true,
     related: ['emnlp-2026-beyond-epistemic-collapse', 'wmt-2026-translation-metrics', 'juris-ibm-vakra'],
   },
   {
     slug: 'fruit-fly-connectome-trading',
+    cardImage: '/assets/portfolio/updates/sheep.webp',
     tag: 'Project',
     title: 'I made a fruit fly trade crypto',
     description:
@@ -79,6 +80,7 @@ export const posts: Post[] = [
   },
   {
     slug: 'global-fintech-fest-2026',
+    cardImage: '/assets/portfolio/updates/low-frequency.webp',
     tag: 'Conference',
     title: 'What I took away from Global Fintech Fest 2026',
     description:
@@ -93,6 +95,7 @@ export const posts: Post[] = [
   },
   {
     slug: 'wmt-2026-translation-metrics',
+    cardImage: '/assets/portfolio/updates/error-mountains.webp',
     tag: 'Paper',
     title: 'Translation metrics cannot judge what their tokeniser deletes',
     description:
@@ -111,6 +114,7 @@ export const posts: Post[] = [
   },
   {
     slug: 'emnlp-2026-beyond-epistemic-collapse',
+    cardImage: '/assets/portfolio/updates/error-walker.webp',
     tag: 'Paper',
     title: 'Beyond epistemic collapse: disagreement-aware scientific RAG',
     description:
@@ -125,6 +129,7 @@ export const posts: Post[] = [
   },
   {
     slug: 'machina-open-machine-intelligence',
+    cardImage: '/assets/portfolio/updates/pixel-satellite.webp',
     tag: 'Project',
     title: 'Machina: open machine intelligence you can audit',
     description:
@@ -139,6 +144,7 @@ export const posts: Post[] = [
   },
   {
     slug: 'juris-ibm-vakra',
+    cardImage: '/assets/portfolio/updates/halftone-circle.webp',
     tag: 'Benchmark',
     title: 'Juris ranked #2 globally on IBM VAKRA for tool selection',
     description:
