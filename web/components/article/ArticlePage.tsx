@@ -85,9 +85,9 @@ function RelatedRow({ post }: { post: Post }) {
         </h3>
         <p>{post.excerpt}</p>
       </div>
-      {post.thumbnail !== null && (post.thumbnail ?? post.cover) && (
+      {post.thumbnail !== null && (post.thumbnail ?? post.cardImage ?? post.cover?.src) && (
         <ColorFrame
-          src={post.thumbnail ?? post.cover!.src}
+          src={(post.thumbnail ?? post.cardImage ?? post.cover?.src)!}
           alt={cardTitle(post)}
           className="nw-article-related-image"
         />
